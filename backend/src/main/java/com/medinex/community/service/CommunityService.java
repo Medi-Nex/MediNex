@@ -5,6 +5,7 @@ import com.medinex.common.exception.ResourceNotFoundException;
 import com.medinex.community.dto.*;
 import com.medinex.community.entity.*;
 import com.medinex.community.repository.*;
+import com.medinex.common.security.PhiGuardService;
 import com.medinex.follow.repository.BlockRepository;
 import com.medinex.notification.entity.NotificationType;
 import com.medinex.notification.service.NotificationService;
@@ -35,6 +36,7 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final BlockRepository blockRepository;
     private final NotificationService notificationService;
+    private final PhiGuardService phiGuardService;
 
     // --------------------------------------------------------------------------
     // POST CRUD & FEED
@@ -45,6 +47,7 @@ public class CommunityService {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Author user not found"));
 
+        phiGuardService.validateContent(request.getContent());
         String sanitizedContent = sanitizeContent(request.getContent());
 
         boolean isAnnouncement = false;
@@ -106,6 +109,7 @@ public class CommunityService {
             throw new BadRequestException("Unauthorized to modify this post");
         }
 
+        phiGuardService.validateContent(request.getContent());
         post.setContent(sanitizeContent(request.getContent()));
         if (request.getVisibility() != null) {
             post.setVisibility(request.getVisibility());
@@ -247,6 +251,8 @@ public class CommunityService {
     public CommentDto addComment(UUID authorId, UUID postId, CreateCommentRequest request) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        phiGuardService.validateContent(request.getContent());
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));

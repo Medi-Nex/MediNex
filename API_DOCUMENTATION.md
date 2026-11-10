@@ -528,6 +528,31 @@ Access restricted to users with `ROLE_ADMIN` or `ROLE_SUPER_ADMIN`. All mutation
 
 ---
 
+## Security Headers & Zero-PHI Compliance
+
+### 1. Mandatory HTTP Response Headers
+All API responses emitted by the Spring Boot gateway include the following hardened headers:
+- `X-Content-Type-Options: nosniff`: Prevents MIME-sniffing attacks.
+- `X-Frame-Options: DENY`: Blocks clickjacking and iframe embedding.
+- `X-XSS-Protection: 0`: Modern standard delegating to CSP.
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains`: Enforces encrypted transport across all endpoints.
+- `Cache-Control: no-cache, no-store, max-age=0, must-revalidate`: Enforced across all authenticated and sensitive endpoints.
+
+### 2. Zero-PHI Enforcement Policy
+In compliance with E-Health Hackathon 2026 data governance regulations, the public MediNex platform maintains strict data isolation from clinical operations:
+- **Interception Engine:** `PhiGuardService` scans all post and comment submissions for Medical Record Numbers (`MRN`), clinic/hospital identifiers, clinical prescription dosages (`Rx`), diagnostic admission summaries (`Chief Complaint`, `Discharge Summary`, `ICD-10`), and patient demographic pairings.
+- **Violation Response:** If a submission contains Protected Health Information, the API immediately halts processing and responds with `400 Bad Request`:
+  ```json
+  {
+    "success": false,
+    "message": "Zero-PHI Policy Violation: Detected potential Protected Health Information (PHI) or clinical diagnostic records (\"MRN: BD-77491-X\"). In accordance with MediNex healthcare data governance rules, posting patient medical records, clinical identifiers, or personal diagnostic data in the public community is strictly prohibited.",
+    "data": null,
+    "timestamp": "2026-02-10T12:00:00Z"
+  }
+  ```
+
+---
+
 ## Status and Error Codes
 
 | HTTP Status | Meaning | Scenario |

@@ -121,6 +121,7 @@ export default function CommunityFeedPage() {
   const [reportReason, setReportReason] = useState<string>("INAPPROPRIATE_CONTENT");
   const [reportDetails, setReportDetails] = useState<string>("");
   const [reportSubmitted, setReportSubmitted] = useState<boolean>(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const fetchFeed = useCallback(async () => {
     setLoading(true);
@@ -143,6 +144,7 @@ export default function CommunityFeedPage() {
     if (!newContent.trim() || publishing) return;
 
     setPublishing(true);
+    setCreateError(null);
     try {
       const created = await createPost({
         content: newContent.trim(),
@@ -157,8 +159,10 @@ export default function CommunityFeedPage() {
       setShowImageInput(false);
       setImageUrlInput("");
       setIsAnnouncement(false);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to publish post:", err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      setCreateError(apiErr?.response?.data?.message || apiErr?.message || "Failed to publish post. Please check community rules.");
     } finally {
       setPublishing(false);
     }
@@ -403,6 +407,22 @@ export default function CommunityFeedPage() {
           <Card className="shadow-sm border-slate-200/80">
             <CardBody className="p-4 sm:p-5">
               <form onSubmit={handleCreatePost} className="space-y-3">
+                {createError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="flex-1 leading-relaxed">
+                      <strong>Submission Blocked:</strong> {createError}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCreateError(null)}
+                      className="text-rose-500 hover:text-rose-700 p-0.5"
+                      aria-label="Dismiss error"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#063D38] to-[#0D9488] text-white flex items-center justify-center font-bold text-sm shrink-0">
                     {user.fullName.charAt(0)}
@@ -493,19 +513,26 @@ export default function CommunityFeedPage() {
                     )}
                   </div>
 
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    disabled={!newContent.trim() || publishing}
-                  >
-                    {publishing ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                    ) : (
-                      <Send className="w-3.5 h-3.5 mr-1.5" />
-                    )}
-                    <span>Publish Post</span>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-teal-800 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200/80">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#0D9488]" />
+                      <span>Strict Zero-PHI Active</span>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      disabled={!newContent.trim() || publishing}
+                    >
+                      {publishing ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5 mr-1.5" />
+                      )}
+                      <span>Publish Post</span>
+                    </Button>
+                  </div>
                 </div>
               </form>
             </CardBody>

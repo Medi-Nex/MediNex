@@ -58,6 +58,7 @@ export default function SinglePostPage({ params }: PostPageProps) {
   const [newCommentText, setNewCommentText] = useState<string>("");
   const [replyToId, setReplyToId] = useState<string | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState<boolean>(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   // Link copied state
   const [copied, setCopied] = useState<boolean>(false);
@@ -162,6 +163,7 @@ export default function SinglePostPage({ params }: PostPageProps) {
     }
 
     setIsSubmittingComment(true);
+    setCommentError(null);
     try {
       const newComment = await addComment(postId, {
         content: newCommentText.trim(),
@@ -190,8 +192,10 @@ export default function SinglePostPage({ params }: PostPageProps) {
 
       setNewCommentText("");
       setReplyToId(null);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to post comment:", err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      setCommentError(apiErr?.response?.data?.message || apiErr?.message || "Failed to submit comment.");
     } finally {
       setIsSubmittingComment(false);
     }
@@ -488,7 +492,23 @@ export default function SinglePostPage({ params }: PostPageProps) {
 
           {/* New Comment Input */}
           <Card className="border border-medinex-border">
-            <CardBody className="p-4">
+            <CardBody className="p-4 space-y-2">
+              {commentError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-xs flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 leading-relaxed">
+                    <strong>Submission Blocked:</strong> {commentError}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCommentError(null)}
+                    className="text-rose-500 hover:text-rose-700"
+                    aria-label="Dismiss error"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
               {replyToId && (
                 <div className="flex items-center justify-between text-xs text-medinex-teal bg-teal-50 px-3 py-1.5 rounded-lg mb-2">
                   <span>Replying to comment thread</span>
