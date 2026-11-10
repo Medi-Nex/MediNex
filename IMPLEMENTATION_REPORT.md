@@ -130,21 +130,50 @@ cd frontend; npm run build
 
 ---
 
-## 4. Remaining Issues / Technical Debt
+## 4. Phase 5 Implementation & Verification (Admin Console, Moderation, & Audit System)
 
-- None. Phase 4 community feed, reaction engine, and discussion threads are complete and verified.
+### Architectural Components Built:
+1. **Backend Administration & Moderation Services:**
+   - [`AdminService.java`](backend/src/main/java/com/medinex/admin/service/AdminService.java):
+     - Real, database-driven metrics (registered users, team followers, member followers, community posts, pending reports, audit trail count).
+     - User status and role updates with super-admin demotion prevention.
+     - Content moderation (hiding/unhiding posts and comments).
+     - Moderation report review with automated action enforcement (`HIDE_POST`, `HIDE_COMMENT`, `SUSPEND_USER`, `NONE`).
+     - Automated immutable audit logging on every administrative event.
+   - [`AdminController.java`](backend/src/main/java/com/medinex/admin/controller/AdminController.java):
+     - Endpoints under `/api/v1/admin/**` protected by `@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")`.
+   - [`ReportDto.java`](backend/src/main/java/com/medinex/moderation/dto/ReportDto.java): Decoupled DTO preventing lazy-loading issues and Jackson serialization circularities.
+   - [`JwtAccessDeniedHandler.java`](backend/src/main/java/com/medinex/common/security/JwtAccessDeniedHandler.java) & [`JwtAuthenticationEntryPoint.java`](backend/src/main/java/com/medinex/common/security/JwtAuthenticationEntryPoint.java): Configured with Spring-managed `ObjectMapper` with JSR-310 datetime module support.
+
+2. **Backend Automated Integration Tests:**
+   - [`AdminIntegrationTest.java`](backend/src/test/java/com/medinex/admin/AdminIntegrationTest.java):
+     - Non-admin access rejection (403 Forbidden).
+     - Real database stats query.
+     - User status and role modification with immutable audit entry.
+     - Post moderation and report resolution lifecycle.
+   - **Maven Test Suite Result:** **25 tests run, 0 failures, 0 errors, 0 skipped (`BUILD SUCCESS`)**.
+
+3. **Frontend Admin Console Suite (`/admin/**`):**
+   - [`/admin/layout.tsx`](frontend/src/app/(admin)/admin/layout.tsx): Privileged layout with navigation sidebar, live user role guard redirecting unauthorized users, and audit guarantee banner.
+   - [`/admin/page.tsx`](frontend/src/app/(admin)/admin/page.tsx): Overview with 6 real database metric cards, quick-action shortcuts, and a live preview of the 5 most recent security audit events.
+   - [`/admin/users/page.tsx`](frontend/src/app/(admin)/admin/users/page.tsx): Paginated user accounts table with search filter, status switch modal (`ACTIVE`, `SUSPENDED`, `PENDING_VERIFICATION`, `DELETED`), security role toggles, and official team contributor flag.
+   - [`/admin/reports/page.tsx`](frontend/src/app/(admin)/admin/reports/page.tsx): Content moderation review queue with status filter (`PENDING`, `RESOLVED`, `DISMISSED`, `ALL`), reported post/comment/user inspection, and action dialog (`HIDE_POST`, `HIDE_COMMENT`, `SUSPEND_USER`, `NONE`).
+   - [`/admin/audit-logs/page.tsx`](frontend/src/app/(admin)/admin/audit-logs/page.tsx): Immutable compliance audit trail displaying chronological security and administrative events (UTC timestamp, actor, action, target entity, target UUID, client IP).
+   - Connected Admin shortcut into desktop and mobile navigation in [`Navbar.tsx`](frontend/src/components/layout/Navbar.tsx).
+
+4. **Frontend Verification:**
+   - `npx eslint src/`: **0 errors, 0 warnings**.
+   - `npm run build`: **Compiled successfully in 1068ms**, prerendered all **27 routes** (including all `/admin/**` routes).
 
 ---
 
-## 5. Next-Phase Plan (Phase 5: Comprehensive Admin Dashboard & Audit System)
+## 5. Final Verification & Quality Gate Summary
 
-Phase 5 will build:
-1. **Admin Control Suite (`/admin/**`):**
-   - User status management (`ACTIVE`, `SUSPENDED`, `DELETED`).
-   - Role management (`ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER`).
-   - Contributor ordering and verified profile toggles.
-   - Moderation ticket review (`reports` queue with accept/dismiss actions).
-   - System audit log inspector (`audit_logs`).
-2. **Backend Admin Endpoints:**
-   - `/api/v1/admin/users/**`, `/api/v1/admin/reports/**`, `/api/v1/admin/audit-logs/**`.
-   - Method security restricted to `ROLE_ADMIN` and `ROLE_SUPER_ADMIN`.
+| Component | Test Suite | Pass Count | Failure Count | Error Count | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Backend Integration Tests** | Maven Surefire / JUnit 5 | 25 | 0 | 0 | **PASSED** |
+| **Frontend Code Quality** | ESLint Strict | 0 errors | 0 warnings | 0 | **PASSED** |
+| **Frontend Production Build** | Next.js 16 App Router | 27 routes | 0 failed | 0 | **PASSED** |
+| **Database Migrations** | Flyway V1 & Initializer | Verified | 0 | 0 | **PASSED** |
+| **Security & Auditing** | Spring Security & AuditLog | Verified | 0 | 0 | **PASSED** |
+

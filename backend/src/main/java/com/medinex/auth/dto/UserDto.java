@@ -1,5 +1,6 @@
 package com.medinex.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.medinex.user.entity.User;
 import com.medinex.user.model.UserStatus;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,10 @@ public class UserDto {
     private String fullName;
     private UserStatus status;
     private boolean emailVerified;
+
+    @JsonProperty("isTeamMember")
     private boolean isTeamMember;
+
     private List<String> roles;
     private Instant createdAt;
 

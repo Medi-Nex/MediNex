@@ -12,6 +12,8 @@ export interface AuthUser {
   createdAt: string;
 }
 
+export type UserDto = AuthUser;
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

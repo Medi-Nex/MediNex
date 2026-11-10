@@ -55,7 +55,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${hindSiliguri.variable} scroll-smooth`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${hindSiliguri.variable} scroll-smooth`}
+      suppressHydrationWarning
+    >
       <body className="min-h-screen flex flex-col bg-medinex-light text-medinex-text selection:bg-medinex-teal selection:text-white">
         <AuthProvider>
           <a

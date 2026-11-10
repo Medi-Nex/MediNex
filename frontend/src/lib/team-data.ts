@@ -64,7 +64,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
     username: "jihadjp",
     fullName: "Jihad Khan",
     designation: "Full-Stack Developer",
-    department: "Computer Science & Engineering",
+    department: "Department of Computer Science & Engineering",
     university: "Daffodil International University",
 
     bio: "Full-Stack Developer and technology enthusiast focused on building modern web applications, Android applications, and practical digital solutions. Works with React and JavaScript for frontend development, Java for Android applications, and backend API integration and database technologies. Interested in software architecture, application development, and building technology that solves real-world problems. Contributes to the planning and technical development of MediNex and ShasthoSetu.",
@@ -111,7 +111,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
     username: "tarek",
     fullName: "M Tarek Rahman",
     designation: "Core Software Developer",
-    department: "Computer Science & Engineering",
+    department: "Department of Computer Science & Engineering",
     university: "Daffodil International University",
 
     bio: "Team contributor at MediNex. Additional professional information, technical skills, and project responsibilities are awaiting confirmation.",
@@ -138,7 +138,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
     username: "shopnil",
     fullName: "Md. Khairul Anam Shopnil",
     designation: "Backend Developer",
-    department: "SWE",
+    department: "Department of Software Engineering",
     university: "Daffodil International University",
 
     bio: "Backend Developer focused on server-side application development, API integration, database management, and reliable backend systems. Interested in building secure, maintainable, and scalable application infrastructure.",

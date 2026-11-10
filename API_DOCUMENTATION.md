@@ -386,6 +386,98 @@
 
 ---
 
+## Administration & Audit Console Endpoints (`/api/v1/admin`)
+Access restricted to users with `ROLE_ADMIN` or `ROLE_SUPER_ADMIN`. All mutations automatically generate append-only audit entries.
+
+### 1. Real Dashboard Metrics
+- **Endpoint:** `GET /api/v1/admin/stats`
+- **Access:** Admin (`ROLE_ADMIN`, `ROLE_SUPER_ADMIN`)
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Admin dashboard statistics retrieved",
+    "data": {
+      "totalUsers": 14,
+      "totalTeamFollowers": 8,
+      "totalMemberFollowers": 22,
+      "totalPosts": 31,
+      "pendingReportsCount": 2,
+      "totalAuditLogs": 67
+    }
+  }
+  ```
+
+### 2. Paginated User Management
+- **Endpoint:** `GET /api/v1/admin/users`
+- **Access:** Admin
+- **Query Params:** `page`, `size`
+- **Response:** Paginated list of registered users with full profile, roles, and status.
+
+### 3. Update User Status & Security Roles
+- **Endpoint:** `PUT /api/v1/admin/users/{id}`
+- **Access:** Admin (SUPER_ADMIN required to modify another SUPER_ADMIN)
+- **Request Body (`AdminUserUpdateDto`):**
+  ```json
+  {
+    "status": "ACTIVE",
+    "roles": ["ROLE_USER", "ROLE_MODERATOR"],
+    "isTeamMember": true
+  }
+  ```
+- **Response:** Updated `UserDto`.
+- **Side Effect:** Emits `ADMIN_USER_UPDATED` immutable audit log.
+
+### 4. Moderation Reports Queue
+- **Endpoint:** `GET /api/v1/admin/reports`
+- **Access:** Admin
+- **Query Params:** `status` (`PENDING`, `RESOLVED`, `DISMISSED`), `page`, `size`
+- **Response:** Paginated array of `ReportDto` with target post/comment/user details.
+
+### 5. Resolve Moderation Ticket
+- **Endpoint:** `POST /api/v1/admin/reports/{id}/resolve`
+- **Access:** Admin
+- **Request Body (`AdminReportResolutionRequest`):**
+  ```json
+  {
+    "status": "RESOLVED",
+    "resolutionNotes": "Verified guideline infringement. Post hidden and user issued formal warning.",
+    "action": "HIDE_POST"
+  }
+  ```
+- **Supported Actions:** `HIDE_POST`, `HIDE_COMMENT`, `SUSPEND_USER`, `NONE`.
+- **Side Effect:** Automatically sets post/comment `hidden = true` or user status `SUSPENDED`, and writes `REPORT_RESOLVED` audit log.
+
+### 6. Moderate Post
+- **Endpoint:** `PATCH /api/v1/admin/posts/{id}/moderate`
+- **Access:** Admin
+- **Request Body (`ModerateContentRequest`):**
+  ```json
+  {
+    "isHidden": true,
+    "reason": "Violates safety policy"
+  }
+  ```
+
+### 7. Moderate Comment
+- **Endpoint:** `PATCH /api/v1/admin/comments/{id}/moderate`
+- **Access:** Admin
+- **Request Body (`ModerateContentRequest`):**
+  ```json
+  {
+    "isHidden": true,
+    "reason": "Spam content"
+  }
+  ```
+
+### 8. Immutable System Audit Logs
+- **Endpoint:** `GET /api/v1/admin/audit-logs`
+- **Access:** Admin
+- **Query Params:** `page`, `size`
+- **Response:** Paginated append-only list of security and administrative operations with UTC timestamp, actor email, action, target entity, target UUID, and IP address.
+
+---
+
 ## Status and Error Codes
 
 | HTTP Status | Meaning | Scenario |

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Activity, ChevronRight, ShieldCheck, LogOut, LayoutDashboard, Bell, Users } from "lucide-react";
+import { Menu, X, Activity, ChevronRight, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, Bell, Users } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
@@ -140,6 +140,15 @@ export default function Navbar() {
                     <Users className="w-4 h-4" />
                   </Link>
 
+                  {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") && (
+                    <Link href="/admin">
+                      <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5 text-xs">
+                        <ShieldAlert className="w-3.5 h-3.5" />
+                        <span>Admin</span>
+                      </Button>
+                    </Link>
+                  )}
+
                   <Link href="/dashboard">
                     <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5">
                       <LayoutDashboard className="w-3.5 h-3.5 text-medinex-teal" />
@@ -247,6 +256,14 @@ export default function Navbar() {
                         <span>Following</span>
                       </Link>
                     </div>
+                    {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") && (
+                      <Link href="/admin" className="w-full block">
+                        <Button variant="primary" className="w-full">
+                          <ShieldAlert className="w-4 h-4 mr-1.5" />
+                          Admin Console
+                        </Button>
+                      </Link>
+                    )}
                     <Link href="/dashboard" className="w-full block">
                       <Button variant="primary" className="w-full">
                         Dashboard ({user.username})

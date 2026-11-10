@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight,
-  ShieldCheck,
   Users,
   HeartPulse,
   WifiOff,
@@ -83,7 +82,7 @@ export default function HomePage() {
 
               <Link href="/team">
                 <Button variant="dark" size="lg" className="border-emerald-800 text-slate-200">
-                  <span>Meet the 6 Contributors</span>
+                  <span>Meet the Contributors</span>
                 </Button>
               </Link>
 
@@ -281,7 +280,7 @@ export default function HomePage() {
                 E-Health Hackathon 2026 Team
               </Badge>
               <h2 className="text-3xl font-bold text-medinex-text tracking-tight">
-                The Six Engineering Contributors
+                Contributors
               </h2>
               <p className="mt-2 text-medinex-muted text-sm max-w-xl">
                 Each profile is structured with verified placeholder identities and can be updated by
