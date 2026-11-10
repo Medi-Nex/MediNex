@@ -31,4 +31,10 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
     long countByParentCommentIdAndDeletedAtIsNullAndIsHiddenFalse(UUID parentId);
 
     Optional<Comment> findByIdAndDeletedAtIsNull(UUID id);
+
+    Page<Comment> findByDeletedAtIsNull(Pageable pageable);
+
+    Page<Comment> findByDeletedAtIsNullAndIsHidden(boolean isHidden, Pageable pageable);
+
+    long countByDeletedAtIsNullAndIsHiddenTrue();
 }

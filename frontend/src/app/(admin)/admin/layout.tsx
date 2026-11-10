@@ -11,6 +11,13 @@ import {
   Activity,
   ArrowLeft,
   Lock,
+  UserCheck,
+  MessageSquare,
+  MessageCircle,
+  Layers,
+  Image as ImageIcon,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -92,15 +99,57 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       exact: false,
     },
     {
+      name: "Team Contributors",
+      href: "/admin/team",
+      icon: UserCheck,
+      exact: false,
+    },
+    {
+      name: "Post Moderation",
+      href: "/admin/posts",
+      icon: MessageSquare,
+      exact: false,
+    },
+    {
+      name: "Comment Moderation",
+      href: "/admin/comments",
+      icon: MessageCircle,
+      exact: false,
+    },
+    {
+      name: "Project Governance",
+      href: "/admin/projects",
+      icon: Layers,
+      exact: false,
+    },
+    {
+      name: "Media Review",
+      href: "/admin/media",
+      icon: ImageIcon,
+      exact: false,
+    },
+    {
       name: "Moderation Queue",
       href: "/admin/reports",
       icon: Flag,
       exact: false,
     },
     {
+      name: "Detailed Analytics",
+      href: "/admin/analytics",
+      icon: BarChart3,
+      exact: false,
+    },
+    {
       name: "Audit Trail",
       href: "/admin/audit-logs",
       icon: FileText,
+      exact: false,
+    },
+    {
+      name: "Site Settings",
+      href: "/admin/settings",
+      icon: Settings,
       exact: false,
     },
   ];

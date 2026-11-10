@@ -1,6 +1,8 @@
 package com.medinex.community.repository;
 
 import com.medinex.community.entity.PostMedia;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,8 @@ import java.util.UUID;
 public interface PostMediaRepository extends JpaRepository<PostMedia, UUID> {
 
     List<PostMedia> findByPostIdOrderByDisplayOrderAsc(UUID postId);
+
+    Page<PostMedia> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     void deleteByPostId(UUID postId);
 }

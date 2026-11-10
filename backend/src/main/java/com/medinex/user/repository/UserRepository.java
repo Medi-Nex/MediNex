@@ -14,4 +14,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsername(String username);
     boolean existsByEmailIgnoreCase(String email);
     boolean existsByUsernameIgnoreCase(String username);
+    long countByStatus(com.medinex.user.model.UserStatus status);
 }

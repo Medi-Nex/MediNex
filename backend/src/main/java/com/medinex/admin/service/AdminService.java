@@ -1,8 +1,6 @@
 package com.medinex.admin.service;
 
-import com.medinex.admin.dto.AdminDashboardStatsDto;
-import com.medinex.admin.dto.AdminReportResolutionRequest;
-import com.medinex.admin.dto.AdminUserUpdateDto;
+import com.medinex.admin.dto.*;
 import com.medinex.audit.entity.AuditLog;
 import com.medinex.audit.repository.AuditLogRepository;
 import com.medinex.auth.dto.UserDto;
@@ -10,7 +8,9 @@ import com.medinex.common.exception.BadRequestException;
 import com.medinex.common.exception.ResourceNotFoundException;
 import com.medinex.community.entity.Comment;
 import com.medinex.community.entity.Post;
+import com.medinex.community.entity.PostMedia;
 import com.medinex.community.repository.CommentRepository;
+import com.medinex.community.repository.PostMediaRepository;
 import com.medinex.community.repository.PostRepository;
 import com.medinex.follow.repository.TeamFollowRepository;
 import com.medinex.follow.repository.UserFollowRepository;
@@ -18,10 +18,15 @@ import com.medinex.moderation.dto.ReportDto;
 import com.medinex.moderation.entity.Report;
 import com.medinex.moderation.entity.ReportStatus;
 import com.medinex.moderation.repository.ReportRepository;
+import com.medinex.team.dto.TeamMemberDto;
+import com.medinex.team.entity.TeamMember;
+import com.medinex.team.repository.TeamMemberRepository;
 import com.medinex.user.entity.Role;
 import com.medinex.user.entity.User;
+import com.medinex.user.entity.UserProfile;
 import com.medinex.user.model.UserStatus;
 import com.medinex.user.repository.RoleRepository;
+import com.medinex.user.repository.UserProfileRepository;
 import com.medinex.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +53,23 @@ public class AdminService {
     private final UserFollowRepository userFollowRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PostMediaRepository postMediaRepository;
     private final ReportRepository reportRepository;
     private final AuditLogRepository auditLogRepository;
+    private final TeamMemberRepository teamMemberRepository;
+    private final UserProfileRepository userProfileRepository;
+
+    private final AtomicReference<AdminSettingsDto> settingsHolder =
+            new AtomicReference<>(
+                    AdminSettingsDto.builder()
+                            .maintenanceMode(false)
+                            .allowUserRegistration(true)
+                            .requireEmailVerification(true)
+                            .phiWarningBannerEnabled(true)
+                            .allowedDomains("medinex.health, healthhack2026.org")
+                            .platformNotice("Welcome to MediNex. Strictly zero PHI allowed on public feeds.")
+                            .build()
+            );
 
     @Transactional(readOnly = true)
     public AdminDashboardStatsDto getDashboardStats() {
@@ -253,5 +275,217 @@ public class AdminService {
         auditLogRepository.save(logEntry);
 
         log.info("[ADMIN] Admin {} set comment {} isHidden={}", admin.getUsername(), commentId, isHidden);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminPostDto> getPosts(Boolean hidden, Pageable pageable) {
+        Page<Post> posts;
+        if (hidden != null) {
+            posts = postRepository.findByDeletedAtIsNullAndIsHidden(hidden, pageable);
+        } else {
+            posts = postRepository.findByDeletedAtIsNull(pageable);
+        }
+        return posts.map(this::mapToAdminPostDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminCommentDto> getComments(Boolean hidden, Pageable pageable) {
+        Page<Comment> comments;
+        if (hidden != null) {
+            comments = commentRepository.findByDeletedAtIsNullAndIsHidden(hidden, pageable);
+        } else {
+            comments = commentRepository.findByDeletedAtIsNull(pageable);
+        }
+        return comments.map(this::mapToAdminCommentDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminMediaDto> getMedia(Pageable pageable) {
+        return postMediaRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(this::mapToAdminMediaDto);
+    }
+
+    @Transactional(readOnly = true)
+    public AdminAnalyticsDto getAnalytics() {
+        long totalUsers = userRepository.count();
+        long activeUsers = userRepository.countByStatus(UserStatus.ACTIVE);
+        long suspendedUsers = userRepository.countByStatus(UserStatus.SUSPENDED);
+        long pendingVerificationUsers = userRepository.countByStatus(UserStatus.PENDING_VERIFICATION);
+        long totalPosts = postRepository.count();
+        long hiddenPosts = postRepository.countByDeletedAtIsNullAndIsHiddenTrue();
+        long totalComments = commentRepository.count();
+        long hiddenComments = commentRepository.countByDeletedAtIsNullAndIsHiddenTrue();
+        long totalMedia = postMediaRepository.count();
+        long pendingReports = reportRepository.countByStatus(ReportStatus.PENDING);
+        long resolvedReports = reportRepository.countByStatus(ReportStatus.RESOLVED);
+        long dismissedReports = reportRepository.countByStatus(ReportStatus.DISMISSED);
+        long totalAuditLogs = auditLogRepository.count();
+        long totalFollows = teamFollowRepository.count() + userFollowRepository.count();
+
+        return AdminAnalyticsDto.builder()
+                .totalUsers(totalUsers)
+                .activeUsers(activeUsers)
+                .suspendedUsers(suspendedUsers)
+                .pendingVerificationUsers(pendingVerificationUsers)
+                .totalPosts(totalPosts)
+                .hiddenPosts(hiddenPosts)
+                .totalComments(totalComments)
+                .hiddenComments(hiddenComments)
+                .totalMedia(totalMedia)
+                .pendingReports(pendingReports)
+                .resolvedReports(resolvedReports)
+                .dismissedReports(dismissedReports)
+                .totalAuditLogs(totalAuditLogs)
+                .totalFollows(totalFollows)
+                .build();
+    }
+
+    public AdminSettingsDto getSettings() {
+        return settingsHolder.get();
+    }
+
+    @Transactional
+    public AdminSettingsDto updateSettings(AdminSettingsDto request, UUID adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        settingsHolder.set(request);
+
+        AuditLog logEntry = AuditLog.builder()
+                .actorId(admin.getId())
+                .actorEmail(admin.getEmail())
+                .action("SITE_SETTINGS_UPDATED")
+                .targetEntity("SETTINGS")
+                .targetId("PLATFORM_CONFIG")
+                .ipAddress("127.0.0.1")
+                .build();
+        auditLogRepository.save(logEntry);
+
+        log.info("[ADMIN] Admin {} updated platform site settings", admin.getUsername());
+        return settingsHolder.get();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamMemberDto> getTeamMembers() {
+        return teamMemberRepository.findAllByOrderByDisplayOrderAsc().stream()
+                .map(this::mapTeamMemberToDto)
+                .toList();
+    }
+
+    @Transactional
+    public TeamMemberDto updateTeamMember(String username, TeamMemberDto updated, UUID adminId) {
+        TeamMember member = teamMemberRepository.findByUserUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Contributor", "username", username));
+
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        if (updated.getDesignation() != null) {
+            member.setOfficialDesignation(updated.getDesignation());
+        }
+        if (updated.getDepartment() != null) {
+            member.setDepartment(updated.getDepartment());
+        }
+        if (updated.getUniversity() != null) {
+            member.setUniversity(updated.getUniversity());
+        }
+        if (updated.getDisplayOrder() > 0) {
+            member.setDisplayOrder(updated.getDisplayOrder());
+        }
+        member.setPlaceholder(false);
+        teamMemberRepository.save(member);
+
+        userProfileRepository.findByUserId(member.getUser().getId()).ifPresent(profile -> {
+            if (updated.getFullName() != null) member.getUser().setFullName(updated.getFullName());
+            if (updated.getBio() != null) profile.setBio(updated.getBio());
+            if (updated.getSkills() != null) profile.setSkills(updated.getSkills());
+            if (updated.getResponsibilities() != null) profile.setResponsibilities(updated.getResponsibilities());
+            if (updated.getGithubUrl() != null) profile.setGithubUrl(updated.getGithubUrl());
+            if (updated.getLinkedinUrl() != null) profile.setLinkedinUrl(updated.getLinkedinUrl());
+            profile.setVerifiedContributor(true);
+            userProfileRepository.save(profile);
+        });
+
+        AuditLog logEntry = AuditLog.builder()
+                .actorId(admin.getId())
+                .actorEmail(admin.getEmail())
+                .action("TEAM_MEMBER_UPDATED")
+                .targetEntity("TEAM_MEMBER")
+                .targetId(member.getId().toString())
+                .ipAddress("127.0.0.1")
+                .build();
+        auditLogRepository.save(logEntry);
+
+        log.info("[ADMIN] Admin {} updated team member {}", admin.getUsername(), username);
+        return mapTeamMemberToDto(member);
+    }
+
+    private AdminPostDto mapToAdminPostDto(Post post) {
+        return AdminPostDto.builder()
+                .id(post.getId())
+                .authorUsername(post.getAuthor().getUsername())
+                .authorFullName(post.getAuthor().getFullName())
+                .content(post.getContent())
+                .visibility(post.getVisibility().name())
+                .isHidden(post.isHidden())
+                .isPinned(post.isPinned())
+                .isOfficialAnnouncement(post.isOfficialAnnouncement())
+                .likesCount(post.getLikesCount())
+                .commentsCount(post.getCommentsCount())
+                .mediaCount(post.getMedia() != null ? post.getMedia().size() : 0)
+                .createdAt(post.getCreatedAt())
+                .build();
+    }
+
+    private AdminCommentDto mapToAdminCommentDto(Comment comment) {
+        return AdminCommentDto.builder()
+                .id(comment.getId())
+                .postId(comment.getPost().getId())
+                .authorUsername(comment.getAuthor().getUsername())
+                .authorFullName(comment.getAuthor().getFullName())
+                .content(comment.getContent())
+                .isHidden(comment.isHidden())
+                .likesCount(comment.getLikesCount())
+                .repliesCount(comment.getReplies() != null ? comment.getReplies().size() : 0)
+                .createdAt(comment.getCreatedAt())
+                .build();
+    }
+
+    private AdminMediaDto mapToAdminMediaDto(PostMedia media) {
+        return AdminMediaDto.builder()
+                .id(media.getId())
+                .postId(media.getPost().getId())
+                .authorUsername(media.getPost().getAuthor().getUsername())
+                .mediaUrl(media.getMediaUrl())
+                .mediaType(media.getMediaType())
+                .fileSizeBytes(media.getFileSizeBytes())
+                .isPostHidden(media.getPost().isHidden())
+                .createdAt(media.getCreatedAt())
+                .build();
+    }
+
+    private TeamMemberDto mapTeamMemberToDto(TeamMember member) {
+        UserProfile profile = userProfileRepository.findByUserId(member.getUser().getId()).orElse(null);
+
+        return TeamMemberDto.builder()
+                .id(member.getId().toString())
+                .username(member.getUser().getUsername())
+                .fullName(member.getUser().getFullName())
+                .designation(member.getOfficialDesignation())
+                .department(member.getDepartment())
+                .university(member.getUniversity())
+                .bio(profile != null ? profile.getBio() : null)
+                .skills(profile != null ? profile.getSkills() : List.of())
+                .responsibilities(profile != null ? profile.getResponsibilities() : List.of())
+                .portfolioUrl(profile != null ? profile.getPortfolioUrl() : null)
+                .githubUrl(profile != null ? profile.getGithubUrl() : null)
+                .linkedinUrl(profile != null ? profile.getLinkedinUrl() : null)
+                .avatarUrl(profile != null ? profile.getAvatarUrl() : null)
+                .isLead(member.isLead())
+                .isPlaceholder(member.isPlaceholder())
+                .publicVisibility(profile == null || profile.isPublicVisible())
+                .verifiedJoinDate(profile != null ? profile.getVerifiedJoinDate() : null)
+                .displayOrder(member.getDisplayOrder())
+                .build();
     }
 }

@@ -233,4 +233,71 @@ public class AdminIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
+
+    @Test
+    void testAdminAnalyticsAndSettings() throws Exception {
+        String adminToken = obtainAdminToken();
+
+        // 1. Get analytics
+        mockMvc.perform(get("/api/v1/admin/analytics")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalUsers", greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$.data.totalPosts", greaterThanOrEqualTo(0)));
+
+        // 2. Get settings
+        mockMvc.perform(get("/api/v1/admin/settings")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.requireEmailVerification").value(true));
+
+        // 3. Update settings
+        com.medinex.admin.dto.AdminSettingsDto update = com.medinex.admin.dto.AdminSettingsDto.builder()
+                .maintenanceMode(false)
+                .allowUserRegistration(true)
+                .requireEmailVerification(true)
+                .phiWarningBannerEnabled(true)
+                .allowedDomains("medinex.health")
+                .platformNotice("Strict HIPAA and zero PHI compliance enforced.")
+                .build();
+
+        mockMvc.perform(put("/api/v1/admin/settings")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.platformNotice", containsString("Strict HIPAA")));
+    }
+
+    @Test
+    void testAdminPostsAndTeamManagement() throws Exception {
+        String adminToken = obtainAdminToken();
+
+        // 1. List posts for moderation
+        mockMvc.perform(get("/api/v1/admin/posts")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content").isArray());
+
+        // 2. List team members
+        mockMvc.perform(get("/api/v1/admin/team")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", hasSize(6)));
+
+        // 3. Update team member designation
+        com.medinex.team.dto.TeamMemberDto updateReq = com.medinex.team.dto.TeamMemberDto.builder()
+                .designation("Senior Lead Architect & Systems Engineer")
+                .department("Biomedical Engineering")
+                .university("BUET")
+                .displayOrder(1)
+                .build();
+
+        mockMvc.perform(put("/api/v1/admin/team/contributor-01")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.designation").value("Senior Lead Architect & Systems Engineer"));
+    }
 }

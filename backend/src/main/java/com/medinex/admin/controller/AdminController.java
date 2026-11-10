@@ -1,9 +1,6 @@
 package com.medinex.admin.controller;
 
-import com.medinex.admin.dto.AdminDashboardStatsDto;
-import com.medinex.admin.dto.AdminReportResolutionRequest;
-import com.medinex.admin.dto.AdminUserUpdateDto;
-import com.medinex.admin.dto.ModerateContentRequest;
+import com.medinex.admin.dto.*;
 import com.medinex.admin.service.AdminService;
 import com.medinex.audit.entity.AuditLog;
 import com.medinex.auth.dto.UserDto;
@@ -11,6 +8,7 @@ import com.medinex.common.api.ApiResponse;
 import com.medinex.common.security.UserPrincipal;
 import com.medinex.moderation.dto.ReportDto;
 import com.medinex.moderation.entity.ReportStatus;
+import com.medinex.team.dto.TeamMemberDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -102,5 +101,63 @@ public class AdminController {
     public ApiResponse<Page<AuditLog>> getAuditLogs(
             @PageableDefault(size = 30, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.ok(adminService.getAuditLogs(pageable), "Audit logs retrieved");
+    }
+
+    @GetMapping("/posts")
+    @Operation(summary = "Get paginated posts for moderation")
+    public ApiResponse<Page<AdminPostDto>> getPosts(
+            @RequestParam(required = false) Boolean hidden,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.ok(adminService.getPosts(hidden, pageable), "Posts list retrieved");
+    }
+
+    @GetMapping("/comments")
+    @Operation(summary = "Get paginated comments for moderation")
+    public ApiResponse<Page<AdminCommentDto>> getComments(
+            @RequestParam(required = false) Boolean hidden,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.ok(adminService.getComments(hidden, pageable), "Comments list retrieved");
+    }
+
+    @GetMapping("/media")
+    @Operation(summary = "Get paginated media attachments for review")
+    public ApiResponse<Page<AdminMediaDto>> getMedia(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.ok(adminService.getMedia(pageable), "Media assets retrieved");
+    }
+
+    @GetMapping("/analytics")
+    @Operation(summary = "Get comprehensive platform analytics")
+    public ApiResponse<AdminAnalyticsDto> getAnalytics() {
+        return ApiResponse.ok(adminService.getAnalytics(), "Platform analytics retrieved");
+    }
+
+    @GetMapping("/settings")
+    @Operation(summary = "Get platform settings")
+    public ApiResponse<AdminSettingsDto> getSettings() {
+        return ApiResponse.ok(adminService.getSettings(), "Platform settings retrieved");
+    }
+
+    @PutMapping("/settings")
+    @Operation(summary = "Update platform settings")
+    public ApiResponse<AdminSettingsDto> updateSettings(
+            @RequestBody AdminSettingsDto request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ApiResponse.ok(adminService.updateSettings(request, principal.getId()), "Platform settings updated");
+    }
+
+    @GetMapping("/team")
+    @Operation(summary = "Get all team contributor profiles for admin management")
+    public ApiResponse<List<TeamMemberDto>> getTeamMembers() {
+        return ApiResponse.ok(adminService.getTeamMembers(), "Team members retrieved");
+    }
+
+    @PutMapping("/team/{username}")
+    @Operation(summary = "Update team member profile by admin")
+    public ApiResponse<TeamMemberDto> updateTeamMember(
+            @PathVariable String username,
+            @RequestBody TeamMemberDto request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ApiResponse.ok(adminService.updateTeamMember(username, request, principal.getId()), "Team member updated");
     }
 }

@@ -13,6 +13,12 @@ import {
   ArrowRight,
   RefreshCw,
   AlertTriangle,
+  UserCheck,
+  MessageCircle,
+  Layers,
+  Image as ImageIcon,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -211,57 +217,161 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Quick Access Modules */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link href="/admin/users" className="group">
-          <div className="p-5 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-medinex-teal flex items-center justify-center group-hover:bg-medinex-teal group-hover:text-white transition-colors">
-                  <Users className="w-5 h-5" />
+      <div>
+        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+          Administrative & Moderation Capabilities
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <Link href="/admin/users" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 text-medinex-teal flex items-center justify-center group-hover:bg-medinex-teal group-hover:text-white transition-colors">
+                  <Users className="w-4 h-4" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-medinex-text">Manage Users</h3>
-                  <p className="text-[11px] text-medinex-muted">Roles, accounts, team flags</p>
-                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Innovator Accounts</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">User status, security roles</p>
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        <Link href="/admin/reports" className="group">
-          <div className="p-5 rounded-2xl bg-white border border-medinex-border group-hover:border-amber-400 transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                  <Flag className="w-5 h-5" />
+          <Link href="/admin/team" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                  <UserCheck className="w-4 h-4" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-medinex-text">Review Reports</h3>
-                  <p className="text-[11px] text-medinex-muted">Content and safety queue</p>
-                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-amber-500 transition-all" />
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Team Contributors</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Verified roster & ordering</p>
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        <Link href="/admin/audit-logs" className="group">
-          <div className="p-5 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
-                  <FileText className="w-5 h-5" />
+          <Link href="/admin/posts" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                  <MessageSquare className="w-4 h-4" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-medinex-text">Audit Trail</h3>
-                  <p className="text-[11px] text-medinex-muted">Security and admin history</p>
-                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Post Moderation</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Audit discussions & hides</p>
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+
+          <Link href="/admin/comments" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Comment Moderation</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Feedback & nested threads</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/projects" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 text-[#063D38] flex items-center justify-center group-hover:bg-[#063D38] group-hover:text-white transition-colors">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Project Governance</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">ShasthoSetu specifications</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/media" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 text-medinex-teal flex items-center justify-center group-hover:bg-medinex-teal group-hover:text-white transition-colors">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Media Asset Review</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Diagnostic & image uploads</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/reports" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-amber-400 transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                  <Flag className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-amber-500 transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Moderation Queue</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">User & content report tickets</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/analytics" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-medinex-teal transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Platform Analytics</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Database growth metrics</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/audit-logs" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Audit Trail</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Immutable compliance log</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/settings" className="group">
+            <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
+                  <Settings className="w-4 h-4" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-bold text-xs text-medinex-text">Site Settings</h3>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Runtime & zero-PHI flags</p>
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* Recent Security & Moderation Activity */}

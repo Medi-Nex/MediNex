@@ -489,6 +489,43 @@ Access restricted to users with `ROLE_ADMIN` or `ROLE_SUPER_ADMIN`. All mutation
 - **Query Params:** `page`, `size`
 - **Response:** Paginated append-only list of security and administrative operations with UTC timestamp, actor email, action, target entity, target UUID, and IP address.
 
+### 9. Paginated Posts for Moderation
+- **Endpoint:** `GET /api/v1/admin/posts`
+- **Access:** Admin
+- **Query Params:** `page`, `size`, `hidden` (optional boolean)
+- **Response:** Full post inventory with hidden and visible states.
+
+### 10. Paginated Comments for Moderation
+- **Endpoint:** `GET /api/v1/admin/comments`
+- **Access:** Admin
+- **Query Params:** `page`, `size`, `hidden` (optional boolean)
+- **Response:** Paginated comment threads for content moderation.
+
+### 11. Media Assets Review
+- **Endpoint:** `GET /api/v1/admin/media`
+- **Access:** Admin
+- **Query Params:** `page`, `size`
+- **Response:** Paginated list of uploaded image attachments for PHI review.
+
+### 12. Platform Analytics Breakdown
+- **Endpoint:** `GET /api/v1/admin/analytics`
+- **Access:** Admin
+- **Response:** Comprehensive database statistics detailing user accounts (active, suspended, pending), posts, comments, media, reports, and audit logs.
+
+### 13. Platform Site Settings
+- **Endpoint:** `GET /api/v1/admin/settings`
+- **Endpoint:** `PUT /api/v1/admin/settings`
+- **Access:** Admin
+- **Payload:** Runtime maintenance mode, public registration toggle, mandatory email verification flag, PHI warning banner toggle, permitted team domains, and broadcast platform notice.
+- **Side Effect:** Automatically writes `SITE_SETTINGS_UPDATED` immutable audit entry.
+
+### 14. Official Team Contributor Administration
+- **Endpoint:** `GET /api/v1/admin/team`
+- **Endpoint:** `PUT /api/v1/admin/team/{username}`
+- **Access:** Admin
+- **Payload:** Verified official designation, department, university, display order sequence, bio, and responsibilities.
+- **Side Effect:** Automatically clears placeholder status and writes `TEAM_MEMBER_UPDATED` audit entry.
+
 ---
 
 ## Status and Error Codes

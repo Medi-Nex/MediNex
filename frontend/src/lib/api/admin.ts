@@ -113,3 +113,142 @@ export async function moderateComment(id: string, isHidden: boolean, reason?: st
 export async function getAdminAuditLogs(page = 0, size = 30): Promise<PaginatedResult<AuditLogItem>> {
   return apiClient<PaginatedResult<AuditLogItem>>(`/admin/audit-logs?page=${page}&size=${size}`);
 }
+
+export interface AdminPostItem {
+  id: string;
+  authorUsername: string;
+  authorFullName: string;
+  content: string;
+  visibility: string;
+  isHidden: boolean;
+  isPinned: boolean;
+  isOfficialAnnouncement: boolean;
+  likesCount: number;
+  commentsCount: number;
+  mediaCount: number;
+  createdAt: string;
+}
+
+export interface AdminCommentItem {
+  id: string;
+  postId: string;
+  authorUsername: string;
+  authorFullName: string;
+  content: string;
+  isHidden: boolean;
+  likesCount: number;
+  repliesCount: number;
+  createdAt: string;
+}
+
+export interface AdminMediaItem {
+  id: string;
+  postId: string;
+  authorUsername: string;
+  mediaUrl: string;
+  mediaType: string;
+  fileSizeBytes: number;
+  isPostHidden: boolean;
+  createdAt: string;
+}
+
+export interface AdminAnalytics {
+  totalUsers: number;
+  activeUsers: number;
+  suspendedUsers: number;
+  pendingVerificationUsers: number;
+  totalPosts: number;
+  hiddenPosts: number;
+  totalComments: number;
+  hiddenComments: number;
+  totalMedia: number;
+  pendingReports: number;
+  resolvedReports: number;
+  dismissedReports: number;
+  totalAuditLogs: number;
+  totalFollows: number;
+}
+
+export interface AdminSettings {
+  maintenanceMode: boolean;
+  allowUserRegistration: boolean;
+  requireEmailVerification: boolean;
+  phiWarningBannerEnabled: boolean;
+  allowedDomains: string;
+  platformNotice: string;
+}
+
+export interface AdminTeamMember {
+  id: string;
+  username: string;
+  fullName: string;
+  designation: string;
+  department?: string;
+  university?: string;
+  bio?: string;
+  skills: string[];
+  responsibilities: string[];
+  portfolioUrl?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  avatarUrl?: string;
+  isLead: boolean;
+  isPlaceholder: boolean;
+  publicVisibility: boolean;
+  verifiedJoinDate?: string;
+  displayOrder: number;
+}
+
+export async function getAdminPosts(
+  page = 0,
+  size = 20,
+  hidden?: boolean
+): Promise<PaginatedResult<AdminPostItem>> {
+  const query = hidden !== undefined ? `?hidden=${hidden}&page=${page}&size=${size}` : `?page=${page}&size=${size}`;
+  return apiClient<PaginatedResult<AdminPostItem>>(`/admin/posts${query}`);
+}
+
+export async function getAdminComments(
+  page = 0,
+  size = 20,
+  hidden?: boolean
+): Promise<PaginatedResult<AdminCommentItem>> {
+  const query = hidden !== undefined ? `?hidden=${hidden}&page=${page}&size=${size}` : `?page=${page}&size=${size}`;
+  return apiClient<PaginatedResult<AdminCommentItem>>(`/admin/comments${query}`);
+}
+
+export async function getAdminMedia(
+  page = 0,
+  size = 20
+): Promise<PaginatedResult<AdminMediaItem>> {
+  return apiClient<PaginatedResult<AdminMediaItem>>(`/admin/media?page=${page}&size=${size}`);
+}
+
+export async function getAdminAnalytics(): Promise<AdminAnalytics> {
+  return apiClient<AdminAnalytics>("/admin/analytics");
+}
+
+export async function getAdminSettings(): Promise<AdminSettings> {
+  return apiClient<AdminSettings>("/admin/settings");
+}
+
+export async function updateAdminSettings(payload: AdminSettings): Promise<AdminSettings> {
+  return apiClient<AdminSettings>("/admin/settings", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAdminTeamMembers(): Promise<AdminTeamMember[]> {
+  return apiClient<AdminTeamMember[]>("/admin/team");
+}
+
+export async function updateAdminTeamMember(
+  username: string,
+  payload: Partial<AdminTeamMember>
+): Promise<AdminTeamMember> {
+  return apiClient<AdminTeamMember>(`/admin/team/${username}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
