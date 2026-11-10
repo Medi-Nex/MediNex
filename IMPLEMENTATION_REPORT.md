@@ -35,9 +35,11 @@
 
 ### Frontend Integration (`frontend/`)
 - **API Client:**
-  - [`frontend/src/lib/api/community.ts`](frontend/src/lib/api/community.ts): Typed client methods for feed retrieval, creating posts, deleting posts, toggling likes, fetching comment threads, and submitting nested replies.
+  - [`frontend/src/lib/api/community.ts`](frontend/src/lib/api/community.ts): Typed client methods for feed retrieval, creating posts, updating posts, deleting posts, toggling likes, fetching comment threads, submitting nested replies, and toggling comment likes.
+  - [`frontend/src/lib/api/follow.ts`](frontend/src/lib/api/follow.ts): Enhanced `reportUser` to support `reportedPostId` and `reportedCommentId` violation reporting.
 - **Pages & Views:**
-  - [`frontend/src/app/community/page.tsx`](frontend/src/app/community/page.tsx): Fully connected public community feed with post creation box (attachments up to 4 images, visibility dropdown, official announcement toggle for team/admins), like buttons with real database counts, expandable comment threads, reply inputs, delete actions, share link copying, and seed/demo content transparency toggle.
+  - [`frontend/src/app/community/page.tsx`](frontend/src/app/community/page.tsx): Fully connected public community feed with post creation box (attachments up to 4 images, visibility dropdown, official announcement toggle for team/admins), like buttons with real database counts, expandable comment threads, reply inputs, in-place edit post modal, report post dialog, direct thread navigation links, delete actions, share link copying, and seed/demo content transparency toggle.
+  - [`frontend/src/app/community/posts/[id]/page.tsx`](frontend/src/app/community/posts/[id]/page.tsx): Dedicated public shareable permalink post route with verified badges, multiple-image media display, in-place post editing & deletion for authors/admins, post reporting modal, full nested comment discussion thread, and clipboard URL copying.
 
 ---
 
@@ -171,9 +173,9 @@ cd frontend; npm run build
 
 | Component | Test Suite | Pass Count | Failure Count | Error Count | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Backend Integration Tests** | Maven Surefire / JUnit 5 | 25 | 0 | 0 | **PASSED** |
+| **Backend Integration Tests** | Maven Surefire / JUnit 5 | 29 | 0 | 0 | **PASSED** |
 | **Frontend Code Quality** | ESLint Strict | 0 errors | 0 warnings | 0 | **PASSED** |
-| **Frontend Production Build** | Next.js 16 App Router | 27 routes | 0 failed | 0 | **PASSED** |
+| **Frontend Production Build** | Next.js 16 App Router | 28 routes | 0 failed | 0 | **PASSED** |
 | **Database Migrations** | Flyway V1 & Initializer | Verified | 0 | 0 | **PASSED** |
 | **Security & Auditing** | Spring Security & AuditLog | Verified | 0 | 0 | **PASSED** |
 

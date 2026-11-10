@@ -276,4 +276,92 @@ public class CommunityIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", containsString("Unauthorized to modify")));
     }
+
+    @Test
+    void shouldRetrieveSinglePostByIdPubliclyAndAsOwner() throws Exception {
+        String suffix = System.currentTimeMillis() + "_single";
+        String token = obtainAccessToken("single_" + suffix, "single_" + suffix + "@medinex.health", "Pass123456!");
+
+        CreatePostRequest postReq = CreatePostRequest.builder()
+                .content("Dedicated shareable permalink post for clinical research collaboration.")
+                .visibility(PostVisibility.PUBLIC)
+                .build();
+
+        MvcResult createResult = mockMvc.perform(post("/api/v1/community/posts")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postReq)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String postId = objectMapper.readTree(createResult.getResponse().getContentAsString())
+                .get("data").get("id").asText();
+
+        // 1. Anonymous public fetch
+        mockMvc.perform(get("/api/v1/community/posts/" + postId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(postId))
+                .andExpect(jsonPath("$.data.content", containsString("Dedicated shareable permalink")))
+                .andExpect(jsonPath("$.data.isOwner").value(false));
+
+        // 2. Authenticated owner fetch
+        mockMvc.perform(get("/api/v1/community/posts/" + postId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(postId))
+                .andExpect(jsonPath("$.data.isOwner").value(true));
+
+        // 3. Owner updates post
+        UpdatePostRequest updateReq = UpdatePostRequest.builder()
+                .content("Updated content for clinical research collaboration.")
+                .visibility(PostVisibility.PUBLIC)
+                .build();
+
+        mockMvc.perform(put("/api/v1/community/posts/" + postId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content").value("Updated content for clinical research collaboration."));
+    }
+
+    @Test
+    void shouldAllowCommentDeletionByAuthor() throws Exception {
+        String suffix = System.currentTimeMillis() + "_cdel";
+        String token = obtainAccessToken("cdel_" + suffix, "cdel_" + suffix + "@medinex.health", "Pass123456!");
+
+        CreatePostRequest postReq = CreatePostRequest.builder()
+                .content("Discussion post testing comment deletion.")
+                .visibility(PostVisibility.PUBLIC)
+                .build();
+
+        MvcResult createResult = mockMvc.perform(post("/api/v1/community/posts")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postReq)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String postId = objectMapper.readTree(createResult.getResponse().getContentAsString())
+                .get("data").get("id").asText();
+
+        CreateCommentRequest commentReq = CreateCommentRequest.builder()
+                .content("Comment that will be deleted.")
+                .build();
+
+        MvcResult commentResult = mockMvc.perform(post("/api/v1/community/posts/" + postId + "/comments")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentReq)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String commentId = objectMapper.readTree(commentResult.getResponse().getContentAsString())
+                .get("data").get("id").asText();
+
+        // Delete the comment
+        mockMvc.perform(delete("/api/v1/community/comments/" + commentId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
 }

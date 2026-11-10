@@ -16,6 +16,9 @@ import {
   Check,
   Image as ImageIcon,
   X,
+  Edit2,
+  Flag,
+  ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,6 +27,7 @@ import { useAuth } from "@/lib/auth-context";
 import {
   getCommunityFeed,
   createPost,
+  updatePost,
   deletePost,
   togglePostLike,
   getPostComments,
@@ -33,6 +37,7 @@ import {
   PostDto,
   CommentDto
 } from "@/lib/api/community";
+import { reportUser } from "@/lib/api/follow";
 
 // Demo seed posts for visual testing & transparent preview
 const DEMO_SEED_POSTS: PostDto[] = [
@@ -104,6 +109,18 @@ export default function CommunityFeedPage() {
   const [replyToMap, setReplyToMap] = useState<Record<string, string | null>>({});
   const [commentLoadingMap, setCommentLoadingMap] = useState<Record<string, boolean>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Edit post state
+  const [editingPost, setEditingPost] = useState<PostDto | null>(null);
+  const [editContent, setEditContent] = useState<string>("");
+  const [editVisibility, setEditVisibility] = useState<"PUBLIC" | "MEMBERS_ONLY" | "PRIVATE">("PUBLIC");
+  const [isUpdatingPost, setIsUpdatingPost] = useState<boolean>(false);
+
+  // Report post state
+  const [reportingPost, setReportingPost] = useState<PostDto | null>(null);
+  const [reportReason, setReportReason] = useState<string>("INAPPROPRIATE_CONTENT");
+  const [reportDetails, setReportDetails] = useState<string>("");
+  const [reportSubmitted, setReportSubmitted] = useState<boolean>(false);
 
   const fetchFeed = useCallback(async () => {
     setLoading(true);
@@ -270,9 +287,61 @@ export default function CommunityFeedPage() {
     }
   };
 
+  const handleOpenEdit = (post: PostDto) => {
+    setEditingPost(post);
+    setEditContent(post.content);
+    setEditVisibility(post.visibility);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPost || !editContent.trim() || isUpdatingPost) return;
+    setIsUpdatingPost(true);
+    try {
+      const updated = await updatePost(editingPost.id, {
+        content: editContent.trim(),
+        visibility: editVisibility,
+      });
+      setPosts((prev) => prev.map((p) => (p.id === editingPost.id ? updated : p)));
+      setEditingPost(null);
+    } catch (err) {
+      console.error("Failed to update post:", err);
+    } finally {
+      setIsUpdatingPost(false);
+    }
+  };
+
+  const handleOpenReport = (post: PostDto) => {
+    setReportingPost(post);
+    setReportReason("INAPPROPRIATE_CONTENT");
+    setReportDetails("");
+    setReportSubmitted(false);
+  };
+
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportingPost) return;
+    try {
+      await reportUser(
+        reportingPost.authorUsername,
+        reportReason,
+        reportDetails,
+        reportingPost.id,
+        undefined
+      );
+      setReportSubmitted(true);
+      setTimeout(() => {
+        setReportingPost(null);
+        setReportSubmitted(false);
+        setReportDetails("");
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to submit report:", err);
+    }
+  };
+
   const handleCopyLink = (postId: string) => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(`${window.location.origin}/community#${postId}`);
+      navigator.clipboard.writeText(`${window.location.origin}/community/posts/${postId}`);
       setCopiedId(postId);
       setTimeout(() => setCopiedId(null), 2500);
     }
@@ -560,16 +629,36 @@ export default function CommunityFeedPage() {
                     </div>
                   </div>
 
-                  {/* Post Options (Owner/Admin Delete) */}
-                  {(post.isOwner || (user && user.roles.some((r) => r.includes("ADMIN")))) && (
-                    <button
-                      onClick={() => handleDeletePost(post.id)}
-                      className="text-slate-400 hover:text-rose-600 transition-colors p-1"
-                      title="Delete post"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  {/* Post Options (Owner/Admin Edit & Delete, User Report) */}
+                  <div className="flex items-center gap-1">
+                    {(post.isOwner || (user && user.roles.some((r) => r.includes("ADMIN")))) && (
+                      <>
+                        <button
+                          onClick={() => handleOpenEdit(post)}
+                          className="text-slate-400 hover:text-[#0D9488] transition-colors p-1"
+                          title="Edit post"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          className="text-slate-400 hover:text-rose-600 transition-colors p-1"
+                          title="Delete post"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                    {isAuthenticated && !post.isOwner && !post.id.startsWith("demo-") && (
+                      <button
+                        onClick={() => handleOpenReport(post)}
+                        className="text-slate-400 hover:text-amber-600 transition-colors p-1"
+                        title="Report post"
+                      >
+                        <Flag className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Content */}
@@ -618,22 +707,33 @@ export default function CommunityFeedPage() {
                     </button>
                   </div>
 
-                  <button
-                    onClick={() => handleCopyLink(post.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-                  >
-                    {copiedId === post.id ? (
-                      <>
-                        <Check className="w-4 h-4 text-[#0D9488]" />
-                        <span className="text-[#0D9488] font-semibold">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Share2 className="w-4 h-4" />
-                        <span>Share</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/community/posts/${post.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:text-[#0D9488] hover:bg-slate-100 transition-colors"
+                      title="Open full discussion thread"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Thread</span>
+                    </Link>
+
+                    <button
+                      onClick={() => handleCopyLink(post.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                    >
+                      {copiedId === post.id ? (
+                        <>
+                          <Check className="w-4 h-4 text-[#0D9488]" />
+                          <span className="text-[#0D9488] font-semibold">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="w-4 h-4" />
+                          <span>Share</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Expanded Comments Section */}
@@ -790,6 +890,138 @@ export default function CommunityFeedPage() {
           ))
         )}
       </div>
+
+      {/* Edit Post Modal */}
+      {editingPost && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-bold text-sm text-slate-900">Edit Community Post</h3>
+              <button
+                onClick={() => setEditingPost(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <textarea
+                rows={4}
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                placeholder="Update post content..."
+              />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 font-medium">Visibility:</span>
+                  <select
+                    value={editVisibility}
+                    onChange={(e) => setEditVisibility(e.target.value as "PUBLIC" | "MEMBERS_ONLY" | "PRIVATE")}
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+                  >
+                    <option value="PUBLIC">Public</option>
+                    <option value="MEMBERS_ONLY">Members Only</option>
+                    <option value="PRIVATE">Private</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingPost(null)}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    disabled={isUpdatingPost || !editContent.trim()}
+                    className="text-xs"
+                  >
+                    {isUpdatingPost ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Post Modal */}
+      {reportingPost && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-bold text-sm text-slate-900">Report Community Post</h3>
+              <button
+                onClick={() => setReportingPost(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {reportSubmitted ? (
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>Thank you. Your report has been submitted to moderators.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitReport} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Reason for Report
+                  </label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+                  >
+                    <option value="INAPPROPRIATE_CONTENT">Inappropriate Content</option>
+                    <option value="SPAM">Spam or Self-Promotion</option>
+                    <option value="HARASSMENT">Harassment or Hate Speech</option>
+                    <option value="FALSE_INFORMATION">False or Misleading Healthcare Information</option>
+                    <option value="OTHER">Other Community Guideline Breach</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Details (Optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={reportDetails}
+                    onChange={(e) => setReportDetails(e.target.value)}
+                    placeholder="Provide additional context for moderators (e.g., guideline breached)..."
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReportingPost(null)}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="primary" size="sm" className="text-xs">
+                    Submit Report
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

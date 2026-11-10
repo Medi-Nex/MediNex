@@ -145,11 +145,13 @@ export async function rejectFollowRequest(requestId: string): Promise<void> {
 export async function reportUser(
   username: string,
   reason: string,
-  details?: string
+  details?: string,
+  reportedPostId?: string,
+  reportedCommentId?: string
 ): Promise<void> {
   return apiClient<void>(`/users/${encodeURIComponent(username)}/report`, {
     method: "POST",
-    body: JSON.stringify({ reason, details }),
+    body: JSON.stringify({ reason, details, reportedPostId, reportedCommentId }),
   });
 }
 
