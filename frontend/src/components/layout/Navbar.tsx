@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Activity, ChevronRight, ShieldCheck } from "lucide-react";
+import { Menu, X, Activity, ChevronRight, ShieldCheck, LogOut, LayoutDashboard } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/lib/auth-context";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -22,6 +23,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,7 +49,7 @@ export default function Navbar() {
           <strong>E-Health Hackathon 2026</strong> — Official Innovation & Community Hub
         </span>
         <span className="hidden md:inline text-slate-400">|</span>
-        <span className="hidden md:inline text-slate-400">Transparent Placeholder Architecture Active</span>
+        <span className="hidden md:inline text-slate-400">Verified Transparency Architecture Active</span>
       </div>
 
       <header
@@ -103,22 +105,47 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* Desktop Action Buttons */}
+            {/* Desktop Action Buttons / Auth State */}
             <div className="hidden md:flex items-center space-x-3">
-              <Link href="/login">
-                <Button
-                  variant={isDarkHero && !scrolled ? "ghost" : "outline"}
-                  size="sm"
-                  className={clsx(isDarkHero && !scrolled && "text-white hover:bg-white/10")}
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="primary" size="sm">
-                  Join Community
-                </Button>
-              </Link>
+              {isAuthenticated && user ? (
+                <div className="flex items-center space-x-2">
+                  <Link href="/dashboard">
+                    <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5">
+                      <LayoutDashboard className="w-3.5 h-3.5 text-medinex-teal" />
+                      <span>Dashboard</span>
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => logout()}
+                    className={clsx(
+                      "inline-flex items-center gap-1.5",
+                      isDarkHero && !scrolled && "text-slate-300 hover:text-white hover:bg-white/10"
+                    )}
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button
+                      variant={isDarkHero && !scrolled ? "ghost" : "outline"}
+                      size="sm"
+                      className={clsx(isDarkHero && !scrolled && "text-white hover:bg-white/10")}
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button variant="primary" size="sm">
+                      Join Community
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -170,17 +197,32 @@ export default function Navbar() {
                 })}
               </div>
 
-              <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
-                <Link href="/login" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register" className="w-full">
-                  <Button variant="primary" className="w-full">
-                    Join Community
-                  </Button>
-                </Link>
+              <div className="pt-4 border-t border-slate-100">
+                {isAuthenticated && user ? (
+                  <div className="space-y-2">
+                    <Link href="/dashboard" className="w-full block">
+                      <Button variant="primary" className="w-full">
+                        Dashboard ({user.username})
+                      </Button>
+                    </Link>
+                    <Button variant="outline" className="w-full" onClick={() => logout()}>
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link href="/login" className="w-full">
+                      <Button variant="outline" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link href="/register" className="w-full">
+                      <Button variant="primary" className="w-full">
+                        Join Community
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>

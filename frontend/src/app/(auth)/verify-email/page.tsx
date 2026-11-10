@@ -2,18 +2,38 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Activity, MailCheck, CheckCircle2 } from "lucide-react";
+import { Activity, MailCheck, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { authApi } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 
 export default function VerifyEmailPage() {
   const [tokenInput, setTokenInput] = useState("");
   const [verified, setVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (tokenInput.trim()) {
+    if (!tokenInput.trim()) return;
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      await authApi.verifyEmail(tokenInput.trim());
       setVerified(true);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrorMessage(err.message);
+      } else if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("Failed to verify email. Token may be invalid or expired.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -54,10 +74,17 @@ export default function VerifyEmailPage() {
               </div>
             ) : (
               <form onSubmit={handleVerify} className="space-y-4 text-left">
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+
                 <div className="p-3 bg-emerald-50 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
                   <MailCheck className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
                   <span>
-                    A 6-digit code or link was sent to your registered address during sign-up.
+                    A verification token was sent to your registered address. (Check Mailpit at http://localhost:8026).
                   </span>
                 </div>
 
@@ -70,12 +97,12 @@ export default function VerifyEmailPage() {
                     required
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
-                    placeholder="e.g. 849201"
+                    placeholder="Enter token from email"
                     className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal text-center tracking-widest font-mono text-sm"
                   />
                 </div>
 
-                <Button type="submit" variant="primary" className="w-full">
+                <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
                   Confirm Email Address
                 </Button>
 

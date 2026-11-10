@@ -3,6 +3,7 @@ import { Inter, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/lib/auth-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -56,17 +57,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${hindSiliguri.variable} scroll-smooth`}>
       <body className="min-h-screen flex flex-col bg-medinex-light text-medinex-text selection:bg-medinex-teal selection:text-white">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-medinex-teal focus:text-white focus:rounded-md shadow-lg"
-        >
-          Skip to main content
-        </a>
-        <Navbar />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-medinex-teal focus:text-white focus:rounded-md shadow-lg"
+          >
+            Skip to main content
+          </a>
+          <Navbar />
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

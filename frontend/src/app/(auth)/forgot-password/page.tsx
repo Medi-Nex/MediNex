@@ -2,17 +2,35 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Activity, Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Activity, Mail, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { authApi } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSent, setIsSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSent(true);
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      await authApi.forgotPassword(email.trim());
+      setIsSent(true);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("Failed to submit password reset request.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,6 +53,13 @@ export default function ForgotPasswordPage() {
 
         <Card className="shadow-subtle">
           <CardBody className="p-6 sm:p-8 space-y-5">
+            {errorMessage && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             {isSent ? (
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 text-medinex-teal flex items-center justify-center mx-auto">
@@ -42,14 +67,21 @@ export default function ForgotPasswordPage() {
                 </div>
                 <h2 className="text-base font-bold text-medinex-text">Reset Token Dispatched</h2>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  If an account exists for <strong>{email}</strong>, a secure reset instruction has been
-                  sent. (In local development, inspect messages at http://localhost:8025 via Mailpit).
+                  If an account exists for <strong>{email}</strong>, a secure reset token has been dispatched.
+                  Check local development emails at <span className="font-mono text-medinex-teal">http://localhost:8026</span> via Mailpit.
                 </p>
-                <Link href="/login" className="inline-block pt-2">
-                  <Button variant="outline" size="sm">
-                    Return to Login
-                  </Button>
-                </Link>
+                <div className="pt-2 flex flex-col gap-2">
+                  <Link href="/reset-password">
+                    <Button variant="primary" size="sm" className="w-full">
+                      Proceed to Reset Password
+                    </Button>
+                  </Link>
+                  <Link href="/login">
+                    <Button variant="outline" size="sm" className="w-full">
+                      Return to Login
+                    </Button>
+                  </Link>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,7 +102,7 @@ export default function ForgotPasswordPage() {
                   </div>
                 </div>
 
-                <Button type="submit" variant="primary" className="w-full">
+                <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
                   Send Reset Link
                 </Button>
 

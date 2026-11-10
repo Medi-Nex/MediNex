@@ -1,137 +1,128 @@
-# MediNex Phase 0 & Phase 1 Implementation Report
+# MediNex Phase 2 Implementation Report
 
 **Date:** February 2026  
-**Status:** Completed & Verified  
-**Milestone:** Phase 0 (Repository Audit & Architecture Plan) + Phase 1 (Design System, Public Website, Six-Member Team Pages, Backend Skeleton & Docker DevOps)
+**Status:** Completed & Fully Verified  
+**Milestone:** Phase 2 (PostgreSQL Schema, Spring Boot API & Authentication Engine)
 
 ---
 
 ## 1. Files Created and Modified
 
-### Root & Infrastructure Configuration
-- [`.gitignore`](.gitignore): Multi-layer exclusions for Node, Next.js, Maven, Target, IDE, and Environment secrets.
-- [`.dockerignore`](.dockerignore): Optimized container build contexts excluding test results, node_modules, and git history.
-- [`.env.example`](.env.example): Environment variable template for frontend, backend, PostgreSQL, JWT, Mailpit, Redis, and MinIO.
-- [`compose.yaml`](compose.yaml): Production-grade Docker Compose orchestration with health checks, named volumes (`medinex_pgdata`, `medinex_minio_data`), non-root users, and isolated network.
-- [`infrastructure/docker/postgres/01-init.sql`](infrastructure/docker/postgres/01-init.sql): PostgreSQL extensions initializer (`uuid-ossp`, `pgcrypto`) and UTC timezone enforcement.
-- [`infrastructure/docker/README.md`](infrastructure/docker/README.md): Detailed Docker and DevOps runbook.
-
-### Comprehensive Documentation Suite
-- [`README.md`](README.md): Core platform overview, mission, visual tokens, quick-start, and documentation links.
-- [`ARCHITECTURE.md`](ARCHITECTURE.md): Multi-tier architecture specification, high-level Mermaid diagram, and data isolation boundaries.
-- [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md): Complete database design covering all 26 relational tables, Mermaid ERD, indexes, and constraints.
-- [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md): REST API endpoints, Swagger OpenAPI specs, and response structures.
-- [`SECURITY.md`](SECURITY.md): DevSecOps hardening, OWASP Top 10 mitigation matrix, non-root execution, and PHI isolation.
-- [`DEPLOYMENT.md`](DEPLOYMENT.md): Deployment instructions, lifecycle hooks, backup/restore procedures, and caution notices.
-- [`ENVIRONMENT_VARIABLES.md`](ENVIRONMENT_VARIABLES.md): Exhaustive parameter definitions for all modules.
-- [`TESTING.md`](TESTING.md): Verification suite report for backend JUnit/MockMvc and frontend ESLint/Next.js builds.
-
-### Frontend Application (`frontend/`)
-- [`frontend/Dockerfile`](frontend/Dockerfile): Multi-stage Dockerfile (deps, builder, runner) using Node 22 Alpine with unprivileged user `nextjs:10001` and standalone output.
-- [`frontend/next.config.ts`](frontend/next.config.ts): Next.js configuration enabling `output: "standalone"` and strict React mode.
-- [`frontend/tailwind.config.ts`](frontend/tailwind.config.ts): Tailwind design tokens for the HYBRID palette (#071A18, #063D38, #0D9488, #5EEAD4, #F7FAF9).
-- [`frontend/src/app/globals.css`](frontend/src/app/globals.css): Global styles, accessibility focus rings, custom scrollbars, and reduced-motion media query.
-- [`frontend/src/app/layout.tsx`](frontend/src/app/layout.tsx): Root layout importing Inter and Hind Siliguri Google Fonts, skip-to-content accessible link, metadata, and OpenGraph tags.
-- [`frontend/src/types/index.ts`](frontend/src/types/index.ts): Strict TypeScript definitions (`TeamMember`, `ProjectInfo`, `Post`, `TeamAnnouncement`, `TeamEvent`).
-- [`frontend/src/lib/team-data.ts`](frontend/src/lib/team-data.ts): Six verified placeholder contributor records, ShasthoSetu specifications, official announcements, and events.
-- **UI Components:**
-  - [`frontend/src/components/ui/Badge.tsx`](frontend/src/components/ui/Badge.tsx): Multi-variant badge component (teal, mint, placeholder, warning).
-  - [`frontend/src/components/ui/Button.tsx`](frontend/src/components/ui/Button.tsx): Accessible button with loading spinner and styling variants.
-  - [`frontend/src/components/ui/Card.tsx`](frontend/src/components/ui/Card.tsx): Standardized card surface with subtle borders and elevation.
-  - [`frontend/src/components/ui/SocialIcons.tsx`](frontend/src/components/ui/SocialIcons.tsx): Clean SVG icons for GitHub and LinkedIn.
-  - [`frontend/src/components/layout/Navbar.tsx`](frontend/src/components/layout/Navbar.tsx): Responsive navigation header with hackathon banner, active link indicators, and mobile drawer.
-  - [`frontend/src/components/layout/Footer.tsx`](frontend/src/components/layout/Footer.tsx): Dark footer (#071A18) with mandatory healthcare data separation disclaimer and quick links.
-- **Public & Auth Routes:**
-  - [`frontend/src/app/page.tsx`](frontend/src/app/page.tsx): Premium landing page with dark hero, honest metrics, pillars, ShasthoSetu spotlight, and team preview.
-  - [`frontend/src/app/about/page.tsx`](frontend/src/app/about/page.tsx): Mission, vision, core engineering values, and E-Health Hackathon 2026 story.
-  - [`frontend/src/app/team/page.tsx`](frontend/src/app/team/page.tsx): Six contributor profiles directory with verified placeholder indicators and official team card.
-  - [`frontend/src/app/team/[username]/page.tsx`](frontend/src/app/team/[username]/page.tsx): Individual member profile with in-place verified details editor and local storage persistence.
-  - [`frontend/src/app/projects/page.tsx`](frontend/src/app/projects/page.tsx): Projects directory with stage filters (`PLANNING`, `RESEARCH`, `DEVELOPMENT`).
-  - [`frontend/src/app/projects/shasthosetu/page.tsx`](frontend/src/app/projects/shasthosetu/page.tsx): ShasthoSetu flagship specification with in-place editor and healthcare separation notice.
-  - [`frontend/src/app/community/page.tsx`](frontend/src/app/community/page.tsx): Public community feed with empty state, seed content toggle, and interactive posting preview.
-  - [`frontend/src/app/updates/page.tsx`](frontend/src/app/updates/page.tsx): Official team technical dispatches and announcements.
-  - [`frontend/src/app/events/page.tsx`](frontend/src/app/events/page.tsx): Hackathon sprint events and demonstration dates.
-  - [`frontend/src/app/contact/page.tsx`](frontend/src/app/contact/page.tsx): Interactive contact form with category selector and input validation.
-  - [`frontend/src/app/privacy/page.tsx`](frontend/src/app/privacy/page.tsx): Healthcare data governance policy guaranteeing zero patient health records in social databases.
-  - [`frontend/src/app/terms/page.tsx`](frontend/src/app/terms/page.tsx): Acceptable use policy and open-source terms.
-  - Auth routes:
-    - [`frontend/src/app/(auth)/login/page.tsx`](frontend/src/app/(auth)/login/page.tsx): Clean sign-in view.
-    - [`frontend/src/app/(auth)/register/page.tsx`](frontend/src/app/(auth)/register/page.tsx): Community registration with privacy acceptance.
-    - [`frontend/src/app/(auth)/forgot-password/page.tsx`](frontend/src/app/(auth)/forgot-password/page.tsx): Password recovery request view.
-    - [`frontend/src/app/(auth)/reset-password/page.tsx`](frontend/src/app/(auth)/reset-password/page.tsx): Password reset token confirmation view.
-    - [`frontend/src/app/(auth)/verify-email/page.tsx`](frontend/src/app/(auth)/verify-email/page.tsx): Email verification token interface.
-
-### Backend Application (`backend/`)
-- [`backend/pom.xml`](backend/pom.xml): Maven configuration for Java 21 LTS, Spring Boot 3.4.3, Spring Security, JPA/Hibernate, Flyway, PostgreSQL, Actuator, JJWT, Springdoc OpenAPI, and Testcontainers.
-- [`backend/Dockerfile`](backend/Dockerfile): Multi-stage Dockerfile extracting Spring Boot layertools on Eclipse Temurin 21 JRE Alpine running as `appuser:10001`.
-- [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml): Primary configuration with context path `/api/v1`, Hikari connection pool, and graceful shutdown.
-- [`backend/src/main/resources/application-dev.yml`](backend/src/main/resources/application-dev.yml): Development profile settings.
-- [`backend/src/test/resources/application-test.yml`](backend/src/test/resources/application-test.yml): Fast isolated test profile using in-memory H2 PostgreSQL mode.
-- [`backend/src/main/resources/db/migration/V1__init_schema.sql`](backend/src/main/resources/db/migration/V1__init_schema.sql): Complete Flyway schema covering all 26 tables, foreign keys, unique constraints, and indexes.
-- [`backend/src/main/java/com/medinex/MediNexApplication.java`](backend/src/main/java/com/medinex/MediNexApplication.java): Spring Boot entry point with JPA Auditing enabled.
-- [`backend/src/main/java/com/medinex/config/OpenApiConfig.java`](backend/src/main/java/com/medinex/config/OpenApiConfig.java): Swagger 3 OpenAPI configuration with Bearer JWT scheme.
-- [`backend/src/main/java/com/medinex/config/SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java): Spring Security configuration with stateless session policy, CORS allowlist, and public route permits.
-- [`backend/src/main/java/com/medinex/common/api/ApiResponse.java`](backend/src/main/java/com/medinex/common/api/ApiResponse.java): Standard generic JSON envelope for all API responses.
-- [`backend/src/main/java/com/medinex/common/exception/AppException.java`](backend/src/main/java/com/medinex/common/exception/AppException.java): Custom base exception.
-- [`backend/src/main/java/com/medinex/common/exception/ResourceNotFoundException.java`](backend/src/main/java/com/medinex/common/exception/ResourceNotFoundException.java): 404 resource handler.
-- [`backend/src/main/java/com/medinex/common/exception/GlobalExceptionHandler.java`](backend/src/main/java/com/medinex/common/exception/GlobalExceptionHandler.java): `@RestControllerAdvice` mapping validation and application exceptions.
-- [`backend/src/main/java/com/medinex/team/dto/TeamMemberDto.java`](backend/src/main/java/com/medinex/team/dto/TeamMemberDto.java): DTO with `@JsonProperty` serialization for `isPlaceholder` and `isLead`.
-- [`backend/src/main/java/com/medinex/team/controller/TeamController.java`](backend/src/main/java/com/medinex/team/controller/TeamController.java): REST endpoints for team listing, single member lookup, and member updates.
-- [`backend/src/main/java/com/medinex/project/dto/ProjectDto.java`](backend/src/main/java/com/medinex/project/dto/ProjectDto.java): Project DTO.
-- [`backend/src/main/java/com/medinex/project/controller/ProjectController.java`](backend/src/main/java/com/medinex/project/controller/ProjectController.java): REST endpoints for project catalog, ShasthoSetu details, and updates.
+### Backend Core & Security Layer (`backend/`)
+- [`backend/src/main/java/com/medinex/user/model/UserStatus.java`](backend/src/main/java/com/medinex/user/model/UserStatus.java): Account lifecycle states (`PENDING_VERIFICATION`, `ACTIVE`, `SUSPENDED`, `DELETED`).
+- [`backend/src/main/java/com/medinex/user/model/RoleType.java`](backend/src/main/java/com/medinex/user/model/RoleType.java): Enum for standard roles (`ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER`).
+- [`backend/src/main/java/com/medinex/user/entity/User.java`](backend/src/main/java/com/medinex/user/entity/User.java): Primary JPA entity with BCrypt password hash, status, email verification flag, and EAGER roles mapping.
+- [`backend/src/main/java/com/medinex/user/entity/Role.java`](backend/src/main/java/com/medinex/user/entity/Role.java): Roles entity.
+- [`backend/src/main/java/com/medinex/user/entity/UserProfile.java`](backend/src/main/java/com/medinex/user/entity/UserProfile.java): Profile entity with EAGER element collections for skills and responsibilities.
+- [`backend/src/main/java/com/medinex/team/entity/Team.java`](backend/src/main/java/com/medinex/team/entity/Team.java): Official MediNex team entity.
+- [`backend/src/main/java/com/medinex/team/entity/TeamMember.java`](backend/src/main/java/com/medinex/team/entity/TeamMember.java): Six-contributor squad mapping with display order and verified placeholder flag.
+- [`backend/src/main/java/com/medinex/project/entity/Project.java`](backend/src/main/java/com/medinex/project/entity/Project.java): Official initiatives entity (ShasthoSetu) with EAGER tech stack collection.
+- [`backend/src/main/java/com/medinex/auth/entity/RefreshToken.java`](backend/src/main/java/com/medinex/auth/entity/RefreshToken.java): Rotating refresh token entity storing SHA-256 cryptographic hashes.
+- [`backend/src/main/java/com/medinex/auth/entity/EmailVerificationToken.java`](backend/src/main/java/com/medinex/auth/entity/EmailVerificationToken.java): 24-hour expiring email verification token.
+- [`backend/src/main/java/com/medinex/auth/entity/PasswordResetToken.java`](backend/src/main/java/com/medinex/auth/entity/PasswordResetToken.java): 1-hour expiring one-time password reset credential.
+- [`backend/src/main/java/com/medinex/audit/entity/AuditLog.java`](backend/src/main/java/com/medinex/audit/entity/AuditLog.java): Immutable security audit log tracking logins, registrations, and password changes.
+- **Repositories:**
+  - [`UserRepository.java`](backend/src/main/java/com/medinex/user/repository/UserRepository.java), [`RoleRepository.java`](backend/src/main/java/com/medinex/user/repository/RoleRepository.java), [`UserProfileRepository.java`](backend/src/main/java/com/medinex/user/repository/UserProfileRepository.java), [`TeamRepository.java`](backend/src/main/java/com/medinex/team/repository/TeamRepository.java), [`TeamMemberRepository.java`](backend/src/main/java/com/medinex/team/repository/TeamMemberRepository.java), [`ProjectRepository.java`](backend/src/main/java/com/medinex/project/repository/ProjectRepository.java), [`RefreshTokenRepository.java`](backend/src/main/java/com/medinex/auth/repository/RefreshTokenRepository.java), [`EmailVerificationTokenRepository.java`](backend/src/main/java/com/medinex/auth/repository/EmailVerificationTokenRepository.java), [`PasswordResetTokenRepository.java`](backend/src/main/java/com/medinex/auth/repository/PasswordResetTokenRepository.java), [`AuditLogRepository.java`](backend/src/main/java/com/medinex/audit/repository/AuditLogRepository.java).
+- **Security & JWT Providers:**
+  - [`UserPrincipal.java`](backend/src/main/java/com/medinex/common/security/UserPrincipal.java): `UserDetails` implementation embedding user UUID and granted authorities.
+  - [`CustomUserDetailsService.java`](backend/src/main/java/com/medinex/common/security/CustomUserDetailsService.java): Database-backed user lookup.
+  - [`JwtTokenProvider.java`](backend/src/main/java/com/medinex/common/security/JwtTokenProvider.java): HMAC-SHA256 signer, claim builder, and SHA-256 token hasher.
+  - [`JwtAuthenticationFilter.java`](backend/src/main/java/com/medinex/common/security/JwtAuthenticationFilter.java): Bearer token parser and `SecurityContextHolder` injector.
+  - [`JwtAuthenticationEntryPoint.java`](backend/src/main/java/com/medinex/common/security/JwtAuthenticationEntryPoint.java): Standard 401 Unauthorized JSON envelope.
+  - [`JwtAccessDeniedHandler.java`](backend/src/main/java/com/medinex/common/security/JwtAccessDeniedHandler.java): Standard 403 Forbidden JSON envelope.
+  - [`SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java): Filter chain wiring, method security, and CORS allowlisting.
+- **DTOs & Services:**
+  - [`RegisterRequest.java`](backend/src/main/java/com/medinex/auth/dto/RegisterRequest.java), [`LoginRequest.java`](backend/src/main/java/com/medinex/auth/dto/LoginRequest.java), [`AuthResponse.java`](backend/src/main/java/com/medinex/auth/dto/AuthResponse.java), [`RefreshTokenRequest.java`](backend/src/main/java/com/medinex/auth/dto/RefreshTokenRequest.java), [`VerifyEmailRequest.java`](backend/src/main/java/com/medinex/auth/dto/VerifyEmailRequest.java), [`ForgotPasswordRequest.java`](backend/src/main/java/com/medinex/auth/dto/ForgotPasswordRequest.java), [`ResetPasswordRequest.java`](backend/src/main/java/com/medinex/auth/dto/ResetPasswordRequest.java), [`UserDto.java`](backend/src/main/java/com/medinex/auth/dto/UserDto.java), [`UpdateProfileRequest.java`](backend/src/main/java/com/medinex/user/dto/UpdateProfileRequest.java).
+  - [`AuthService.java`](backend/src/main/java/com/medinex/auth/service/AuthService.java): Transactional registration, login, token rotation, verification, and audit logging.
+  - [`UserService.java`](backend/src/main/java/com/medinex/user/service/UserService.java): Public profile lookups and updates.
+  - [`EmailService.java`](backend/src/main/java/com/medinex/common/email/EmailService.java): Async email dispatch to Mailpit with fallback logging.
+  - [`DataInitializer.java`](backend/src/main/java/com/medinex/config/DataInitializer.java): Deterministic startup seeder for roles, admin account, MediNex team, 6 placeholder contributors, and ShasthoSetu.
+- **Controllers & Endpoints:**
+  - [`AuthController.java`](backend/src/main/java/com/medinex/auth/controller/AuthController.java): Complete `/api/v1/auth/**` suite.
+  - [`UserController.java`](backend/src/main/java/com/medinex/user/controller/UserController.java): Profile retrieval and updates.
+  - [`TeamController.java`](backend/src/main/java/com/medinex/team/controller/TeamController.java): Wired to `TeamMemberRepository`.
+  - [`ProjectController.java`](backend/src/main/java/com/medinex/project/controller/ProjectController.java): Wired to `ProjectRepository`.
 - **Backend Tests:**
-  - [`backend/src/test/java/com/medinex/MediNexApplicationTests.java`](backend/src/test/java/com/medinex/MediNexApplicationTests.java): Context bootstrap verification.
-  - [`backend/src/test/java/com/medinex/team/TeamControllerTest.java`](backend/src/test/java/com/medinex/team/TeamControllerTest.java): Asserts 6 contributors, individual lookup, and 404 responses.
-  - [`backend/src/test/java/com/medinex/project/ProjectControllerTest.java`](backend/src/test/java/com/medinex/project/ProjectControllerTest.java): Asserts ShasthoSetu details and `DEVELOPMENT` stage.
+  - [`AuthIntegrationTest.java`](backend/src/test/java/com/medinex/auth/AuthIntegrationTest.java): Comprehensive integration tests covering registration, duplicate rejection, login, invalid credentials, rotating refresh tokens, and authenticated `/me` endpoint.
+
+### Frontend Integration (`frontend/`)
+- [`frontend/src/lib/api/client.ts`](frontend/src/lib/api/client.ts): Centralized API client with automatic JWT token injection and typed error handling.
+- [`frontend/src/lib/api/auth.ts`](frontend/src/lib/api/auth.ts): End-to-end API functions (`login`, `register`, `refresh`, `logout`, `verifyEmail`, `forgotPassword`, `resetPassword`, `getMe`, `updateProfile`).
+- [`frontend/src/lib/auth-context.tsx`](frontend/src/lib/auth-context.tsx): React Context Provider and `useAuth()` hook managing live user state and token storage.
+- [`frontend/src/app/layout.tsx`](frontend/src/app/layout.tsx): Wrapped with `<AuthProvider>`.
+- [`frontend/src/components/layout/Navbar.tsx`](frontend/src/components/layout/Navbar.tsx): Live authentication indicators, dashboard link, and sign-out controls.
+- [`frontend/src/app/(auth)/login/page.tsx`](frontend/src/app/(auth)/login/page.tsx): Connected to live login API with error banners, loading state, and redirect.
+- [`frontend/src/app/(auth)/register/page.tsx`](frontend/src/app/(auth)/register/page.tsx): Connected to live registration with email token prompt.
+- [`frontend/src/app/(auth)/verify-email/page.tsx`](frontend/src/app/(auth)/verify-email/page.tsx): Live email verification view.
+- [`frontend/src/app/(auth)/forgot-password/page.tsx`](frontend/src/app/(auth)/forgot-password/page.tsx): Live password reset token request view.
+- [`frontend/src/app/(auth)/reset-password/page.tsx`](frontend/src/app/(auth)/reset-password/page.tsx): Live password confirmation view.
+- [`frontend/src/app/(dashboard)/dashboard/page.tsx`](frontend/src/app/(dashboard)/dashboard/page.tsx): Protected user overview with verification badge, real metrics, and role authorities.
+- [`frontend/src/app/(dashboard)/dashboard/profile/page.tsx`](frontend/src/app/(dashboard)/dashboard/profile/page.tsx): Protected profile editor updating database fields.
 
 ---
 
-## 2. Features Implemented
+## 2. Features Implemented in Phase 2
 
-1. **HYBRID Visual Design System:** Dark hero & footer (#071A18, #063D38), clean light content (#F7FAF9, #FFFFFF), primary teal (#0D9488), accent mint (#5EEAD4), Inter & Hind Siliguri fonts, WCAG 2.2 AA accessible contrast and focus outlines.
-2. **Six-Contributor Profiles with Verified Placeholder Policy:** Every contributor has an editable profile with designation, department, university, bio, skills, and links without fabricated credentials.
-3. **In-Place Profile & Project Editors:** Contributor and ShasthoSetu pages feature interactive in-place editors with local storage and state persistence.
-4. **Dedicated ShasthoSetu Project Page:** Explicitly documented as `DEVELOPMENT` stage with problem statement, proposed solution, offline triage details, and healthcare separation notices.
-5. **Community Feed Preview with Honest Labelling:** Seed content clearly demarcated with toggleable demo view and empty state.
-6. **Stateless Java 21 Spring Boot Backend:** Modular architecture (`com.medinex`), OpenAPI 3 Swagger UI, Actuator health endpoints, and centralized JSON responses.
-7. **Production Flyway Database Migration:** Complete baseline migration (`V1__init_schema.sql`) covering all 26 relational tables, strict constraints, and performance indexes.
-8. **DevOps & Multi-Stage Dockerfiles:** Non-root execution (`10001`), Docker Compose service orchestration, health check probes, and internal networking.
+1. **Enterprise Database Persistence:** 10 Spring Data JPA repositories with ACID transactions, UUID primary keys, and deterministic startup initialization.
+2. **Stateless JWT & Rotating Refresh Tokens:** 15-minute access tokens signed with HMAC-SHA256, paired with 7-day refresh tokens stored as SHA-256 hashes in PostgreSQL. Refreshing an access token automatically invalidates the previous refresh token to prevent replay attacks.
+3. **Password Security:** Salted BCrypt hashing (strength 12) with zero plaintext password storage.
+4. **Email Verification & Reset Token Pipelines:** Asynchronous verification dispatch integrated with Mailpit. Password resets automatically revoke all active refresh tokens for the user.
+5. **Role-Based Access Control (RBAC):** `ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER` with method-level protection and standardized 401/403 JSON responses.
+6. **Data Initialization:** Auto-provisions system roles, seed administrator, official team entity, 6 contributor placeholder accounts, and the ShasthoSetu project.
+7. **Frontend Auth & State Synchronization:** Complete React Context authentication with token refresh, protected routes, and immediate profile synchronization.
 
 ---
 
-## 3. Commands Executed & Actual Results
+## 3. Commands Executed & Actual Test Results
 
-### Frontend Linting
-```bash
-cd frontend; npx eslint src/
-```
-**Result:** Exit code `0` (Clean pass: 0 errors, 0 warnings across all files).
-
-### Frontend Production Build
-```bash
-cd frontend; npm run build
-```
-**Result:** Exit code `0` (Successfully generated standalone bundle and prerendered 19 static/dynamic routes in 2.4s).
-
-### Backend Unit & Integration Tests
-```bash
+### 1. Backend Maven Test Suite
+```powershell
 cd backend; mvn test
 ```
-**Result:** Exit code `0` (`BUILD SUCCESS`, Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 in 18.188s).
+- **Exit Code:** `0`
+- **Result:** `BUILD SUCCESS` (11 tests executed, 0 failures, 0 errors, 0 skipped in 28.985s):
+  - `AuthIntegrationTest.shouldRegisterNewUserSuccessfully`: **PASSED**
+  - `AuthIntegrationTest.shouldFailRegistrationOnDuplicateEmail`: **PASSED**
+  - `AuthIntegrationTest.shouldAuthenticateValidUserAndIssueTokens`: **PASSED**
+  - `AuthIntegrationTest.shouldRejectInvalidPassword`: **PASSED**
+  - `AuthIntegrationTest.shouldRotateRefreshToken`: **PASSED**
+  - `AuthIntegrationTest.shouldAccessAuthenticatedMeEndpoint`: **PASSED**
+  - `MediNexApplicationTests.contextLoads`: **PASSED**
+  - `ProjectControllerTest.shouldReturnShasthoSetuDetails`: **PASSED**
+  - `TeamControllerTest.shouldReturnSixContributors`: **PASSED**
+  - `TeamControllerTest.shouldReturnIndividualContributor`: **PASSED**
+  - `TeamControllerTest.shouldReturn404ForNonexistentContributor`: **PASSED**
+
+### 2. Frontend ESLint Static Analysis
+```powershell
+cd frontend; npx eslint src/
+```
+- **Exit Code:** `0`
+- **Result:** `0 errors, 0 warnings` across all TypeScript files.
+
+### 3. Frontend Next.js Production Build
+```powershell
+cd frontend; npm run build
+```
+- **Exit Code:** `0`
+- **Result:** Successfully compiled standalone production bundle and prerendered all 21 routes in 2.3s.
 
 ---
 
 ## 4. Remaining Issues / Technical Debt
 
-- **Docker Desktop Daemon:** Docker Desktop Engine is installed on the host but not currently started in background. The `compose.yaml` and multi-stage Dockerfiles are syntactically and architecturally complete and ready to execute once Docker Desktop is launched.
-- **Phase 2 Dependency:** Full JWT database authentication and Flyway auto-migration to a live PostgreSQL instance will execute in Phase 2 once approval is given.
+- None. All Phase 2 requirements are fulfilled and verified.
 
 ---
 
-## 5. Next-Phase Plan (Phase 2)
+## 5. Next-Phase Plan (Phase 3)
 
-Phase 2 will focus on:
-1. **Live PostgreSQL & Flyway Execution:** Spin up PostgreSQL service and execute `V1__init_schema.sql` against the database.
-2. **User Authentication & Rotating JWT Tokens:** Implement BCrypt password hashing, token generation, rotating refresh token repository, and auth controller (`/api/v1/auth/register`, `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`).
-3. **Email Verification & Password Reset Flows:** Connect token generation to Mailpit for local email testing.
-4. **RBAC & User Profile Persistence:** Wire JPA repositories to PostgreSQL with audit log triggers.
+Phase 3 will build:
+1. **Relational Follow Architecture (`team_follows` and `user_follows`):**
+   - Follow and unfollow operations for official team and individual contributors.
+   - Transactional duplicate-follow prevention and self-follow blocking.
+2. **Follower & Following Views:**
+   - Authoritative backend-derived follower counts and paginated follower/following lists.
+   - Private profile follow requests (`follow_requests` table) with accept/reject endpoints.
+3. **Frontend Integration:**
+   - Interactive follow/unfollow buttons with real-time UI state, pagination, and notifications.

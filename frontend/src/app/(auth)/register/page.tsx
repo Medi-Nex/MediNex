@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Activity, Lock, Mail, User, CheckCircle2 } from "lucide-react";
+import { Activity, Lock, Mail, User, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { useAuth } from "@/lib/auth-context";
+import { ApiError } from "@/lib/api/client";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
@@ -13,19 +15,38 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [registeredSuccess, setRegisteredSuccess] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const { register } = useAuth();
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreeTerms) return;
 
     setIsLoading(true);
-    setTimeout(() => {
+    setErrorMessage(null);
+
+    try {
+      await register({
+        fullName,
+        username,
+        email,
+        password,
+        agreeTerms,
+      });
+      setRegisteredSuccess(true);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrorMessage(err.message);
+      } else if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("An unexpected registration error occurred.");
+      }
+    } finally {
       setIsLoading(false);
-      setNotice(
-        "Phase 1 Preview: Registration form validated. Verification email dispatch via Mailpit connects in Phase 2."
-      );
-    }, 600);
+    }
   };
 
   return (
@@ -48,124 +69,147 @@ export default function RegisterPage() {
 
         <Card className="shadow-subtle">
           <CardBody className="p-6 sm:p-8 space-y-5">
-            {notice && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
-                <span>{notice}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Dr. Alex Rivera"
-                    className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                  />
+            {registeredSuccess ? (
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-medinex-teal flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Username (Handle)
-                </label>
-                <div className="relative">
-                  <span className="text-xs text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 font-bold">
-                    @
-                  </span>
-                  <input
-                    type="text"
-                    required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                    placeholder="alexrivera"
-                    className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@example.org"
-                    className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Password (Min 8 characters)
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="agreeTerms"
-                  required
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-300 text-medinex-teal focus:ring-medinex-teal"
-                />
-                <label htmlFor="agreeTerms" className="text-xs text-slate-600 leading-tight">
-                  I agree to the{" "}
-                  <Link href="/terms" className="text-medinex-teal underline">
-                    Terms of Service
-                  </Link>{" "}
-                  and acknowledge that MediNex does not store medical records as per the{" "}
-                  <Link href="/privacy" className="text-medinex-teal underline">
-                    Privacy Policy
+                <h2 className="text-lg font-bold text-medinex-text">Registration Successful!</h2>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  We have dispatched a verification email to <strong>{email}</strong>.
+                  Please confirm your email token to activate your account.
+                </p>
+                <div className="pt-2">
+                  <Link href="/verify-email">
+                    <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5">
+                      <span>Enter Verification Token</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
                   </Link>
-                  .
-                </label>
+                </div>
               </div>
+            ) : (
+              <>
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
 
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                disabled={!agreeTerms}
-                isLoading={isLoading}
-              >
-                Create Account
-              </Button>
-            </form>
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Dr. Alex Rivera"
+                        className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                      />
+                    </div>
+                  </div>
 
-            <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
-              Already have an account?{" "}
-              <Link href="/login" className="font-semibold text-medinex-teal hover:underline">
-                Sign in
-              </Link>
-            </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Username (Handle)
+                    </label>
+                    <div className="relative">
+                      <span className="text-xs text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 font-bold">
+                        @
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+                        placeholder="alexrivera"
+                        className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="alex@example.org"
+                        className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Password (Min 8 characters)
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        minLength={8}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="agreeTerms"
+                      required
+                      checked={agreeTerms}
+                      onChange={(e) => setAgreeTerms(e.target.checked)}
+                      className="mt-0.5 rounded border-slate-300 text-medinex-teal focus:ring-medinex-teal"
+                    />
+                    <label htmlFor="agreeTerms" className="text-xs text-slate-600 leading-tight">
+                      I agree to the{" "}
+                      <Link href="/terms" className="text-medinex-teal underline">
+                        Terms of Service
+                      </Link>{" "}
+                      and acknowledge that MediNex does not store medical records as per the{" "}
+                      <Link href="/privacy" className="text-medinex-teal underline">
+                        Privacy Policy
+                      </Link>
+                      .
+                    </label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-full"
+                    disabled={!agreeTerms}
+                    isLoading={isLoading}
+                  >
+                    Create Account
+                  </Button>
+                </form>
+
+                <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
+                  Already have an account?{" "}
+                  <Link href="/login" className="font-semibold text-medinex-teal hover:underline">
+                    Sign in
+                  </Link>
+                </div>
+              </>
+            )}
           </CardBody>
         </Card>
       </div>
