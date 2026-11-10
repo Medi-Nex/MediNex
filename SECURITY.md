@@ -1,44 +1,137 @@
-# MediNex Security Architecture & Hardening Guide
+# MediNex DevSecOps, Security Architecture & Hardening Guide
 
-## 1. Zero Medical Data Storage Policy
+## 1. Cardinal Healthcare Data Isolation Policy (Zero-PHI)
 
-MediNex enforces an absolute security boundary:
-- **No Protected Health Information (PHI):** No electronic medical records (EMR), hospital admission slips, physician diagnostic notes, patient names, national IDs, or laboratory values are ever accepted, stored, or transmitted via the public community platform database.
-- **Physical & Logical Boundary:** The public social modules (`users`, `posts`, `comments`, `follows`) are decoupled from experimental telemedicine prototypes like ShasthoSetu.
-- **Data Retention & Purging:** User account deletion triggers cascade purges of personal profile identifiers and cryptographic tokens.
+MediNex enforces an absolute security and regulatory boundary in full compliance with E-Health Hackathon 2026 data governance standards:
 
----
-
-## 2. Authentication & Credential Architecture
-
-- **Password Hashing:** Passwords are never stored in plaintext. They are salted and hashed using **BCrypt** with an adaptive work factor of 12 (or Argon2id).
-- **Stateless Access Tokens (JWT):** Short-lived access tokens (15-minute expiration window) signed with HMAC-SHA256 (256-bit or 512-bit secure secret key).
-- **Rotating Refresh Tokens:** Long-lived tokens (7-day duration) stored as cryptographic hashes in the `refresh_tokens` table. Used tokens are immediately invalidated to detect replay attacks.
-- **Cookie Security Flags:** Where cookie delivery is utilized, cookies are marked `HttpOnly`, `Secure`, and `SameSite=Strict`.
+- **No Protected Health Information (PHI):** The public community platform database does **NOT** collect, index, or store patient medical records, hospital admission records, physician diagnostic prescriptions, national IDs, or clinical imaging scans.
+- **Automated Interception Engine ([`PhiGuardService.java`](backend/src/main/java/com/medinex/common/security/PhiGuardService.java)):** Every community post, comment, and message submission is scanned for clinical indicators before reaching persistence:
+  - Medical Record Numbers (`MRN`, `Hospital ID`, `Clinic ID`).
+  - Prescription dosages with unit metrics (`Rx: [Medication] [Dosage] mg/ml bid/tid`).
+  - Clinical diagnostic admissions (`Chief Complaint:`, `Discharge Summary:`, `ICD-10:`).
+  - Explicit patient demographic pairings (`Patient Name:`, `Patient DOB:`).
+- **Enforcement Action:** Detected violations are halted immediately and rejected with `400 Bad Request` and an explicit security warning explaining the Zero-PHI policy.
+- **Architectural Segregation:** ShasthoSetu is an isolated experimental development initiative. Social community JWT access tokens possess zero access authority over clinical triage pipelines.
 
 ---
 
-## 3. Defense Against OWASP Top 10
+## 2. Authentication, Token Rotation & Session Security
 
-| Attack Vector | Defense Mechanism in MediNex |
-| :--- | :--- |
-| **A01: Broken Access Control** | Declarative Spring Method Security (`@PreAuthorize`), user ID ownership validation on posts and comments, role-based filters on `/api/v1/admin/**`. |
-| **A02: Cryptographic Failures** | TLS 1.3 in transit, BCrypt password hashing, SHA-256 token hashing, strict `.env` secret management. |
-| **A03: Injection (SQL / Command)** | 100% Parameterized queries via Hibernate / Spring Data JPA. Zero raw dynamic SQL concatenation. |
-| **A04: Insecure Design** | Strict segregation between social community features and healthcare workflows. Verified placeholder states preventing unauthorized claims. |
-| **A05: Security Misconfiguration** | Spring Boot Actuator endpoints restricted to management port (`8081`). Flyway versioned migrations prevent schema drift. |
-| **A06: Vulnerable Components** | Pinned dependency versions in `pom.xml` and `package.json`. Regular `npm audit` and Dependabot scanning. |
-| **A07: Identification & Auth** | Rate-limiting on auth routes, email verification requirement before posting, expiring password reset tokens. |
-| **A08: Software & Data Integrity** | Multi-stage Docker builds without baking secrets, Flyway checksum validation, non-root user execution. |
-| **A09: Security Logging & Monitoring** | Immutable `audit_logs` table tracking user logins, role modifications, and admin moderation events. |
-| **A10: Server-Side Request Forgery** | External URL fetching strictly disallowed on backend endpoints without domain allowlisting. |
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Web Browser
+    participant Gateway as Spring Security Gateway
+    participant Auth as AuthService
+    participant DB as PostgreSQL Database
+
+    Client->>Gateway: POST /api/v1/auth/login (Credentials)
+    Gateway->>Auth: Validate BCrypt Hash
+    Auth->>DB: Query User & Roles
+    Auth->>Auth: Issue 15-min JWT Access Token
+    Auth->>Auth: Generate Cryptographically Secure Refresh Token
+    Auth->>DB: Store SHA-256 Hash in refresh_tokens
+    Gateway-->>Client: Return Access Token & Refresh Token
+
+    Note over Client,Gateway: 15 Minutes Elapse (Access Token Expires)
+
+    Client->>Gateway: POST /api/v1/auth/refresh (Current Refresh Token)
+    Gateway->>Auth: Verify Token Hash & Expiration
+    Auth->>DB: Mark Current Refresh Token as REVOKED
+    Auth->>Auth: Generate New Refresh Token & New Access Token
+    Auth->>DB: Store New SHA-256 Hash
+    Gateway-->>Client: Return Rotated Tokens (One-Time Replay Protection)
+```
+
+- **Password Hashing:** Passwords are never stored in plaintext. They are hashed using **BCrypt** with an adaptive work factor of 12.
+- **Short-Lived Access Tokens:** Signed using HMAC-SHA256 with a 15-minute validity window.
+- **Rotating Refresh Tokens:** 7-day duration, stored as SHA-256 hashes in the `refresh_tokens` table. Used refresh tokens are immediately marked `revoked = true` to detect replay attempts.
+- **Token Revocation & Logout:** Logging out immediately invalidates the active refresh token hash in the database.
 
 ---
 
-## 4. Container & Operating System Hardening
+## 3. Role-Based Access Control (RBAC) Matrix
 
-- Application containers run as unprivileged users:
-  - Frontend: `nextjs:10001`
-  - Backend: `appuser:10001`
-- Minimal base images: `eclipse-temurin:21-jre-alpine` and `node:22-alpine`.
-- PostgreSQL is restricted to the internal Docker bridge network (`medinex-network`) and is not exposed to public network interfaces in production.
+Least-privilege access is enforced across both backend controllers (`@PreAuthorize`) and frontend routing:
+
+| Capability / Route | `ROLE_SUPER_ADMIN` | `ROLE_ADMIN` | `ROLE_MODERATOR` | `ROLE_USER` | `PUBLIC` (Unauthenticated) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Browse Landing, Team, Projects, Feed** | Allowed | Allowed | Allowed | Allowed | Allowed |
+| **Publish Posts, Comments, Like** | Allowed | Allowed | Allowed | Allowed | Denied (401) |
+| **Follow Team & Community Users** | Allowed | Allowed | Allowed | Allowed | Denied (401) |
+| **Official Team Announcements** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **User Status Switch (Suspend/Activate)** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **Role Modification** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **Team Contributor Governance** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **Project Stage & Specs Editing** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **Content Moderation (Hide/Unhide)** | Allowed | Allowed | Allowed | Denied | Denied (403) |
+| **Resolve Moderation Reports** | Allowed | Allowed | Allowed | Denied | Denied (403) |
+| **Audit Logs Inspection** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **Platform Runtime Settings** | Allowed | Allowed | Denied | Denied | Denied (403) |
+
+> [!NOTE]
+> Public registration defaults exclusively to `ROLE_USER`. Privileged roles cannot be self-assigned during registration.
+
+---
+
+## 4. HTTP Security Headers Hardening
+
+### Frontend Next.js Configuration ([`next.config.ts`](frontend/next.config.ts))
+- **`Content-Security-Policy`:**
+  - `default-src 'self'`
+  - `script-src 'self' 'unsafe-eval' 'unsafe-inline'`
+  - `style-src 'self' 'unsafe-inline'`
+  - `img-src 'self' blob: data: https://images.unsplash.com https://avatars.githubusercontent.com`
+  - `font-src 'self' data: https://fonts.gstatic.com`
+  - `connect-src 'self' http://localhost:8080 http://localhost:8082 http://127.0.0.1:8082 https:`
+  - `frame-ancestors 'none'`
+  - `base-uri 'self'`
+  - `form-action 'self'`
+- **`Strict-Transport-Security`:** `max-age=63072000; includeSubDomains; preload`.
+- **`X-Frame-Options`:** `DENY`.
+- **`X-Content-Type-Options`:** `nosniff`.
+- **`Referrer-Policy`:** `strict-origin-when-cross-origin`.
+- **`Permissions-Policy`:** `camera=(), microphone=(), geolocation=(), browsing-topics=()`.
+
+### Backend Spring Security Configuration ([`SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java))
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 0`
+- `Cache-Control: no-cache, no-store, max-age=0, must-revalidate`
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+
+---
+
+## 5. Input Validation, XSS Prevention & SQL Injection Defense
+
+- **SQL Injection:** 100% Parameterized queries via Hibernate and Spring Data JPA. Zero raw SQL string concatenation.
+- **Cross-Site Scripting (XSS):**
+  - Content sanitization strips `<script>` blocks and dangerous HTML elements prior to database persistence.
+  - React/Next.js default JSX string escaping protects against DOM-based XSS.
+- **Attachment Security:**
+  - Uploaded media attachments require validated MIME types (`image/jpeg`, `image/png`, `image/webp`).
+  - Maximum limit of 4 attachments per post with file size ceilings.
+  - Filenames are normalized to prevent directory traversal vectors.
+
+---
+
+## 6. Immutable Security Audit Trail ([`audit_logs`](backend/src/main/java/com/medinex/audit/entity/AuditLog.java))
+
+All critical security and administrative actions are logged synchronously to the `audit_logs` table:
+- **Captured Attributes:** UTC timestamp, actor user UUID, actor email, action string (`USER_LOGIN`, `USER_REGISTERED`, `USER_STATUS_UPDATED`, `ROLE_MODIFIED`, `POST_MODERATED`, `REPORT_RESOLVED`, `SITE_SETTINGS_UPDATED`, `TEAM_MEMBER_UPDATED`), client IP address, user agent, target entity type, target UUID, and JSONB change metadata.
+- **Immutability:** Audit records have no update or delete API endpoints. They remain an indelible record for compliance reviews.
+
+---
+
+## 7. Container & Runtime DevSecOps Hardening
+
+- **Non-Root Execution:**
+  - Frontend runs under system user `nextjs:10001`.
+  - Backend runs under system user `appuser:10001`.
+- **Database Boundary:**
+  - PostgreSQL container is wired exclusively to the internal bridge network (`medinex-network`).
+  - Production environments omit public port binding (`5432` is not exposed externally).
+- **Secret Isolation:**
+  - Zero secrets or API keys are baked into Docker container images.
+  - All credentials injected at container runtime via environment variables.
+  - `.env` files are strictly excluded from source control (`.gitignore`).
