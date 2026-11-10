@@ -68,9 +68,10 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/v1/auth/**",
                                 "/api/v1/public/**",
-                                "/api/v1/projects/**",
-                                "/api/v1/community/public/**"
+                                "/api/v1/projects/**"
                         ).permitAll()
+                        // Public community feed and read endpoints
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/community/**").permitAll()
                         // Team endpoints: GET is public, write is authenticated
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/team/**").permitAll()
                         // Public user profiles and follower lists

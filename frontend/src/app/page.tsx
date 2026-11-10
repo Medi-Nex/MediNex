@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,6 +11,9 @@ import {
   WifiOff,
   Stethoscope,
   Lock,
+  Globe,
+  Mail,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -35,13 +40,13 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
-            {/* Hackathon Badge */}
+            {/* Hackathon Badge
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/80 border border-medinex-teal/30 text-xs font-medium text-medinex-mint mb-6">
               <span className="w-2 h-2 rounded-full bg-medinex-mint animate-pulse" />
               <span>E-Health Hackathon 2026 Contender</span>
               <span className="text-slate-500">|</span>
               <span className="text-slate-300">Six-Member Innovation Team</span>
-            </div>
+            </div>*/}
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white">
@@ -59,13 +64,13 @@ export default function HomePage() {
               fostering evidence-backed health solutions.
             </p>
 
-            {/* Honest Disclosure notice */}
+            {/* Honest Disclosure notice
             <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
               <ShieldCheck className="w-4 h-4 text-medinex-mint shrink-0" />
               <span>
                 Transparent architecture: Team profiles and milestones use verified placeholder records until official credentials are provided.
               </span>
-            </div>
+            </div>*/}
 
             {/* Action Buttons */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -215,8 +220,12 @@ export default function HomePage() {
           <div className="bg-gradient-to-br from-medinex-dark to-medinex-deep rounded-2xl text-white p-8 sm:p-12 shadow-elevated relative overflow-hidden">
             <div className="max-w-2xl relative z-10 space-y-6">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="mint">Featured Hackathon Initiative</Badge>
-                <Badge variant="warning">Status: In Active Development</Badge>
+                <Badge variant="mint" className="bg-emerald-950/90 text-medinex-mint border-medinex-mint/40 font-semibold">
+                  Featured Hackathon Initiative
+                </Badge>
+                <Badge variant="warning" className="bg-amber-950/90 text-amber-300 border-amber-500/40 font-semibold">
+                  Status: In Active Development
+                </Badge>
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
@@ -305,6 +314,9 @@ export default function HomePage() {
                         alt={member.fullName}
                         fill
                         className="object-cover object-top relative z-10"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     </div>
 
@@ -367,6 +379,26 @@ export default function HomePage() {
                 {/* Footer Link */}
                 <div className="px-6 py-3.5 bg-slate-50/80 border-t border-medinex-border/60 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-3">
+                    {member.email && (
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`Email ${member.fullName}`}
+                      >
+                        <Mail className="w-4 h-4" />
+                      </a>
+                    )}
+                    {member.portfolioUrl && (
+                      <a
+                        href={member.portfolioUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`Portfolio website for ${member.fullName}`}
+                      >
+                        <Globe className="w-4 h-4" />
+                      </a>
+                    )}
                     {member.githubUrl && (
                       <a
                         href={member.githubUrl}
@@ -387,6 +419,17 @@ export default function HomePage() {
                         aria-label={`LinkedIn profile for ${member.fullName}`}
                       >
                         <LinkedinIcon className="w-4 h-4" />
+                      </a>
+                    )}
+                    {member.researchGateUrl && (
+                      <a
+                        href={member.researchGateUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`ResearchGate profile for ${member.fullName}`}
+                      >
+                        <BookOpen className="w-4 h-4" />
                       </a>
                     )}
                   </div>

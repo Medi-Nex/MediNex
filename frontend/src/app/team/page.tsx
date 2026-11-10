@@ -8,6 +8,9 @@ import {
   UserCheck,
   UserPlus,
   Info,
+  Globe,
+  Mail,
+  BookOpen,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
 import { Badge } from "@/components/ui/Badge";
@@ -229,6 +232,26 @@ export default function TeamPage() {
                 {/* Footer Link */}
                 <div className="px-6 py-3.5 bg-slate-50/80 border-t border-medinex-border/60 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-3">
+                    {member.email && (
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`Email ${member.fullName}`}
+                      >
+                        <Mail className="w-4 h-4" />
+                      </a>
+                    )}
+                    {member.portfolioUrl && (
+                      <a
+                        href={member.portfolioUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`Portfolio website for ${member.fullName}`}
+                      >
+                        <Globe className="w-4 h-4" />
+                      </a>
+                    )}
                     {member.githubUrl && (
                       <a
                         href={member.githubUrl}
@@ -249,6 +272,17 @@ export default function TeamPage() {
                         aria-label={`LinkedIn profile for ${member.fullName}`}
                       >
                         <LinkedinIcon className="w-4 h-4" />
+                      </a>
+                    )}
+                    {member.researchGateUrl && (
+                      <a
+                        href={member.researchGateUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`ResearchGate profile for ${member.fullName}`}
+                      >
+                        <BookOpen className="w-4 h-4" />
                       </a>
                     )}
                   </div>

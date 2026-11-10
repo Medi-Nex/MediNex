@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   Edit3,
@@ -14,6 +15,8 @@ import {
   Building,
   GraduationCap,
   Share2,
+  Mail,
+  BookOpen,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
 import { Badge } from "@/components/ui/Badge";
@@ -164,8 +167,19 @@ export default function MemberProfilePage() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 sm:-mt-20 gap-4 mb-6">
               {/* Avatar */}
               <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border border-medinex-border">
-                <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-extrabold text-3xl text-medinex-deep border border-slate-200">
-                  {member.username.replace("contributor-", "C")}
+                <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-extrabold text-3xl text-medinex-deep border border-slate-200 overflow-hidden relative">
+                  <span className="absolute inset-0 flex items-center justify-center font-extrabold text-3xl text-medinex-deep z-0">
+                    {member.username.replace("contributor-", "C")}
+                  </span>
+                  <Image
+                    src={`/images/team/${member.username}.jpg`}
+                    alt={member.fullName}
+                    fill
+                    className="object-cover object-top relative z-10"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
                 </div>
               </div>
 
@@ -220,6 +234,15 @@ export default function MemberProfilePage() {
 
               {/* Social links */}
               <div className="flex items-center gap-4 pt-2 border-t border-slate-100">
+                {member.email && (
+                  <a
+                    href={`mailto:${member.email}`}
+                    className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-medinex-teal transition-colors font-medium"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Email</span>
+                  </a>
+                )}
                 {member.portfolioUrl && (
                   <a
                     href={member.portfolioUrl}
@@ -251,6 +274,17 @@ export default function MemberProfilePage() {
                   >
                     <LinkedinIcon className="w-3.5 h-3.5" />
                     <span>LinkedIn</span>
+                  </a>
+                )}
+                {member.researchGateUrl && (
+                  <a
+                    href={member.researchGateUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-medinex-teal transition-colors font-medium"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>ResearchGate</span>
                   </a>
                 )}
               </div>
@@ -347,6 +381,32 @@ export default function MemberProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email || ""}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="user@example.com"
+                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Portfolio / Web URL
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.portfolioUrl || ""}
+                      onChange={(e) => setFormData({ ...formData, portfolioUrl: e.target.value })}
+                      placeholder="https://example.com"
+                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       GitHub Profile URL

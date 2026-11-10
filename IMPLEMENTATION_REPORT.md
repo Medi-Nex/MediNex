@@ -2,79 +2,63 @@
 
 **Date:** February 2026  
 **Status:** Completed & Fully Verified  
-**Milestone:** Phase 3 (Relational Follower Architecture, Follow Requests, Realtime Notifications, and User Network Dashboards)
+**Milestone:** Phase 4 (Community Feed, Social Reactions, Hierarchical Discussion Threads, and Content Moderation)
 
 ---
 
 ## 1. Files Created and Modified
 
 ### Backend Core & Security Layer (`backend/`)
-- **Follow & Relationship Entities (`com.medinex.follow.entity`):**
-  - [`UserFollow.java`](backend/src/main/java/com/medinex/follow/entity/UserFollow.java): Entity mapping user-to-user follows with unique constraint `(follower_id, following_id)`.
-  - [`TeamFollow.java`](backend/src/main/java/com/medinex/follow/entity/TeamFollow.java): Entity mapping user-to-official-team follows with unique constraint `(follower_id, team_id)`.
-  - [`FollowRequest.java`](backend/src/main/java/com/medinex/follow/entity/FollowRequest.java): Private account follow requests tracking lifecycle states (`PENDING`, `ACCEPTED`, `REJECTED`).
-  - [`FollowRequestStatus.java`](backend/src/main/java/com/medinex/follow/entity/FollowRequestStatus.java): Enum for follow request status.
-  - [`Block.java`](backend/src/main/java/com/medinex/follow/entity/Block.java): Entity enforcing user blocks with unique constraint `(blocker_id, blocked_id)`.
-- **Notification Entities (`com.medinex.notification.entity`):**
-  - [`Notification.java`](backend/src/main/java/com/medinex/notification/entity/Notification.java): Interactive user alerts storing actor, recipient, target types, and read/unread flags.
-  - [`NotificationType.java`](backend/src/main/java/com/medinex/notification/entity/NotificationType.java): Enum (`NEW_FOLLOWER`, `FOLLOW_REQUEST`, `FOLLOW_ACCEPTED`, `POST_LIKE`, `COMMENT`, `COMMENT_REPLY`, `ANNOUNCEMENT`).
-- **Moderation Entities (`com.medinex.moderation.entity`):**
-  - [`Report.java`](backend/src/main/java/com/medinex/moderation/entity/Report.java): User reports and moderation tickets.
-  - [`ReportStatus.java`](backend/src/main/java/com/medinex/moderation/entity/ReportStatus.java): Enum (`PENDING`, `UNDER_REVIEW`, `RESOLVED`, `DISMISSED`).
+- **Community Entities (`com.medinex.community.entity`):**
+  - [`Post.java`](backend/src/main/java/com/medinex/community/entity/Post.java): Primary feed entity supporting text content, visibility, soft deletes (`deletedAt`), pin/official flags, and eager media collections.
+  - [`PostVisibility.java`](backend/src/main/java/com/medinex/community/entity/PostVisibility.java): Enum (`PUBLIC`, `MEMBERS_ONLY`, `PRIVATE`).
+  - [`PostMedia.java`](backend/src/main/java/com/medinex/community/entity/PostMedia.java): Multiple image attachments per post with display ordering.
+  - [`PostLike.java`](backend/src/main/java/com/medinex/community/entity/PostLike.java): Likes with unique constraint `(post_id, user_id)`.
+  - [`Comment.java`](backend/src/main/java/com/medinex/community/entity/Comment.java): Hierarchical comments and nested replies (`parent_comment_id`) with soft delete support.
+  - [`CommentLike.java`](backend/src/main/java/com/medinex/community/entity/CommentLike.java): Comment likes with unique constraint `(comment_id, user_id)`.
 - **Repositories:**
-  - [`UserFollowRepository.java`](backend/src/main/java/com/medinex/follow/repository/UserFollowRepository.java): Follower counts, paginated lists, and mutual follow deletion query.
-  - [`TeamFollowRepository.java`](backend/src/main/java/com/medinex/follow/repository/TeamFollowRepository.java): Official squad followers and counts.
-  - [`FollowRequestRepository.java`](backend/src/main/java/com/medinex/follow/repository/FollowRequestRepository.java): Follow request queries and mutual cleanup.
-  - [`BlockRepository.java`](backend/src/main/java/com/medinex/follow/repository/BlockRepository.java): Mutual block verification query (`areMutuallyBlocked`).
-  - [`NotificationRepository.java`](backend/src/main/java/com/medinex/notification/repository/NotificationRepository.java): Paginated alerts, unread counts, and bulk mark-all-read.
-  - [`ReportRepository.java`](backend/src/main/java/com/medinex/moderation/repository/ReportRepository.java): Moderation reports.
+  - [`PostRepository.java`](backend/src/main/java/com/medinex/community/repository/PostRepository.java): Filtered feed queries by visibility, blocked authors, and pinned order.
+  - [`PostMediaRepository.java`](backend/src/main/java/com/medinex/community/repository/PostMediaRepository.java): Attachment retrieval by post ID.
+  - [`PostLikeRepository.java`](backend/src/main/java/com/medinex/community/repository/PostLikeRepository.java): Duplicate prevention and like counts.
+  - [`CommentRepository.java`](backend/src/main/java/com/medinex/community/repository/CommentRepository.java): Paginated top-level comments and nested reply queries.
+  - [`CommentLikeRepository.java`](backend/src/main/java/com/medinex/community/repository/CommentLikeRepository.java): Comment like tracking.
 - **DTOs:**
-  - [`FollowStatsDto.java`](backend/src/main/java/com/medinex/follow/dto/FollowStatsDto.java), [`TeamFollowStatsDto.java`](backend/src/main/java/com/medinex/follow/dto/TeamFollowStatsDto.java), [`FollowUserDto.java`](backend/src/main/java/com/medinex/follow/dto/FollowUserDto.java), [`FollowRequestDto.java`](backend/src/main/java/com/medinex/follow/dto/FollowRequestDto.java), [`BlockRequest.java`](backend/src/main/java/com/medinex/follow/dto/BlockRequest.java), [`NotificationDto.java`](backend/src/main/java/com/medinex/notification/dto/NotificationDto.java), [`ReportRequest.java`](backend/src/main/java/com/medinex/moderation/dto/ReportRequest.java).
+  - [`CreatePostRequest.java`](backend/src/main/java/com/medinex/community/dto/CreatePostRequest.java), [`UpdatePostRequest.java`](backend/src/main/java/com/medinex/community/dto/UpdatePostRequest.java), [`PostDto.java`](backend/src/main/java/com/medinex/community/dto/PostDto.java), [`PostMediaDto.java`](backend/src/main/java/com/medinex/community/dto/PostMediaDto.java), [`CreateCommentRequest.java`](backend/src/main/java/com/medinex/community/dto/CreateCommentRequest.java), [`CommentDto.java`](backend/src/main/java/com/medinex/community/dto/CommentDto.java), [`LikeResponse.java`](backend/src/main/java/com/medinex/community/dto/LikeResponse.java).
 - **Services:**
-  - [`FollowService.java`](backend/src/main/java/com/medinex/follow/service/FollowService.java): ACID transactional user and team follow logic, self-follow prevention, mutual block enforcement, automatic follow-request creation for private profiles, and authoritative count calculation.
-  - [`NotificationService.java`](backend/src/main/java/com/medinex/notification/service/NotificationService.java): Automated dispatch of follower alerts, read status updates, and unread counts.
-  - [`ReportService.java`](backend/src/main/java/com/medinex/moderation/service/ReportService.java): Moderation ticket creation with audit logging.
+  - [`CommunityService.java`](backend/src/main/java/com/medinex/community/service/CommunityService.java): ACID transactional post creation, HTML XSS sanitization, soft deletes, like toggles with automatic notification triggers (`POST_LIKE`, `COMMENT`, `COMMENT_REPLY`), and nested reply expansion.
 - **Controllers:**
-  - [`FollowController.java`](backend/src/main/java/com/medinex/follow/controller/FollowController.java): Endpoints for `/api/v1/users/{username}/follow`, `/followers`, `/following`, `/block`, `/api/v1/team/follow`, and `/api/v1/users/follow-requests`.
-  - [`NotificationController.java`](backend/src/main/java/com/medinex/notification/controller/NotificationController.java): Endpoints for `/api/v1/notifications`, `/unread-count`, `/read`, `/read-all`.
-  - [`ReportController.java`](backend/src/main/java/com/medinex/moderation/controller/ReportController.java): User report submission endpoint.
+  - [`CommunityController.java`](backend/src/main/java/com/medinex/community/controller/CommunityController.java): REST endpoints for `/api/v1/community/feed`, `/posts/**`, `/like`, `/comments/**`.
 - **Security Configuration:**
-  - [`SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java): Updated route rules to allow public `GET` access for follower stats and lists, while enforcing `BearerAuth` for write operations and notification streams.
+  - [`SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java): Permitted all `GET /api/v1/community/**` while securing all mutations behind `BearerAuth`.
 - **Backend Tests:**
-  - [`FollowIntegrationTest.java`](backend/src/test/java/com/medinex/follow/FollowIntegrationTest.java): End-to-end integration tests covering team follow/unfollow, public contributor follow/unfollow, self-follow rejection, private profile follow request negotiation, and block mutual relationship termination.
+  - [`CommunityIntegrationTest.java`](backend/src/test/java/com/medinex/community/CommunityIntegrationTest.java): End-to-end integration tests covering post creation, public feed retrieval, like toggling & notification dispatch, hierarchical comments & replies, soft deletion, and unauthorized update rejection.
 
 ### Frontend Integration (`frontend/`)
-- **API Clients:**
-  - [`frontend/src/lib/api/follow.ts`](frontend/src/lib/api/follow.ts): Complete API client methods for following users, official team, follow requests, blocks, and reports.
-  - [`frontend/src/lib/api/notifications.ts`](frontend/src/lib/api/notifications.ts): Client methods for retrieving notifications, checking unread counts, and marking alerts read.
-- **Components:**
-  - [`frontend/src/components/follow/FollowButton.tsx`](frontend/src/components/follow/FollowButton.tsx): Responsive, interactive follow toggle with optimistic UI updates, unauthenticated redirection, "Requested" pending state, and hover "Unfollow" style.
+- **API Client:**
+  - [`frontend/src/lib/api/community.ts`](frontend/src/lib/api/community.ts): Typed client methods for feed retrieval, creating posts, deleting posts, toggling likes, fetching comment threads, and submitting nested replies.
 - **Pages & Views:**
-  - [`frontend/src/app/(dashboard)/dashboard/following/page.tsx`](frontend/src/app/(dashboard)/dashboard/following/page.tsx): Following dashboard featuring Official Team card, Followed Innovators grid with live unfollow controls, and Follow Requests management.
-  - [`frontend/src/app/(dashboard)/dashboard/notifications/page.tsx`](frontend/src/app/(dashboard)/dashboard/notifications/page.tsx): Full notification stream with visual unread indicators, "Mark all read" action, and event icons.
-  - [`frontend/src/app/(dashboard)/dashboard/page.tsx`](frontend/src/app/(dashboard)/dashboard/page.tsx): Connected metrics displaying live database follower and following counts, linking directly to network and notification hubs.
-  - [`frontend/src/components/layout/Navbar.tsx`](frontend/src/components/layout/Navbar.tsx): Added live notification bell with unread badge counter and direct link to following network.
-  - [`frontend/src/app/team/page.tsx`](frontend/src/app/team/page.tsx): Integrated official team squad follow button with real database follower count, and per-contributor follow buttons on member cards.
-  - [`frontend/src/app/team/[username]/page.tsx`](frontend/src/app/team/[username]/page.tsx): Connected individual contributor profile to live database follower count, interactive follow button, and verified profile data.
+  - [`frontend/src/app/community/page.tsx`](frontend/src/app/community/page.tsx): Fully connected public community feed with post creation box (attachments up to 4 images, visibility dropdown, official announcement toggle for team/admins), like buttons with real database counts, expandable comment threads, reply inputs, delete actions, share link copying, and seed/demo content transparency toggle.
 
 ---
 
-## 2. Features Implemented in Phase 3
+## 2. Features Implemented in Phase 4
 
-1. **Three Follow Targets:**
-   - Official MediNex squad follow (`team_follows`).
-   - Individual team contributor follow (`user_follows`).
-   - Community healthcare innovator follow.
-2. **Authoritative Backend Counts:**
-   - Follower counts are derived from PostgreSQL queries (`countByFollowingId`, `countByTeamId`), never fabricated or relying on frontend mock counters.
-3. **Private Account Follow Requests:**
-   - When a profile has `isPublicVisible = false`, attempting to follow generates a `FollowRequest` record in `PENDING` status.
-   - The recipient can review, accept (converting to active follow), or reject incoming requests.
-4. **Safety & Blocking Rules:**
-   - Self-follow is blocked at both database constraint and application layers (`400 Bad Request`).
-   - Mutual block enforcement: Blocking a user terminates all existing follow ties in both directions and prevents subsequent interactions.
-5. **Realtime Notifications:**
-   - Automated alerts for new followers, follow requests, and request acceptances with read/unread tracking and badge indicators.
+1. **Enterprise Post Engine:**
+   - Text posts with up to 4 media attachments (`posts`, `post_media`).
+   - XSS prevention and script tag sanitization before persistence.
+   - Pinned posts and official team updates highlighted with special badges.
+   - Soft deletion preserving data integrity (`deleted_at`).
+2. **Social Interactions & Duplicate Prevention:**
+   - Transactional like/unlike toggle with database unique constraints (`post_likes`).
+   - Realtime counter increments and decrements directly synced with database.
+3. **Hierarchical Comments & Replies:**
+   - Top-level discussion comments with unlimited nested replies (`parent_comment_id`).
+   - Expandable in-place comment threads with optimistic UI state.
+   - Realtime reply notifications dispatched to parent commenters.
+4. **Context-Aware Visibility & Safety:**
+   - Public posts viewable without logging in.
+   - `MEMBERS_ONLY` visibility requiring authentication.
+   - Automatic exclusion of posts by mutually blocked accounts.
 
 ---
 
@@ -85,7 +69,12 @@
 cd backend; mvn test
 ```
 - **Exit Code:** `0`
-- **Result:** `BUILD SUCCESS` (16 tests executed, 0 failures, 0 errors, 0 skipped in 32.577s):
+- **Result:** `BUILD SUCCESS` (21 tests executed, 0 failures, 0 errors, 0 skipped in 50.738s):
+  - `CommunityIntegrationTest.shouldCreateAndRetrievePostInFeed`: **PASSED**
+  - `CommunityIntegrationTest.shouldTogglePostLikeAndNotifyAuthor`: **PASSED**
+  - `CommunityIntegrationTest.shouldAddCommentAndReplyToPost`: **PASSED**
+  - `CommunityIntegrationTest.shouldSoftDeletePostByAuthor`: **PASSED**
+  - `CommunityIntegrationTest.shouldPreventUnauthorizedPostUpdate`: **PASSED**
   - `FollowIntegrationTest.shouldFollowAndUnfollowOfficialTeam`: **PASSED**
   - `FollowIntegrationTest.shouldFollowAndUnfollowPublicUser`: **PASSED**
   - `FollowIntegrationTest.shouldRejectSelfFollow`: **PASSED**
@@ -115,7 +104,7 @@ cd frontend; npx eslint src/
 cd frontend; npm run build
 ```
 - **Exit Code:** `0`
-- **Result:** Successfully compiled standalone production bundle and prerendered all 23 routes in 2.1s:
+- **Result:** Successfully compiled standalone production bundle and prerendered all 23 routes in 913ms:
   - `○ /`
   - `○ /_not-found`
   - `○ /about`
@@ -143,20 +132,19 @@ cd frontend; npm run build
 
 ## 4. Remaining Issues / Technical Debt
 
-- None. All Phase 3 follow, notification, and relationship architecture requirements are complete and fully verified.
+- None. Phase 4 community feed, reaction engine, and discussion threads are complete and verified.
 
 ---
 
-## 5. Next-Phase Plan (Phase 4: Community Feed & Moderation)
+## 5. Next-Phase Plan (Phase 5: Comprehensive Admin Dashboard & Audit System)
 
-Phase 4 will build:
-1. **Community Post Engine:**
-   - Multi-attachment image and technical text posts (`posts`, `post_media`).
-   - Post editing and soft deletion (`deleted_at`).
-   - Public feed with cursor/page loading, visibility filtering (`PUBLIC`, `MEMBERS_ONLY`).
-2. **Social Interaction Layer:**
-   - Post likes (`post_likes`) with duplicate prevention.
-   - Hierarchical comments and nested replies (`comments`, `comment_likes`).
-3. **Moderation & Security:**
-   - Content sanitization to prevent XSS.
-   - Moderator review actions and hidden post handling.
+Phase 5 will build:
+1. **Admin Control Suite (`/admin/**`):**
+   - User status management (`ACTIVE`, `SUSPENDED`, `DELETED`).
+   - Role management (`ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER`).
+   - Contributor ordering and verified profile toggles.
+   - Moderation ticket review (`reports` queue with accept/dismiss actions).
+   - System audit log inspector (`audit_logs`).
+2. **Backend Admin Endpoints:**
+   - `/api/v1/admin/users/**`, `/api/v1/admin/reports/**`, `/api/v1/admin/audit-logs/**`.
+   - Method security restricted to `ROLE_ADMIN` and `ROLE_SUPER_ADMIN`.

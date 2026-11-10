@@ -14,11 +14,13 @@ export interface TeamMember {
   bio: string;
   skills: string[];
   responsibilities: string[];
-  portfolioUrl?: string;
+
+  email?: string;
   githubUrl?: string;
   linkedinUrl?: string;
-  avatarUrl?: string;
-  coverImageUrl?: string;
+  portfolioUrl?: string;
+  researchGateUrl?: string;
+
   isLead: boolean;
   isPlaceholder: boolean;
   publicVisibility: boolean;

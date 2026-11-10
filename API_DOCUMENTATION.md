@@ -268,6 +268,84 @@
 
 ---
 
+## Community Feed & Social Platform (`/api/v1/community`)
+
+### 1. Public Community Feed
+- **Endpoint:** `GET /api/v1/community/feed`
+- **Access:** Public (context-aware if authenticated)
+- **Query Params:** `page` (default: 0), `size` (default: 15)
+- **Behavior:**
+  - Anonymous viewers receive posts with `visibility = PUBLIC`.
+  - Authenticated viewers receive `PUBLIC` and `MEMBERS_ONLY` posts.
+  - Automatically excludes hidden, soft-deleted, and mutually blocked accounts.
+  - Pinned/official announcements are returned first.
+
+### 2. Get Post by ID
+- **Endpoint:** `GET /api/v1/community/posts/{id}`
+- **Access:** Public (context-aware if authenticated)
+
+### 3. Get User Posts
+- **Endpoint:** `GET /api/v1/community/users/{username}/posts`
+- **Access:** Public (context-aware if authenticated)
+- **Query Params:** `page` (default: 0), `size` (default: 15)
+
+### 4. Create Post
+- **Endpoint:** `POST /api/v1/community/posts`
+- **Access:** Authenticated (`BearerAuth`)
+- **Payload:**
+  ```json
+  {
+    "content": "Exploring rural health triage bridge architectures.",
+    "visibility": "PUBLIC",
+    "mediaUrls": ["https://example.org/images/triage.png"],
+    "isOfficialAnnouncement": false
+  }
+  ```
+
+### 5. Update Post
+- **Endpoint:** `PUT /api/v1/community/posts/{id}`
+- **Access:** Post Owner or Admin (`BearerAuth`)
+
+### 6. Delete Post
+- **Endpoint:** `DELETE /api/v1/community/posts/{id}`
+- **Access:** Post Owner or Admin (`BearerAuth`)
+- **Behavior:** Soft delete (`deleted_at = CURRENT_TIMESTAMP`).
+
+### 7. Toggle Post Like
+- **Endpoint:** `POST /api/v1/community/posts/{id}/like`
+- **Access:** Authenticated (`BearerAuth`)
+- **Behavior:** Idempotent toggle. Automatically dispatches `POST_LIKE` notification to the post author.
+- **Response:** `{ "isLiked": true, "likesCount": 6 }`
+
+### 8. Get Post Comments
+- **Endpoint:** `GET /api/v1/community/posts/{id}/comments`
+- **Access:** Public (context-aware if authenticated)
+- **Query Params:** `page` (default: 0), `size` (default: 20)
+- **Response:** Paginated top-level comments with eager nested replies.
+
+### 9. Add Comment / Reply
+- **Endpoint:** `POST /api/v1/community/posts/{id}/comments`
+- **Access:** Authenticated (`BearerAuth`)
+- **Payload:**
+  ```json
+  {
+    "content": "Have you evaluated bandwidth consumption under 2G edge conditions?",
+    "parentCommentId": null
+  }
+  ```
+- **Behavior:** Increments post `comments_count`. If `parentCommentId` is supplied, dispatches `COMMENT_REPLY` notification; otherwise dispatches `COMMENT` notification.
+
+### 10. Delete Comment
+- **Endpoint:** `DELETE /api/v1/community/comments/{commentId}`
+- **Access:** Comment Owner or Admin (`BearerAuth`)
+- **Behavior:** Soft delete and decrements post `comments_count`.
+
+### 11. Toggle Comment Like
+- **Endpoint:** `POST /api/v1/community/comments/{commentId}/like`
+- **Access:** Authenticated (`BearerAuth`)
+
+---
+
 ## Notifications Endpoints (`/api/v1/notifications`)
 
 ### 1. List Notifications

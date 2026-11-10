@@ -20,7 +20,7 @@ export function Badge({
   };
   const variantStyles = {
     teal: "bg-medinex-teal/10 text-medinex-teal border border-medinex-teal/20",
-    mint: "bg-medinex-mint/20 text-medinex-deep border border-medinex-mint/30",
+    mint: "bg-emerald-100/90 text-emerald-900 border border-emerald-300/80 font-semibold",
     outline: "border border-medinex-border text-medinex-muted bg-white",
     warning: "bg-amber-50 text-amber-700 border border-amber-200",
     neutral: "bg-slate-100 text-slate-700 border border-slate-200",
