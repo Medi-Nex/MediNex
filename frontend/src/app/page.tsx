@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   ShieldCheck,
@@ -12,6 +13,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardBody } from "@/components/ui/Card";
+import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
 import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
 
 export default function HomePage() {
@@ -291,10 +293,40 @@ export default function HomePage() {
             {INITIAL_TEAM_MEMBERS.map((member) => (
               <Card key={member.id} hoverEffect className="flex flex-col justify-between">
                 <CardBody className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-medinex-deep">
-                      {member.username.split("-")[1]}
+                  <div className="flex flex-col items-start gap-4">
+                    {/* বড় ছবির জায়গা */}
+                    <div className="w-full aspect-[4/4] md:aspect-[4/4.5] rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative">
+                      <span className="absolute inset-0 flex items-center justify-center font-bold text-6xl text-slate-300 z-0">
+                        {member.username.replace("contributor-", "C")}
+                      </span>
+
+                      <Image
+                        src={`/images/team/${member.username}.jpg`}
+                        alt={member.fullName}
+                        fill
+                        className="object-cover object-top relative z-10"
+                      />
                     </div>
+
+                    <div className="flex items-start justify-between w-full">
+                      <div>
+                        <h3 className="font-bold text-base text-medinex-text leading-tight">
+                          {member.fullName}
+                        </h3>
+                        <p className="text-xs text-medinex-teal font-medium mt-0.5">
+                          @{member.username}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {member.isLead && (
+                      <Badge variant="teal" size="sm">
+                        Team Lead
+                      </Badge>
+                    )}
                     {member.isPlaceholder && (
                       <Badge variant="placeholder" size="sm">
                         Verified Placeholder
@@ -302,41 +334,69 @@ export default function HomePage() {
                     )}
                   </div>
 
-                  <div>
-                    <h3 className="font-bold text-lg text-medinex-text">{member.fullName}</h3>
-                    <p className="text-xs font-semibold text-medinex-teal mt-0.5">{member.designation}</p>
-                    <p className="text-xs text-medinex-muted mt-1">{member.department}</p>
+                  {/* Role & Org */}
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-800">{member.designation}</p>
+                    <p className="text-xs text-slate-500">{member.department}</p>
+                    <p className="text-[11px] text-slate-400 italic">{member.university}</p>
                   </div>
 
-                  <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                  {/* Bio */}
+                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                     {member.bio}
                   </p>
 
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {member.skills.slice(0, 3).map((skill) => (
-                      <span
-                        key={skill}
-                        className="text-[11px] px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                    {member.skills.length > 3 && (
-                      <span className="text-[11px] px-1.5 py-0.5 text-slate-400">
-                        +{member.skills.length - 3}
-                      </span>
-                    )}
+                  {/* Key Skills */}
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1.5">
+                      Focus Areas &amp; Skills
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {member.skills.slice(0, 4).map((skill) => (
+                        <span
+                          key={skill}
+                          className="text-[11px] px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md border border-slate-200/60"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </CardBody>
 
-                <div className="px-6 py-3 bg-slate-50 border-t border-medinex-border/60 flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Order: #{member.displayOrder}</span>
+                {/* Footer Link */}
+                <div className="px-6 py-3.5 bg-slate-50/80 border-t border-medinex-border/60 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-3">
+                    {member.githubUrl && (
+                      <a
+                        href={member.githubUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`GitHub profile for ${member.fullName}`}
+                      >
+                        <GithubIcon className="w-4 h-4" />
+                      </a>
+                    )}
+                    {member.linkedinUrl && (
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-medinex-teal transition-colors"
+                        aria-label={`LinkedIn profile for ${member.fullName}`}
+                      >
+                        <LinkedinIcon className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+
                   <Link
                     href={`/team/${member.username}`}
-                    className="font-semibold text-medinex-teal hover:underline inline-flex items-center gap-1"
+                    className="font-semibold text-medinex-teal hover:text-medinex-teal-hover inline-flex items-center gap-1"
                   >
-                    <span>Profile Details</span>
-                    <ArrowRight className="w-3 h-3" />
+                    <span>View &amp; Edit Profile</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </Card>

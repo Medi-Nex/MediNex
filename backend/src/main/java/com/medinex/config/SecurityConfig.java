@@ -68,10 +68,16 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/v1/auth/**",
                                 "/api/v1/public/**",
-                                "/api/v1/team/**",
                                 "/api/v1/projects/**",
                                 "/api/v1/community/public/**"
                         ).permitAll()
+                        // Team endpoints: GET is public, write is authenticated
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/team/**").permitAll()
+                        // Public user profiles and follower lists
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/follow-stats").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/followers").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/following").permitAll()
                         // Admin restricted endpoints
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                         // All other endpoints require authentication

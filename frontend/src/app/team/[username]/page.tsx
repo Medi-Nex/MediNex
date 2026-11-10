@@ -13,8 +13,6 @@ import {
   Calendar,
   Building,
   GraduationCap,
-  UserPlus,
-  UserCheck,
   Share2,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
@@ -23,6 +21,8 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
 import { TeamMember } from "@/types";
+import { FollowButton } from "@/components/follow/FollowButton";
+import { getUserFollowStats } from "@/lib/api/follow";
 
 export default function MemberProfilePage() {
   const params = useParams();
@@ -30,12 +30,25 @@ export default function MemberProfilePage() {
 
   const [member, setMember] = useState<TeamMember | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Form state for editing
   const [formData, setFormData] = useState<Partial<TeamMember>>({});
+
+  useEffect(() => {
+    if (username) {
+      getUserFollowStats(username)
+        .then((stats) => {
+          setFollowerCount(stats.followerCount);
+          setIsFollowing(stats.isFollowing);
+          setHasPendingRequest(stats.hasPendingRequest);
+        })
+        .catch(() => {});
+    }
+  }, [username]);
 
   useEffect(() => {
     // Check localStorage first for updated profile
@@ -85,11 +98,6 @@ export default function MemberProfilePage() {
       localStorage.setItem(`medinex_member_${username}`, JSON.stringify(updated));
     }
     setIsEditing(false);
-  };
-
-  const handleFollowToggle = () => {
-    setIsFollowing(!isFollowing);
-    setFollowerCount((prev) => (isFollowing ? Math.max(0, prev - 1) : prev + 1));
   };
 
   const handleCopyLink = () => {
@@ -163,23 +171,16 @@ export default function MemberProfilePage() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3 self-start sm:self-auto pt-2">
-                <Button
-                  variant={isFollowing ? "outline" : "primary"}
+                <FollowButton
+                  username={member.username}
+                  initialIsFollowing={isFollowing}
+                  initialHasPendingRequest={hasPendingRequest}
                   size="md"
-                  onClick={handleFollowToggle}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck className="w-4 h-4 mr-1.5 text-medinex-teal" />
-                      <span>Following Contributor</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-1.5" />
-                      <span>Follow Contributor</span>
-                    </>
-                  )}
-                </Button>
+                  onFollowChange={(newIsFollowing, delta) => {
+                    setIsFollowing(newIsFollowing);
+                    setFollowerCount((prev) => Math.max(0, prev + delta));
+                  }}
+                />
               </div>
             </div>
 

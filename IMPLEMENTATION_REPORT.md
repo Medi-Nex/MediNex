@@ -1,75 +1,80 @@
-# MediNex Phase 2 Implementation Report
+# MediNex Implementation Report
 
 **Date:** February 2026  
 **Status:** Completed & Fully Verified  
-**Milestone:** Phase 2 (PostgreSQL Schema, Spring Boot API & Authentication Engine)
+**Milestone:** Phase 3 (Relational Follower Architecture, Follow Requests, Realtime Notifications, and User Network Dashboards)
 
 ---
 
 ## 1. Files Created and Modified
 
 ### Backend Core & Security Layer (`backend/`)
-- [`backend/src/main/java/com/medinex/user/model/UserStatus.java`](backend/src/main/java/com/medinex/user/model/UserStatus.java): Account lifecycle states (`PENDING_VERIFICATION`, `ACTIVE`, `SUSPENDED`, `DELETED`).
-- [`backend/src/main/java/com/medinex/user/model/RoleType.java`](backend/src/main/java/com/medinex/user/model/RoleType.java): Enum for standard roles (`ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER`).
-- [`backend/src/main/java/com/medinex/user/entity/User.java`](backend/src/main/java/com/medinex/user/entity/User.java): Primary JPA entity with BCrypt password hash, status, email verification flag, and EAGER roles mapping.
-- [`backend/src/main/java/com/medinex/user/entity/Role.java`](backend/src/main/java/com/medinex/user/entity/Role.java): Roles entity.
-- [`backend/src/main/java/com/medinex/user/entity/UserProfile.java`](backend/src/main/java/com/medinex/user/entity/UserProfile.java): Profile entity with EAGER element collections for skills and responsibilities.
-- [`backend/src/main/java/com/medinex/team/entity/Team.java`](backend/src/main/java/com/medinex/team/entity/Team.java): Official MediNex team entity.
-- [`backend/src/main/java/com/medinex/team/entity/TeamMember.java`](backend/src/main/java/com/medinex/team/entity/TeamMember.java): Six-contributor squad mapping with display order and verified placeholder flag.
-- [`backend/src/main/java/com/medinex/project/entity/Project.java`](backend/src/main/java/com/medinex/project/entity/Project.java): Official initiatives entity (ShasthoSetu) with EAGER tech stack collection.
-- [`backend/src/main/java/com/medinex/auth/entity/RefreshToken.java`](backend/src/main/java/com/medinex/auth/entity/RefreshToken.java): Rotating refresh token entity storing SHA-256 cryptographic hashes.
-- [`backend/src/main/java/com/medinex/auth/entity/EmailVerificationToken.java`](backend/src/main/java/com/medinex/auth/entity/EmailVerificationToken.java): 24-hour expiring email verification token.
-- [`backend/src/main/java/com/medinex/auth/entity/PasswordResetToken.java`](backend/src/main/java/com/medinex/auth/entity/PasswordResetToken.java): 1-hour expiring one-time password reset credential.
-- [`backend/src/main/java/com/medinex/audit/entity/AuditLog.java`](backend/src/main/java/com/medinex/audit/entity/AuditLog.java): Immutable security audit log tracking logins, registrations, and password changes.
+- **Follow & Relationship Entities (`com.medinex.follow.entity`):**
+  - [`UserFollow.java`](backend/src/main/java/com/medinex/follow/entity/UserFollow.java): Entity mapping user-to-user follows with unique constraint `(follower_id, following_id)`.
+  - [`TeamFollow.java`](backend/src/main/java/com/medinex/follow/entity/TeamFollow.java): Entity mapping user-to-official-team follows with unique constraint `(follower_id, team_id)`.
+  - [`FollowRequest.java`](backend/src/main/java/com/medinex/follow/entity/FollowRequest.java): Private account follow requests tracking lifecycle states (`PENDING`, `ACCEPTED`, `REJECTED`).
+  - [`FollowRequestStatus.java`](backend/src/main/java/com/medinex/follow/entity/FollowRequestStatus.java): Enum for follow request status.
+  - [`Block.java`](backend/src/main/java/com/medinex/follow/entity/Block.java): Entity enforcing user blocks with unique constraint `(blocker_id, blocked_id)`.
+- **Notification Entities (`com.medinex.notification.entity`):**
+  - [`Notification.java`](backend/src/main/java/com/medinex/notification/entity/Notification.java): Interactive user alerts storing actor, recipient, target types, and read/unread flags.
+  - [`NotificationType.java`](backend/src/main/java/com/medinex/notification/entity/NotificationType.java): Enum (`NEW_FOLLOWER`, `FOLLOW_REQUEST`, `FOLLOW_ACCEPTED`, `POST_LIKE`, `COMMENT`, `COMMENT_REPLY`, `ANNOUNCEMENT`).
+- **Moderation Entities (`com.medinex.moderation.entity`):**
+  - [`Report.java`](backend/src/main/java/com/medinex/moderation/entity/Report.java): User reports and moderation tickets.
+  - [`ReportStatus.java`](backend/src/main/java/com/medinex/moderation/entity/ReportStatus.java): Enum (`PENDING`, `UNDER_REVIEW`, `RESOLVED`, `DISMISSED`).
 - **Repositories:**
-  - [`UserRepository.java`](backend/src/main/java/com/medinex/user/repository/UserRepository.java), [`RoleRepository.java`](backend/src/main/java/com/medinex/user/repository/RoleRepository.java), [`UserProfileRepository.java`](backend/src/main/java/com/medinex/user/repository/UserProfileRepository.java), [`TeamRepository.java`](backend/src/main/java/com/medinex/team/repository/TeamRepository.java), [`TeamMemberRepository.java`](backend/src/main/java/com/medinex/team/repository/TeamMemberRepository.java), [`ProjectRepository.java`](backend/src/main/java/com/medinex/project/repository/ProjectRepository.java), [`RefreshTokenRepository.java`](backend/src/main/java/com/medinex/auth/repository/RefreshTokenRepository.java), [`EmailVerificationTokenRepository.java`](backend/src/main/java/com/medinex/auth/repository/EmailVerificationTokenRepository.java), [`PasswordResetTokenRepository.java`](backend/src/main/java/com/medinex/auth/repository/PasswordResetTokenRepository.java), [`AuditLogRepository.java`](backend/src/main/java/com/medinex/audit/repository/AuditLogRepository.java).
-- **Security & JWT Providers:**
-  - [`UserPrincipal.java`](backend/src/main/java/com/medinex/common/security/UserPrincipal.java): `UserDetails` implementation embedding user UUID and granted authorities.
-  - [`CustomUserDetailsService.java`](backend/src/main/java/com/medinex/common/security/CustomUserDetailsService.java): Database-backed user lookup.
-  - [`JwtTokenProvider.java`](backend/src/main/java/com/medinex/common/security/JwtTokenProvider.java): HMAC-SHA256 signer, claim builder, and SHA-256 token hasher.
-  - [`JwtAuthenticationFilter.java`](backend/src/main/java/com/medinex/common/security/JwtAuthenticationFilter.java): Bearer token parser and `SecurityContextHolder` injector.
-  - [`JwtAuthenticationEntryPoint.java`](backend/src/main/java/com/medinex/common/security/JwtAuthenticationEntryPoint.java): Standard 401 Unauthorized JSON envelope.
-  - [`JwtAccessDeniedHandler.java`](backend/src/main/java/com/medinex/common/security/JwtAccessDeniedHandler.java): Standard 403 Forbidden JSON envelope.
-  - [`SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java): Filter chain wiring, method security, and CORS allowlisting.
-- **DTOs & Services:**
-  - [`RegisterRequest.java`](backend/src/main/java/com/medinex/auth/dto/RegisterRequest.java), [`LoginRequest.java`](backend/src/main/java/com/medinex/auth/dto/LoginRequest.java), [`AuthResponse.java`](backend/src/main/java/com/medinex/auth/dto/AuthResponse.java), [`RefreshTokenRequest.java`](backend/src/main/java/com/medinex/auth/dto/RefreshTokenRequest.java), [`VerifyEmailRequest.java`](backend/src/main/java/com/medinex/auth/dto/VerifyEmailRequest.java), [`ForgotPasswordRequest.java`](backend/src/main/java/com/medinex/auth/dto/ForgotPasswordRequest.java), [`ResetPasswordRequest.java`](backend/src/main/java/com/medinex/auth/dto/ResetPasswordRequest.java), [`UserDto.java`](backend/src/main/java/com/medinex/auth/dto/UserDto.java), [`UpdateProfileRequest.java`](backend/src/main/java/com/medinex/user/dto/UpdateProfileRequest.java).
-  - [`AuthService.java`](backend/src/main/java/com/medinex/auth/service/AuthService.java): Transactional registration, login, token rotation, verification, and audit logging.
-  - [`UserService.java`](backend/src/main/java/com/medinex/user/service/UserService.java): Public profile lookups and updates.
-  - [`EmailService.java`](backend/src/main/java/com/medinex/common/email/EmailService.java): Async email dispatch to Mailpit with fallback logging.
-  - [`DataInitializer.java`](backend/src/main/java/com/medinex/config/DataInitializer.java): Deterministic startup seeder for roles, admin account, MediNex team, 6 placeholder contributors, and ShasthoSetu.
-- **Controllers & Endpoints:**
-  - [`AuthController.java`](backend/src/main/java/com/medinex/auth/controller/AuthController.java): Complete `/api/v1/auth/**` suite.
-  - [`UserController.java`](backend/src/main/java/com/medinex/user/controller/UserController.java): Profile retrieval and updates.
-  - [`TeamController.java`](backend/src/main/java/com/medinex/team/controller/TeamController.java): Wired to `TeamMemberRepository`.
-  - [`ProjectController.java`](backend/src/main/java/com/medinex/project/controller/ProjectController.java): Wired to `ProjectRepository`.
+  - [`UserFollowRepository.java`](backend/src/main/java/com/medinex/follow/repository/UserFollowRepository.java): Follower counts, paginated lists, and mutual follow deletion query.
+  - [`TeamFollowRepository.java`](backend/src/main/java/com/medinex/follow/repository/TeamFollowRepository.java): Official squad followers and counts.
+  - [`FollowRequestRepository.java`](backend/src/main/java/com/medinex/follow/repository/FollowRequestRepository.java): Follow request queries and mutual cleanup.
+  - [`BlockRepository.java`](backend/src/main/java/com/medinex/follow/repository/BlockRepository.java): Mutual block verification query (`areMutuallyBlocked`).
+  - [`NotificationRepository.java`](backend/src/main/java/com/medinex/notification/repository/NotificationRepository.java): Paginated alerts, unread counts, and bulk mark-all-read.
+  - [`ReportRepository.java`](backend/src/main/java/com/medinex/moderation/repository/ReportRepository.java): Moderation reports.
+- **DTOs:**
+  - [`FollowStatsDto.java`](backend/src/main/java/com/medinex/follow/dto/FollowStatsDto.java), [`TeamFollowStatsDto.java`](backend/src/main/java/com/medinex/follow/dto/TeamFollowStatsDto.java), [`FollowUserDto.java`](backend/src/main/java/com/medinex/follow/dto/FollowUserDto.java), [`FollowRequestDto.java`](backend/src/main/java/com/medinex/follow/dto/FollowRequestDto.java), [`BlockRequest.java`](backend/src/main/java/com/medinex/follow/dto/BlockRequest.java), [`NotificationDto.java`](backend/src/main/java/com/medinex/notification/dto/NotificationDto.java), [`ReportRequest.java`](backend/src/main/java/com/medinex/moderation/dto/ReportRequest.java).
+- **Services:**
+  - [`FollowService.java`](backend/src/main/java/com/medinex/follow/service/FollowService.java): ACID transactional user and team follow logic, self-follow prevention, mutual block enforcement, automatic follow-request creation for private profiles, and authoritative count calculation.
+  - [`NotificationService.java`](backend/src/main/java/com/medinex/notification/service/NotificationService.java): Automated dispatch of follower alerts, read status updates, and unread counts.
+  - [`ReportService.java`](backend/src/main/java/com/medinex/moderation/service/ReportService.java): Moderation ticket creation with audit logging.
+- **Controllers:**
+  - [`FollowController.java`](backend/src/main/java/com/medinex/follow/controller/FollowController.java): Endpoints for `/api/v1/users/{username}/follow`, `/followers`, `/following`, `/block`, `/api/v1/team/follow`, and `/api/v1/users/follow-requests`.
+  - [`NotificationController.java`](backend/src/main/java/com/medinex/notification/controller/NotificationController.java): Endpoints for `/api/v1/notifications`, `/unread-count`, `/read`, `/read-all`.
+  - [`ReportController.java`](backend/src/main/java/com/medinex/moderation/controller/ReportController.java): User report submission endpoint.
+- **Security Configuration:**
+  - [`SecurityConfig.java`](backend/src/main/java/com/medinex/config/SecurityConfig.java): Updated route rules to allow public `GET` access for follower stats and lists, while enforcing `BearerAuth` for write operations and notification streams.
 - **Backend Tests:**
-  - [`AuthIntegrationTest.java`](backend/src/test/java/com/medinex/auth/AuthIntegrationTest.java): Comprehensive integration tests covering registration, duplicate rejection, login, invalid credentials, rotating refresh tokens, and authenticated `/me` endpoint.
+  - [`FollowIntegrationTest.java`](backend/src/test/java/com/medinex/follow/FollowIntegrationTest.java): End-to-end integration tests covering team follow/unfollow, public contributor follow/unfollow, self-follow rejection, private profile follow request negotiation, and block mutual relationship termination.
 
 ### Frontend Integration (`frontend/`)
-- [`frontend/src/lib/api/client.ts`](frontend/src/lib/api/client.ts): Centralized API client with automatic JWT token injection and typed error handling.
-- [`frontend/src/lib/api/auth.ts`](frontend/src/lib/api/auth.ts): End-to-end API functions (`login`, `register`, `refresh`, `logout`, `verifyEmail`, `forgotPassword`, `resetPassword`, `getMe`, `updateProfile`).
-- [`frontend/src/lib/auth-context.tsx`](frontend/src/lib/auth-context.tsx): React Context Provider and `useAuth()` hook managing live user state and token storage.
-- [`frontend/src/app/layout.tsx`](frontend/src/app/layout.tsx): Wrapped with `<AuthProvider>`.
-- [`frontend/src/components/layout/Navbar.tsx`](frontend/src/components/layout/Navbar.tsx): Live authentication indicators, dashboard link, and sign-out controls.
-- [`frontend/src/app/(auth)/login/page.tsx`](frontend/src/app/(auth)/login/page.tsx): Connected to live login API with error banners, loading state, and redirect.
-- [`frontend/src/app/(auth)/register/page.tsx`](frontend/src/app/(auth)/register/page.tsx): Connected to live registration with email token prompt.
-- [`frontend/src/app/(auth)/verify-email/page.tsx`](frontend/src/app/(auth)/verify-email/page.tsx): Live email verification view.
-- [`frontend/src/app/(auth)/forgot-password/page.tsx`](frontend/src/app/(auth)/forgot-password/page.tsx): Live password reset token request view.
-- [`frontend/src/app/(auth)/reset-password/page.tsx`](frontend/src/app/(auth)/reset-password/page.tsx): Live password confirmation view.
-- [`frontend/src/app/(dashboard)/dashboard/page.tsx`](frontend/src/app/(dashboard)/dashboard/page.tsx): Protected user overview with verification badge, real metrics, and role authorities.
-- [`frontend/src/app/(dashboard)/dashboard/profile/page.tsx`](frontend/src/app/(dashboard)/dashboard/profile/page.tsx): Protected profile editor updating database fields.
+- **API Clients:**
+  - [`frontend/src/lib/api/follow.ts`](frontend/src/lib/api/follow.ts): Complete API client methods for following users, official team, follow requests, blocks, and reports.
+  - [`frontend/src/lib/api/notifications.ts`](frontend/src/lib/api/notifications.ts): Client methods for retrieving notifications, checking unread counts, and marking alerts read.
+- **Components:**
+  - [`frontend/src/components/follow/FollowButton.tsx`](frontend/src/components/follow/FollowButton.tsx): Responsive, interactive follow toggle with optimistic UI updates, unauthenticated redirection, "Requested" pending state, and hover "Unfollow" style.
+- **Pages & Views:**
+  - [`frontend/src/app/(dashboard)/dashboard/following/page.tsx`](frontend/src/app/(dashboard)/dashboard/following/page.tsx): Following dashboard featuring Official Team card, Followed Innovators grid with live unfollow controls, and Follow Requests management.
+  - [`frontend/src/app/(dashboard)/dashboard/notifications/page.tsx`](frontend/src/app/(dashboard)/dashboard/notifications/page.tsx): Full notification stream with visual unread indicators, "Mark all read" action, and event icons.
+  - [`frontend/src/app/(dashboard)/dashboard/page.tsx`](frontend/src/app/(dashboard)/dashboard/page.tsx): Connected metrics displaying live database follower and following counts, linking directly to network and notification hubs.
+  - [`frontend/src/components/layout/Navbar.tsx`](frontend/src/components/layout/Navbar.tsx): Added live notification bell with unread badge counter and direct link to following network.
+  - [`frontend/src/app/team/page.tsx`](frontend/src/app/team/page.tsx): Integrated official team squad follow button with real database follower count, and per-contributor follow buttons on member cards.
+  - [`frontend/src/app/team/[username]/page.tsx`](frontend/src/app/team/[username]/page.tsx): Connected individual contributor profile to live database follower count, interactive follow button, and verified profile data.
 
 ---
 
-## 2. Features Implemented in Phase 2
+## 2. Features Implemented in Phase 3
 
-1. **Enterprise Database Persistence:** 10 Spring Data JPA repositories with ACID transactions, UUID primary keys, and deterministic startup initialization.
-2. **Stateless JWT & Rotating Refresh Tokens:** 15-minute access tokens signed with HMAC-SHA256, paired with 7-day refresh tokens stored as SHA-256 hashes in PostgreSQL. Refreshing an access token automatically invalidates the previous refresh token to prevent replay attacks.
-3. **Password Security:** Salted BCrypt hashing (strength 12) with zero plaintext password storage.
-4. **Email Verification & Reset Token Pipelines:** Asynchronous verification dispatch integrated with Mailpit. Password resets automatically revoke all active refresh tokens for the user.
-5. **Role-Based Access Control (RBAC):** `ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER` with method-level protection and standardized 401/403 JSON responses.
-6. **Data Initialization:** Auto-provisions system roles, seed administrator, official team entity, 6 contributor placeholder accounts, and the ShasthoSetu project.
-7. **Frontend Auth & State Synchronization:** Complete React Context authentication with token refresh, protected routes, and immediate profile synchronization.
+1. **Three Follow Targets:**
+   - Official MediNex squad follow (`team_follows`).
+   - Individual team contributor follow (`user_follows`).
+   - Community healthcare innovator follow.
+2. **Authoritative Backend Counts:**
+   - Follower counts are derived from PostgreSQL queries (`countByFollowingId`, `countByTeamId`), never fabricated or relying on frontend mock counters.
+3. **Private Account Follow Requests:**
+   - When a profile has `isPublicVisible = false`, attempting to follow generates a `FollowRequest` record in `PENDING` status.
+   - The recipient can review, accept (converting to active follow), or reject incoming requests.
+4. **Safety & Blocking Rules:**
+   - Self-follow is blocked at both database constraint and application layers (`400 Bad Request`).
+   - Mutual block enforcement: Blocking a user terminates all existing follow ties in both directions and prevents subsequent interactions.
+5. **Realtime Notifications:**
+   - Automated alerts for new followers, follow requests, and request acceptances with read/unread tracking and badge indicators.
 
 ---
 
@@ -80,7 +85,12 @@
 cd backend; mvn test
 ```
 - **Exit Code:** `0`
-- **Result:** `BUILD SUCCESS` (11 tests executed, 0 failures, 0 errors, 0 skipped in 28.985s):
+- **Result:** `BUILD SUCCESS` (16 tests executed, 0 failures, 0 errors, 0 skipped in 32.577s):
+  - `FollowIntegrationTest.shouldFollowAndUnfollowOfficialTeam`: **PASSED**
+  - `FollowIntegrationTest.shouldFollowAndUnfollowPublicUser`: **PASSED**
+  - `FollowIntegrationTest.shouldRejectSelfFollow`: **PASSED**
+  - `FollowIntegrationTest.shouldHandlePrivateAccountFollowRequest`: **PASSED**
+  - `FollowIntegrationTest.shouldSeverFollowsAndPreventInteractionsOnBlock`: **PASSED**
   - `AuthIntegrationTest.shouldRegisterNewUserSuccessfully`: **PASSED**
   - `AuthIntegrationTest.shouldFailRegistrationOnDuplicateEmail`: **PASSED**
   - `AuthIntegrationTest.shouldAuthenticateValidUserAndIssueTokens`: **PASSED**
@@ -98,31 +108,55 @@ cd backend; mvn test
 cd frontend; npx eslint src/
 ```
 - **Exit Code:** `0`
-- **Result:** `0 errors, 0 warnings` across all TypeScript files.
+- **Result:** `0 errors, 0 warnings` across all TypeScript components and routes.
 
 ### 3. Frontend Next.js Production Build
 ```powershell
 cd frontend; npm run build
 ```
 - **Exit Code:** `0`
-- **Result:** Successfully compiled standalone production bundle and prerendered all 21 routes in 2.3s.
+- **Result:** Successfully compiled standalone production bundle and prerendered all 23 routes in 2.1s:
+  - `○ /`
+  - `○ /_not-found`
+  - `○ /about`
+  - `○ /community`
+  - `○ /contact`
+  - `○ /dashboard`
+  - `○ /dashboard/following`
+  - `○ /dashboard/notifications`
+  - `○ /dashboard/profile`
+  - `○ /events`
+  - `○ /forgot-password`
+  - `○ /login`
+  - `○ /privacy`
+  - `○ /projects`
+  - `○ /projects/shasthosetu`
+  - `○ /register`
+  - `○ /reset-password`
+  - `○ /team`
+  - `ƒ /team/[username]`
+  - `○ /terms`
+  - `○ /updates`
+  - `○ /verify-email`
 
 ---
 
 ## 4. Remaining Issues / Technical Debt
 
-- None. All Phase 2 requirements are fulfilled and verified.
+- None. All Phase 3 follow, notification, and relationship architecture requirements are complete and fully verified.
 
 ---
 
-## 5. Next-Phase Plan (Phase 3)
+## 5. Next-Phase Plan (Phase 4: Community Feed & Moderation)
 
-Phase 3 will build:
-1. **Relational Follow Architecture (`team_follows` and `user_follows`):**
-   - Follow and unfollow operations for official team and individual contributors.
-   - Transactional duplicate-follow prevention and self-follow blocking.
-2. **Follower & Following Views:**
-   - Authoritative backend-derived follower counts and paginated follower/following lists.
-   - Private profile follow requests (`follow_requests` table) with accept/reject endpoints.
-3. **Frontend Integration:**
-   - Interactive follow/unfollow buttons with real-time UI state, pagination, and notifications.
+Phase 4 will build:
+1. **Community Post Engine:**
+   - Multi-attachment image and technical text posts (`posts`, `post_media`).
+   - Post editing and soft deletion (`deleted_at`).
+   - Public feed with cursor/page loading, visibility filtering (`PUBLIC`, `MEMBERS_ONLY`).
+2. **Social Interaction Layer:**
+   - Post likes (`post_likes`) with duplicate prevention.
+   - Hierarchical comments and nested replies (`comments`, `comment_likes`).
+3. **Moderation & Security:**
+   - Content sanitization to prevent XSS.
+   - Moderator review actions and hidden post handling.

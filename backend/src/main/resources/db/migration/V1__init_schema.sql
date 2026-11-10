@@ -159,6 +159,15 @@ CREATE TABLE project_members (
 );
 
 -- ------------------------------------------------------------------------------
+-- 8.5 PROJECT TECH STACK COLLECTION
+-- ------------------------------------------------------------------------------
+CREATE TABLE project_tech_stack (
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    tech VARCHAR(150) NOT NULL
+);
+CREATE INDEX idx_project_tech_stack_id ON project_tech_stack (project_id);
+
+-- ------------------------------------------------------------------------------
 -- 9. USER FOLLOWS (User-to-User Follow Relationship)
 -- ------------------------------------------------------------------------------
 CREATE TABLE user_follows (

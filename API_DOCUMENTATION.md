@@ -203,6 +203,111 @@
 
 ---
 
+## Follow & Network Endpoints
+
+### 1. Follow User
+- **Endpoint:** `POST /api/v1/users/{username}/follow`
+- **Access:** Authenticated (`BearerAuth`)
+- **Behavior:**
+  - Public profile: Direct follow relationship created; `NEW_FOLLOWER` notification dispatched to target.
+  - Private profile (`isPublicVisible = false`): `FollowRequest` created with status `PENDING`; `FOLLOW_REQUEST` notification dispatched.
+  - Self-follow: Rejected with `400 Bad Request`.
+  - Mutual block: Interaction rejected with `400 Bad Request`.
+
+### 2. Unfollow User
+- **Endpoint:** `DELETE /api/v1/users/{username}/follow`
+- **Access:** Authenticated (`BearerAuth`)
+- **Behavior:** Removes follow relationship and purges any pending follow requests.
+
+### 3. Get User Follow Stats
+- **Endpoint:** `GET /api/v1/users/{username}/follow-stats`
+- **Access:** Public (context-aware if authenticated)
+- **Response:**
+  ```json
+  {
+    "followerCount": 14,
+    "followingCount": 5,
+    "isFollowing": true,
+    "hasPendingRequest": false,
+    "isBlocked": false,
+    "isSelf": false
+  }
+  ```
+
+### 4. Get User Followers & Following
+- **Endpoint:** `GET /api/v1/users/{username}/followers`
+- **Endpoint:** `GET /api/v1/users/{username}/following`
+- **Access:** Public
+- **Query Params:** `page` (default: 0), `size` (default: 20)
+
+### 5. Follow Official MediNex Team
+- **Endpoint:** `POST /api/v1/team/follow`
+- **Access:** Authenticated (`BearerAuth`)
+- **Behavior:** Inserts record into `team_follows`.
+
+### 6. Unfollow Official MediNex Team
+- **Endpoint:** `DELETE /api/v1/team/follow`
+- **Access:** Authenticated (`BearerAuth`)
+
+### 7. Get Official Team Follow Stats & Followers
+- **Endpoint:** `GET /api/v1/team/follow-stats`
+- **Endpoint:** `GET /api/v1/team/followers`
+- **Access:** Public
+
+### 8. User Blocking & Unblocking
+- **Endpoint:** `POST /api/v1/users/{username}/block`
+- **Endpoint:** `DELETE /api/v1/users/{username}/block`
+- **Access:** Authenticated (`BearerAuth`)
+- **Behavior:** Mutual block enforcement. Blocking severs all existing follow relationships in both directions and cancels any pending requests.
+
+### 9. Private Account Follow Requests
+- **Endpoint:** `GET /api/v1/users/follow-requests` (List incoming requests)
+- **Endpoint:** `POST /api/v1/users/follow-requests/{id}/accept`
+- **Endpoint:** `POST /api/v1/users/follow-requests/{id}/reject`
+- **Access:** Authenticated (`BearerAuth`)
+
+---
+
+## Notifications Endpoints (`/api/v1/notifications`)
+
+### 1. List Notifications
+- **Endpoint:** `GET /api/v1/notifications`
+- **Access:** Authenticated (`BearerAuth`)
+- **Query Params:** `page` (default: 0), `size` (default: 20)
+- **Response:** Paginated array of notifications sorted newest-first.
+
+### 2. Unread Notification Count
+- **Endpoint:** `GET /api/v1/notifications/unread-count`
+- **Access:** Authenticated (`BearerAuth`)
+- **Response:** `{ "unreadCount": 3 }`
+
+### 3. Mark Notification as Read
+- **Endpoint:** `PATCH /api/v1/notifications/{id}/read`
+- **Access:** Authenticated (`BearerAuth`)
+
+### 4. Mark All Notifications as Read
+- **Endpoint:** `POST /api/v1/notifications/read-all`
+- **Access:** Authenticated (`BearerAuth`)
+
+---
+
+## Moderation & Safety Endpoints
+
+### 1. Report User / Profile
+- **Endpoint:** `POST /api/v1/users/{username}/report`
+- **Access:** Authenticated (`BearerAuth`)
+- **Payload:**
+  ```json
+  {
+    "reason": "HARASSMENT",
+    "details": "User behavior violates community safety guidelines",
+    "reportedPostId": null,
+    "reportedCommentId": null
+  }
+  ```
+
+---
+
 ## Status and Error Codes
 
 | HTTP Status | Meaning | Scenario |

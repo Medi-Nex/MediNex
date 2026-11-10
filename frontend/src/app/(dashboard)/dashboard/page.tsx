@@ -1,26 +1,46 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   Edit3,
+  Users,
+  Bell,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { useAuth } from "@/lib/auth-context";
+import { getUserFollowStats } from "@/lib/api/follow";
 
 export default function DashboardOverviewPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const [followStats, setFollowStats] = useState<{ followerCount: number; followingCount: number }>({
+    followerCount: 0,
+    followingCount: 0,
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
   }, [isLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (user) {
+      getUserFollowStats(user.username)
+        .then((stats) => {
+          setFollowStats({
+            followerCount: stats.followerCount,
+            followingCount: stats.followingCount,
+          });
+        })
+        .catch(() => {});
+    }
+  }, [user]);
 
   if (isLoading || !user) {
     return (
@@ -87,20 +107,23 @@ export default function DashboardOverviewPage() {
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Followers
               </span>
-              <div className="text-2xl font-extrabold text-medinex-text mt-1">0</div>
+              <div className="text-2xl font-extrabold text-medinex-text mt-1">{followStats.followerCount}</div>
               <span className="text-[10px] text-slate-500">Real Database Count</span>
             </CardBody>
           </Card>
 
-          <Card>
-            <CardBody className="p-5">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Following
-              </span>
-              <div className="text-2xl font-extrabold text-medinex-text mt-1">0</div>
-              <span className="text-[10px] text-slate-500">Accounts Followed</span>
-            </CardBody>
-          </Card>
+          <Link href="/dashboard/following">
+            <Card className="hover:border-teal-500/50 transition-colors cursor-pointer">
+              <CardBody className="p-5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                  Following
+                  <Users className="w-3.5 h-3.5 text-teal-600" />
+                </span>
+                <div className="text-2xl font-extrabold text-medinex-text mt-1">{followStats.followingCount}</div>
+                <span className="text-[10px] text-teal-600 font-medium">Manage Network &rarr;</span>
+              </CardBody>
+            </Card>
+          </Link>
 
           <Card>
             <CardBody className="p-5">
@@ -112,17 +135,18 @@ export default function DashboardOverviewPage() {
             </CardBody>
           </Card>
 
-          <Card>
-            <CardBody className="p-5">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Account Status
-              </span>
-              <div className="text-sm font-bold text-medinex-teal mt-2">{user.status}</div>
-              <span className="text-[10px] text-slate-500">
-                {user.emailVerified ? "Verified Member" : "Unverified"}
-              </span>
-            </CardBody>
-          </Card>
+          <Link href="/dashboard/notifications">
+            <Card className="hover:border-teal-500/50 transition-colors cursor-pointer">
+              <CardBody className="p-5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                  Notifications
+                  <Bell className="w-3.5 h-3.5 text-teal-600" />
+                </span>
+                <div className="text-sm font-bold text-medinex-teal mt-2">Active Stream</div>
+                <span className="text-[10px] text-teal-600 font-medium">View Alerts &rarr;</span>
+              </CardBody>
+            </Card>
+          </Link>
         </div>
 
         {/* Quick Action Cards */}

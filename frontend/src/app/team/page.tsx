@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Added missing import
 import {
   ArrowRight,
   UserCheck,
@@ -151,11 +152,25 @@ export default function TeamPage() {
               <Card key={member.id} hoverEffect className="flex flex-col justify-between">
                 <CardBody className="space-y-4">
                   {/* Top Bar with Avatar and Badge */}
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center font-bold text-lg text-medinex-deep shadow-inner">
+                  <div className="flex flex-col items-start gap-4">
+                    {/* বড় ছবির জায়গা */}
+                    <div className="w-full aspect-[4/4] md:aspect-[4/4.5] rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative">
+                      <span className="absolute inset-0 flex items-center justify-center font-bold text-6xl text-slate-300 z-0">
                         {member.username.replace("contributor-", "C")}
-                      </div>
+                      </span>
+                      <Image
+                        src={`/images/team/${member.username}.jpg`} // আপনার ছবিগুলো .jpg নাকি .png তা খেয়াল করে এক্সটেনশন পাল্টাবেন
+                        alt={member.fullName}
+                        fill
+                        className="object-cover object-top relative z-10"
+                        onError={(e) => {
+                          // যদি ছবি না পাওয়া যায়, তবে এই বক্সে ইনিশিয়াল (C01) দেখাবে
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between w-full">
                       <div>
                         <h3 className="font-bold text-base text-medinex-text leading-tight">
                           {member.fullName}
