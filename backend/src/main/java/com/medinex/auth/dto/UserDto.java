@@ -2,6 +2,7 @@ package com.medinex.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.medinex.user.entity.User;
+import com.medinex.user.entity.UserProfile;
 import com.medinex.user.model.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,10 +28,17 @@ public class UserDto {
     @JsonProperty("isTeamMember")
     private boolean isTeamMember;
 
+    @JsonProperty("isPublicVisible")
+    @Builder.Default
+    private boolean isPublicVisible = true;
+
     private List<String> roles;
     private Instant createdAt;
 
     public static UserDto fromEntity(User user) {
+        UserProfile profile = user.getProfile();
+        boolean publicVisible = profile == null || profile.isPublicVisible();
+
         return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -39,6 +47,7 @@ public class UserDto {
                 .status(user.getStatus())
                 .emailVerified(user.isEmailVerified())
                 .isTeamMember(user.isTeamMember())
+                .isPublicVisible(publicVisible)
                 .roles(user.getRoles().stream().map(r -> r.getName()).toList())
                 .createdAt(user.getCreatedAt())
                 .build();

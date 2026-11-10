@@ -132,6 +132,18 @@
 - **Access:** Authenticated (`Bearer <token>`)
 - **Response:** Current authenticated `UserDto`.
 
+### 9. Change Password
+- **Endpoint:** `POST /api/v1/auth/change-password`
+- **Access:** Authenticated (`Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "currentPassword": "CurrentPassword123!",
+    "newPassword": "BrandNewSecurePassword2026!"
+  }
+  ```
+- **Response:** HTTP `200 OK`. Re-hashes password with BCrypt, revokes all active refresh tokens for session security, and emits `PASSWORD_CHANGED` audit log.
+
 ---
 
 ## User & Profile Endpoints (`/api/v1/users`)
@@ -257,6 +269,7 @@
 ### 8. User Blocking & Unblocking
 - **Endpoint:** `POST /api/v1/users/{username}/block`
 - **Endpoint:** `DELETE /api/v1/users/{username}/block`
+- **Endpoint:** `GET /api/v1/users/blocks` (List blocked users for authenticated user)
 - **Access:** Authenticated (`BearerAuth`)
 - **Behavior:** Mutual block enforcement. Blocking severs all existing follow relationships in both directions and cancels any pending requests.
 

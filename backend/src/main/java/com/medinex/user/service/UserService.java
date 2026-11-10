@@ -50,6 +50,7 @@ public class UserService {
         if (request.getPortfolioUrl() != null) profile.setPortfolioUrl(request.getPortfolioUrl());
         if (request.getGithubUrl() != null) profile.setGithubUrl(request.getGithubUrl());
         if (request.getLinkedinUrl() != null) profile.setLinkedinUrl(request.getLinkedinUrl());
+        if (request.getIsPublicVisible() != null) profile.setPublicVisible(request.getIsPublicVisible());
 
         userProfileRepository.save(profile);
 

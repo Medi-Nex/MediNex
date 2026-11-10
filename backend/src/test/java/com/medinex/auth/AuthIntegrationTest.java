@@ -185,4 +185,63 @@ public class AuthIntegrationTest {
                 .andExpect(jsonPath("$.data.email", is("admin@medinex.health")))
                 .andExpect(jsonPath("$.data.roles", hasItem("ROLE_SUPER_ADMIN")));
     }
+
+    @Test
+    void shouldChangePasswordSuccessfully() throws Exception {
+        String suffix = System.currentTimeMillis() + "_pwd";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("pwd_user_" + suffix)
+                .email("pwd_user_" + suffix + "@medinex.health")
+                .fullName("Password Test User")
+                .password("OldSecurePass123!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(register)));
+
+        LoginRequest login = LoginRequest.builder()
+                .emailOrUsername("pwd_user_" + suffix)
+                .password("OldSecurePass123!")
+                .build();
+
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String token = objectMapper.readTree(loginResult.getResponse().getContentAsString())
+                .get("data").get("accessToken").asText();
+
+        ChangePasswordRequest changeReq = ChangePasswordRequest.builder()
+                .currentPassword("OldSecurePass123!")
+                .newPassword("BrandNewSecurePass2026!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/change-password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(changeReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+
+        // Login with old password fails
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isUnauthorized());
+
+        // Login with new password succeeds
+        LoginRequest newLogin = LoginRequest.builder()
+                .emailOrUsername("pwd_user_" + suffix)
+                .password("BrandNewSecurePass2026!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newLogin)))
+                .andExpect(status().isOk());
+    }
 }

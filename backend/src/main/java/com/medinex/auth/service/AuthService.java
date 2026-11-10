@@ -11,6 +11,7 @@ import com.medinex.auth.repository.PasswordResetTokenRepository;
 import com.medinex.auth.repository.RefreshTokenRepository;
 import com.medinex.common.email.EmailService;
 import com.medinex.common.exception.AppException;
+import com.medinex.common.exception.BadRequestException;
 import com.medinex.common.exception.ResourceNotFoundException;
 import com.medinex.common.security.JwtTokenProvider;
 import com.medinex.common.security.UserPrincipal;
@@ -263,6 +264,24 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         return UserDto.fromEntity(user);
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Current password does not match");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        refreshTokenRepository.revokeAllByUserId(user.getId());
+
+        recordAuditLog(user.getId(), user.getEmail(), "PASSWORD_CHANGED", "User", user.getId().toString());
+        log.info("[AUTH] User {} changed password successfully", user.getUsername());
     }
 
     private void recordAuditLog(UUID actorId, String email, String action, String targetEntity, String targetId) {

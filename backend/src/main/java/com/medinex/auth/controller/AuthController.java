@@ -85,4 +85,14 @@ public class AuthController {
         UserDto user = authService.getCurrentUser(principal.getId());
         return ApiResponse.ok(user, "Fetched authenticated profile");
     }
+
+    @PostMapping("/change-password")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Change password for authenticated user")
+    public ApiResponse<Void> changePassword(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(principal.getId(), request);
+        return ApiResponse.ok(null, "Password changed successfully");
+    }
 }

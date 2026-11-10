@@ -8,6 +8,7 @@ import {
   Edit3,
   Users,
   Bell,
+  Settings,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -69,7 +70,13 @@ export default function DashboardOverviewPage() {
             <p className="text-xs text-slate-400">@{user.username} &bull; {user.email}</p>
           </div>
 
-          <div>
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/settings">
+              <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5 border-emerald-800 text-slate-200 hover:text-white">
+                <Settings className="w-3.5 h-3.5 text-medinex-mint" />
+                <span>Settings</span>
+              </Button>
+            </Link>
             <Link href="/dashboard/profile">
               <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5">
                 <Edit3 className="w-3.5 h-3.5" />

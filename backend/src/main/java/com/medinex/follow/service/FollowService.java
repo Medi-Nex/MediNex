@@ -295,6 +295,20 @@ public class FollowService {
         log.info("[UNBLOCK] User {} unblocked user {}", blocker.getUsername(), blocked.getUsername());
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<BlockedUserDto> getBlockedUsers(UUID blockerId) {
+        return blockRepository.findByBlockerIdOrderByCreatedAtDesc(blockerId).stream()
+                .map(b -> BlockedUserDto.builder()
+                        .id(b.getId())
+                        .blockedUserId(b.getBlocked().getId())
+                        .username(b.getBlocked().getUsername())
+                        .fullName(b.getBlocked().getFullName())
+                        .reason(b.getReason())
+                        .blockedAt(b.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
     // --------------------------------------------------------------------------
     // FOLLOW REQUEST MANAGEMENT
     // --------------------------------------------------------------------------

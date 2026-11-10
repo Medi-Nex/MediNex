@@ -8,6 +8,7 @@ export interface AuthUser {
   status: "PENDING_VERIFICATION" | "ACTIVE" | "SUSPENDED" | "DELETED";
   emailVerified: boolean;
   isTeamMember: boolean;
+  isPublicVisible?: boolean;
   roles: string[];
   createdAt: string;
 }
@@ -47,6 +48,12 @@ export interface UpdateProfilePayload {
   portfolioUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
+  isPublicVisible?: boolean;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export const authApi = {
@@ -97,6 +104,12 @@ export const authApi = {
   updateProfile: (payload: UpdateProfilePayload) =>
     apiClient<AuthUser>("/users/profile", {
       method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  changePassword: (payload: ChangePasswordPayload) =>
+    apiClient<void>("/auth/change-password", {
+      method: "POST",
       body: JSON.stringify(payload),
     }),
 };

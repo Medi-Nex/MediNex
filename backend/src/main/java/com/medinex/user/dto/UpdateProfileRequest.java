@@ -1,5 +1,6 @@
 package com.medinex.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,4 +24,7 @@ public class UpdateProfileRequest {
     private String portfolioUrl;
     private String githubUrl;
     private String linkedinUrl;
+
+    @JsonProperty("isPublicVisible")
+    private Boolean isPublicVisible;
 }

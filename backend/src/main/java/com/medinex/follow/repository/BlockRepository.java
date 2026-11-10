@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ public interface BlockRepository extends JpaRepository<Block, UUID> {
     Optional<Block> findByBlockerIdAndBlockedId(UUID blockerId, UUID blockedId);
 
     void deleteByBlockerIdAndBlockedId(UUID blockerId, UUID blockedId);
+
+    List<Block> findByBlockerIdOrderByCreatedAtDesc(UUID blockerId);
 
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM Block b " +
             "WHERE (b.blocker.id = :userA AND b.blocked.id = :userB) " +

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Activity, ChevronRight, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, Bell, Users } from "lucide-react";
+import { Menu, X, Activity, ChevronRight, ShieldCheck, ShieldAlert, LogOut, LayoutDashboard, Bell, Users, Settings } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
@@ -138,6 +138,20 @@ export default function Navbar() {
                     aria-label="View following network"
                   >
                     <Users className="w-4 h-4" />
+                  </Link>
+
+                  <Link
+                    href="/dashboard/settings"
+                    className={clsx(
+                      "p-2 rounded-lg transition-colors",
+                      isDarkHero && !scrolled
+                        ? "text-slate-300 hover:text-white hover:bg-white/10"
+                        : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
+                    )}
+                    title="Account & Privacy Settings"
+                    aria-label="View settings"
+                  >
+                    <Settings className="w-4 h-4" />
                   </Link>
 
                   {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") && (

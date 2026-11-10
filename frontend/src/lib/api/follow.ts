@@ -152,3 +152,16 @@ export async function reportUser(
     body: JSON.stringify({ reason, details }),
   });
 }
+
+export interface BlockedUserDto {
+  id: string;
+  blockedUserId: string;
+  username: string;
+  fullName: string;
+  reason?: string;
+  blockedAt: string;
+}
+
+export async function getBlockedUsers(): Promise<BlockedUserDto[]> {
+  return apiClient<BlockedUserDto[]>("/users/blocks");
+}

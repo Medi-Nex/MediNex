@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -152,6 +153,15 @@ public class FollowController {
             @PathVariable String username) {
         followService.unblockUser(principal.getId(), username);
         return ApiResponse.ok(null, "User unblocked successfully");
+    }
+
+    @GetMapping("/api/v1/users/blocks")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get list of users blocked by authenticated user")
+    public ApiResponse<List<BlockedUserDto>> getBlockedUsers(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ApiResponse.ok(followService.getBlockedUsers(principal.getId()), "Blocked users retrieved successfully");
     }
 
     // --------------------------------------------------------------------------

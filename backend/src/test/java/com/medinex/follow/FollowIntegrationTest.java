@@ -248,4 +248,34 @@ public class FollowIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", containsString("active block")));
     }
+
+    @Test
+    void shouldListBlockedUsersAndUnblock() throws Exception {
+        String suffix = System.currentTimeMillis() + "_blq";
+        String tokenA = obtainAccessToken("user_a_" + suffix, "user_a_" + suffix + "@medinex.health", "Pass123456!");
+        String tokenB = obtainAccessToken("user_b_" + suffix, "user_b_" + suffix + "@medinex.health", "Pass123456!");
+
+        // Alice blocks Bob
+        mockMvc.perform(post("/api/v1/users/user_b_" + suffix + "/block")
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk());
+
+        // Alice retrieves her blocked users list
+        mockMvc.perform(get("/api/v1/users/blocks")
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].username").value("user_b_" + suffix));
+
+        // Alice unblocks Bob
+        mockMvc.perform(delete("/api/v1/users/user_b_" + suffix + "/block")
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk());
+
+        // List is now empty
+        mockMvc.perform(get("/api/v1/users/blocks")
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", empty()));
+    }
 }
