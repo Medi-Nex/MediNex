@@ -1,0 +1,172 @@
+name: medinex
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL Database Service
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16.4-alpine
+    container_name: medinex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-medinex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-medinex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medinex_secure_password_dev_only}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - medinex_pgdata:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - medinex-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medinex_user} -d ${POSTGRES_DB:-medinex_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ----------------------------------------------------------------------------
+  # Spring Boot 3.4 API Backend Service (Java 21)
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medinex-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-medinex_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-medinex_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-medinex_secure_password_dev_only}
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-4c56e297893a778c187e1451b5c2a13b4f59837651a2d48698ecb819f3900cb93ad9871f92e071e6d1f054817a1936c5}
+      JWT_ACCESS_TOKEN_EXPIRATION_MS: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:-900000}
+      JWT_REFRESH_TOKEN_EXPIRATION_MS: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:-604800000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend:3000}
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@medinex.health}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+      - "8081:8081"
+    networks:
+      - medinex-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8081/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ----------------------------------------------------------------------------
+  # Next.js 15 App Router Frontend Service
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medinex-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_APP_NAME: "MediNex"
+      NEXT_PUBLIC_APP_TAGLINE: "Healthcare Innovation. Connected Communities."
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}
+    ports:
+      - "3000:3000"
+    networks:
+      - medinex-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ----------------------------------------------------------------------------
+  # Local Email Testing Service (Mailpit)
+  # ----------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:v1.20
+    container_name: medinex-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP port
+    networks:
+      - medinex-network
+
+  # ----------------------------------------------------------------------------
+  # Optional Redis Cache Service (profile: cache)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2.5-alpine
+    container_name: medinex-redis
+    profiles: ["cache"]
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - medinex-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ----------------------------------------------------------------------------
+  # Optional Local S3 Storage (MinIO) (profile: storage)
+  # ----------------------------------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2024-08-03T04-33-23Z
+    container_name: medinex-minio
+    profiles: ["storage"]
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Web Console
+    volumes:
+      - medinex_minio_data:/data
+    networks:
+      - medinex-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+# ------------------------------------------------------------------------------
+# Persistent Named Volumes
+# ------------------------------------------------------------------------------
+volumes:
+  medinex_pgdata:
+    name: medinex_pgdata
+  medinex_minio_data:
+    name: medinex_minio_data
+
+# ------------------------------------------------------------------------------
+# Isolated Internal Network
+# ------------------------------------------------------------------------------
+networks:
+  medinex-network:
+    name: medinex-network
+    driver: bridge
