@@ -55,7 +55,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    @Operation(summary = "Verify account using email verification token")
+    @Operation(summary = "Verify account using email and 6-digit verification OTP")
     public ApiResponse<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
         authService.verifyEmail(request);
         return ApiResponse.ok(null, "Email verified successfully. You may now participate fully.");

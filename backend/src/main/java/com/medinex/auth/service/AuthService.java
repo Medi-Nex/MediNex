@@ -30,6 +30,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,7 +46,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final long RESEND_VERIFICATION_COOLDOWN_SECONDS = 120L;
+    private static final int OTP_EXPIRATION_MINUTES = 10;
+    private static final int MAX_OTP_FAILED_ATTEMPTS = 5;
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -190,24 +196,66 @@ public class AuthService {
         }
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = AppException.class)
     public void verifyEmail(VerifyEmailRequest request) {
-        String tokenHash = tokenProvider.hashToken(request.getToken().trim());
-        EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new AppException("Invalid or expired verification token", HttpStatus.BAD_REQUEST));
+        String email = request.getEmail().trim().toLowerCase();
+        String otp = request.getOtp().trim();
 
-        if (verificationToken.isExpired()) {
-            throw new AppException("Verification token has expired. Please request a new one.", HttpStatus.BAD_REQUEST);
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new AppException("Invalid or expired verification OTP", HttpStatus.BAD_REQUEST));
+
+        if (user.isEmailVerified() && user.getStatus() == UserStatus.ACTIVE) {
+            throw new AppException("Email address is already verified", HttpStatus.BAD_REQUEST);
         }
 
-        User user = verificationToken.getUser();
+        List<EmailVerificationToken> tokens = emailVerificationTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId());
+
+        if (tokens.isEmpty()) {
+            throw new AppException("Invalid or expired verification OTP", HttpStatus.BAD_REQUEST);
+        }
+
+        EmailVerificationToken latestToken = tokens.get(0);
+
+        if (latestToken.isExpired()) {
+            throw new AppException("Verification OTP has expired. Please request a new one.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (latestToken.getFailedAttempts() >= MAX_OTP_FAILED_ATTEMPTS) {
+            throw new AppException(
+                    "Too many failed attempts for this OTP. Please wait and request a new verification code.",
+                    HttpStatus.TOO_MANY_REQUESTS
+            );
+        }
+
+        String expectedHash = hashVerificationOtp(user.getId(), otp);
+        if (!MessageDigest.isEqual(
+                expectedHash.getBytes(StandardCharsets.UTF_8),
+                latestToken.getTokenHash().getBytes(StandardCharsets.UTF_8))) {
+            int updatedAttempts = latestToken.getFailedAttempts() + 1;
+            latestToken.setFailedAttempts(updatedAttempts);
+            emailVerificationTokenRepository.save(latestToken);
+
+            if (updatedAttempts >= MAX_OTP_FAILED_ATTEMPTS) {
+                throw new AppException(
+                        "Too many failed attempts for this OTP. Please wait and request a new verification code.",
+                        HttpStatus.TOO_MANY_REQUESTS
+                );
+            }
+            int remainingAttempts = MAX_OTP_FAILED_ATTEMPTS - updatedAttempts;
+            throw new AppException(
+                    "Invalid verification OTP. " + remainingAttempts + " attempt(s) remaining.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
         user.setEmailVerified(true);
         if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
             user.setStatus(UserStatus.ACTIVE);
         }
         userRepository.save(user);
 
-        emailVerificationTokenRepository.delete(verificationToken);
+        emailVerificationTokenRepository.deleteAll(tokens);
         recordAuditLog(user.getId(), user.getEmail(), "EMAIL_VERIFIED", "User", user.getId().toString());
     }
 
@@ -248,17 +296,22 @@ public class AuthService {
     }
 
     private void issueAndDispatchVerificationToken(User user) {
-        String rawToken = tokenProvider.generateRawRefreshToken().substring(0, 16);
-        String tokenHash = tokenProvider.hashToken(rawToken);
+        String rawOtp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
+        String tokenHash = hashVerificationOtp(user.getId(), rawOtp);
 
         EmailVerificationToken verificationToken = EmailVerificationToken.builder()
                 .user(user)
                 .tokenHash(tokenHash)
-                .expiresAt(Instant.now().plus(24, ChronoUnit.HOURS))
+                .expiresAt(Instant.now().plus(OTP_EXPIRATION_MINUTES, ChronoUnit.MINUTES))
+                .failedAttempts(0)
                 .build();
         emailVerificationTokenRepository.save(verificationToken);
 
-        emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), rawToken);
+        emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), rawOtp);
+    }
+
+    private String hashVerificationOtp(UUID userId, String otp) {
+        return tokenProvider.hashToken(userId.toString() + ":" + otp.trim());
     }
 
     @Transactional

@@ -11,9 +11,12 @@ import com.medinex.user.model.UserStatus;
 import com.medinex.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,6 +25,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@ExtendWith(OutputCaptureExtension.class)
 public class AuthIntegrationTest {
 
     @Autowired
@@ -302,5 +308,106 @@ public class AuthIntegrationTest {
         var updatedTokens = emailVerificationTokenRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
         assertEquals(1, updatedTokens.size());
         assertNotEquals(initialToken.getTokenHash(), updatedTokens.get(0).getTokenHash());
+    }
+
+    @Test
+    void shouldVerifyEmailWithSixDigitOtpAndRejectNonDigitFormat(CapturedOutput output) throws Exception {
+        String suffix = System.currentTimeMillis() + "_otp";
+        String email = "otp_" + suffix + "@medinex.health";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("otp_" + suffix)
+                .email(email)
+                .fullName("OTP Verification User")
+                .password("SecurePass2026!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isCreated());
+
+        String realOtp = extractOtpForEmail(output, email);
+
+        VerifyEmailRequest badFormat = VerifyEmailRequest.builder()
+                .email(email)
+                .otp("abc123")
+                .build();
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(badFormat)))
+                .andExpect(status().isBadRequest());
+
+        VerifyEmailRequest validReq = VerifyEmailRequest.builder()
+                .email(email)
+                .otp(realOtp)
+                .build();
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+
+        User verifiedUser = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        assertTrue(verifiedUser.isEmailVerified());
+        assertEquals(UserStatus.ACTIVE, verifiedUser.getStatus());
+    }
+
+    @Test
+    void shouldLockOtpAfterFiveFailedAttempts(CapturedOutput output) throws Exception {
+        String suffix = System.currentTimeMillis() + "_lock";
+        String email = "lock_" + suffix + "@medinex.health";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("lock_" + suffix)
+                .email(email)
+                .fullName("Lockout Test User")
+                .password("SecurePass2026!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isCreated());
+
+        String realOtp = extractOtpForEmail(output, email);
+        String wrongOtp = realOtp.equals("000000") ? "999999" : "000000";
+
+        VerifyEmailRequest wrongReq = VerifyEmailRequest.builder()
+                .email(email)
+                .otp(wrongOtp)
+                .build();
+
+        for (int attempt = 1; attempt <= 4; attempt++) {
+            mockMvc.perform(post("/api/v1/auth/verify-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(wrongReq)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("attempt(s) remaining")));
+        }
+
+        // 5th incorrect attempt locks the OTP
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wrongReq)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.message", containsString("Too many failed attempts")));
+
+        // Real OTP must also be rejected once locked
+        VerifyEmailRequest realReq = VerifyEmailRequest.builder()
+                .email(email)
+                .otp(realOtp)
+                .build();
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(realReq)))
+                .andExpect(status().isTooManyRequests());
+    }
+
+    private String extractOtpForEmail(CapturedOutput output, String email) {
+        Pattern pattern = Pattern.compile("Dispatching verification OTP to " + Pattern.quote(email) + " \\(OTP: (\\d{6})\\)");
+        Matcher matcher = pattern.matcher(output.getOut());
+        assertTrue(matcher.find(), "Expected 6-digit OTP log entry for " + email);
+        return matcher.group(1);
     }
 }

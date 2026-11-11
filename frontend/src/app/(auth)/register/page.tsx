@@ -79,13 +79,13 @@ export default function RegisterPage() {
                 </div>
                 <h2 className="text-lg font-bold text-medinex-text">Registration Successful!</h2>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  We have dispatched a verification code to <strong>{email}</strong>.
-                  Redirecting you to the verification page...
+                  We have dispatched a 6-digit verification OTP to <strong>{email}</strong>.
+                  Redirecting you to the OTP verification page...
                 </p>
                 <div className="pt-2">
-                  <Link href={`/verify-email?email=${encodeURIComponent(email.trim())}`}>
+                  <Link href={`/verify-email?email=${encodeURIComponent(email.trim())}&sent=1`}>
                     <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5">
-                      <span>Enter Verification Code / OTP</span>
+                      <span>Enter 6-Digit OTP</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   </Link>

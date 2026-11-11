@@ -31,11 +31,11 @@ public class EmailService {
     private boolean smtpAuth;
 
     @Async
-    public void sendVerificationEmail(String recipientEmail, String recipientName, String rawToken) {
-        log.info("[EMAIL SERVICE] Dispatching verification token to {} (Token: {})", recipientEmail, rawToken);
-        sendEmail(recipientEmail, "Verify your MediNex Account",
-                String.format("Hello %s,\n\nWelcome to MediNex! Please verify your community account with this verification code/token:\n\n%s\n\nEnter this token on the MediNex Verify Email page. It will expire in 24 hours.\n\nBest regards,\nMediNex Team",
-                        recipientName, rawToken));
+    public void sendVerificationEmail(String recipientEmail, String recipientName, String rawOtp) {
+        log.info("[EMAIL SERVICE] Dispatching verification OTP to {} (OTP: {})", recipientEmail, rawOtp);
+        sendEmail(recipientEmail, "Your MediNex Verification Code (OTP)",
+                String.format("Hello %s,\n\nWelcome to MediNex! Your 6-digit email verification OTP is:\n\n%s\n\nEnter this 6-digit code with your email on the MediNex Verify Email page. It expires in 10 minutes and locks after 5 incorrect attempts.\n\nBest regards,\nMediNex Team",
+                        recipientName, rawOtp));
     }
 
     @Async

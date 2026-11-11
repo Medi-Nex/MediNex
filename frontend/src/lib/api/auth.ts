@@ -81,10 +81,10 @@ export const authApi = {
       body: JSON.stringify({ refreshToken }),
     }),
 
-  verifyEmail: (token: string) =>
+  verifyEmail: (email: string, otp: string) =>
     apiClient<void>("/auth/verify-email", {
       method: "POST",
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ email, otp }),
     }),
 
   resendVerification: (email: string) =>

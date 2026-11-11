@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Activity, MailCheck, CheckCircle2, AlertCircle, RotateCw, Clock } from "lucide-react";
+import { Activity, MailCheck, CheckCircle2, AlertCircle, RotateCw, Clock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { authApi } from "@/lib/api/auth";
@@ -23,7 +23,7 @@ function VerifyEmailContent() {
   const justSent = searchParams.get("sent") === "1";
 
   const [emailInput, setEmailInput] = useState(initialEmail);
-  const [tokenInput, setTokenInput] = useState("");
+  const [otpInput, setOtpInput] = useState("");
   const [verified, setVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -72,13 +72,16 @@ function VerifyEmailContent() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tokenInput.trim()) return;
+    const cleanEmail = emailInput.trim();
+    const cleanOtp = otpInput.replace(/\D/g, "").slice(0, 6);
+    if (!cleanEmail || cleanOtp.length !== 6) return;
 
     setIsLoading(true);
     setErrorMessage(null);
+    setResendSuccessMessage(null);
 
     try {
-      await authApi.verifyEmail(tokenInput.trim());
+      await authApi.verifyEmail(cleanEmail, cleanOtp);
       setVerified(true);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -86,7 +89,7 @@ function VerifyEmailContent() {
       } else if (err instanceof Error) {
         setErrorMessage(err.message);
       } else {
-        setErrorMessage("Failed to verify email. Token may be invalid or expired.");
+        setErrorMessage("Failed to verify email. OTP may be invalid or expired.");
       }
     } finally {
       setIsLoading(false);
@@ -103,9 +106,10 @@ function VerifyEmailContent() {
 
     try {
       await authApi.resendVerification(cleanEmail);
+      setOtpInput("");
       startCooldownForEmail(cleanEmail, RESEND_COOLDOWN_SECONDS);
       setResendSuccessMessage(
-        `A new verification code has been dispatched from medinexbd.noreply@gmail.com to ${cleanEmail}.`
+        `A new 6-digit verification OTP has been dispatched from medinexbd.noreply@gmail.com to ${cleanEmail}.`
       );
     } catch (err) {
       if (err instanceof ApiError) {
@@ -117,7 +121,7 @@ function VerifyEmailContent() {
       } else if (err instanceof Error) {
         setErrorMessage(err.message);
       } else {
-        setErrorMessage("Failed to resend verification email. Please try again shortly.");
+        setErrorMessage("Failed to resend verification OTP. Please try again shortly.");
       }
     } finally {
       setIsResending(false);
@@ -136,9 +140,9 @@ function VerifyEmailContent() {
               Medi<span className="text-medinex-teal">Nex</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-medinex-text">Email Verification</h1>
+          <h1 className="text-2xl font-bold text-medinex-text">OTP Email Verification</h1>
           <p className="text-xs text-medinex-muted">
-            Confirm your email address to activate your community posting and following privileges.
+            Enter the 6-digit OTP code sent to your email to activate your community account.
           </p>
         </div>
 
@@ -178,41 +182,61 @@ function VerifyEmailContent() {
                 <div className="p-3 bg-emerald-50 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
                   <MailCheck className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
                   <span>
-                    A verification code was sent from <strong>medinexbd.noreply@gmail.com</strong> to{" "}
-                    <strong>{emailInput.trim() || "your registered address"}</strong>. Please check your inbox (and spam folder) and enter it below.
+                    A 6-digit OTP was sent from <strong>medinexbd.noreply@gmail.com</strong> to{" "}
+                    <strong>{emailInput.trim() || "your registered address"}</strong>. Valid for 10 minutes (max 5 attempts). Check inbox or spam folder.
                   </span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Verification Code / Token
+                    Registered Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      required
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    6-Digit OTP Code
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    pattern="\d{6}"
                     required
                     autoFocus
-                    value={tokenInput}
-                    onChange={(e) => setTokenInput(e.target.value)}
-                    placeholder="Enter verification code from email"
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal text-center tracking-widest font-mono text-sm"
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal text-center tracking-[0.45em] font-mono text-lg font-bold"
                   />
                 </div>
 
-                <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-                  Verify Email &amp; Activate Account
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full"
+                  disabled={!emailInput.trim() || otpInput.length !== 6}
+                  isLoading={isLoading}
+                >
+                  Verify OTP &amp; Activate Account
                 </Button>
 
-                <div className="pt-4 border-t border-slate-100 space-y-2.5">
+                <div className="pt-4 border-t border-slate-100 space-y-2">
                   <p className="text-[11px] font-semibold text-slate-600">
-                    Didn&apos;t receive the code? Resend verification email (2-minute cooldown):
+                    Didn&apos;t receive the OTP or code expired? Wait 2 minutes to resend:
                   </p>
-                  <input
-                    type="email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="Enter your registered email address"
-                    className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                  />
                   <Button
                     type="button"
                     variant="outline"
@@ -225,12 +249,12 @@ function VerifyEmailContent() {
                     {cooldownSeconds > 0 ? (
                       <>
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Resend Code in {formatCountdown(cooldownSeconds)}</span>
+                        <span>Resend OTP in {formatCountdown(cooldownSeconds)}</span>
                       </>
                     ) : (
                       <>
                         <RotateCw className="w-3.5 h-3.5" />
-                        <span>Resend Verification Code</span>
+                        <span>Resend Verification OTP</span>
                       </>
                     )}
                   </Button>
@@ -255,7 +279,7 @@ export default function VerifyEmailPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-medinex-light px-4 py-16">
-          <div className="text-xs text-medinex-muted">Loading verification page...</div>
+          <div className="text-xs text-medinex-muted">Loading OTP verification page...</div>
         </div>
       }
     >
