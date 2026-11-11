@@ -12,6 +12,7 @@ import com.medinex.notification.service.NotificationService;
 import com.medinex.user.entity.User;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserRepository;
+import com.medinex.user.service.AvatarUrlHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -390,12 +391,16 @@ public class CommunityService {
                         .build())
                 .collect(Collectors.toList());
 
+        String authorAvatarUrl = profile != null ? profile.getAvatarUrl() : null;
+
         return PostDto.builder()
                 .id(post.getId())
                 .authorId(author.getId().toString())
                 .authorUsername(author.getUsername())
                 .authorFullName(author.getFullName())
-                .authorAvatarUrl(profile != null ? profile.getAvatarUrl() : null)
+                .authorAvatarUrl(authorAvatarUrl)
+                .authorAvatarSmUrl(AvatarUrlHelper.deriveVariant(authorAvatarUrl, AvatarUrlHelper.VARIANT_SM))
+                .authorAvatarLgUrl(AvatarUrlHelper.deriveVariant(authorAvatarUrl, AvatarUrlHelper.VARIANT_LG))
                 .authorDesignation(profile != null ? profile.getDesignation() : null)
                 .isAuthorVerified(profile != null && profile.isVerifiedContributor())
                 .content(post.getContent())
@@ -421,6 +426,8 @@ public class CommunityService {
                 commentLikeRepository.existsByCommentIdAndUserId(comment.getId(), currentUserId);
         boolean isOwner = currentUserId != null && author.getId().equals(currentUserId);
 
+        String authorAvatarUrl = profile != null ? profile.getAvatarUrl() : null;
+
         return CommentDto.builder()
                 .id(comment.getId())
                 .postId(comment.getPost().getId())
@@ -428,7 +435,9 @@ public class CommunityService {
                 .authorId(author.getId().toString())
                 .authorUsername(author.getUsername())
                 .authorFullName(author.getFullName())
-                .authorAvatarUrl(profile != null ? profile.getAvatarUrl() : null)
+                .authorAvatarUrl(authorAvatarUrl)
+                .authorAvatarSmUrl(AvatarUrlHelper.deriveVariant(authorAvatarUrl, AvatarUrlHelper.VARIANT_SM))
+                .authorAvatarLgUrl(AvatarUrlHelper.deriveVariant(authorAvatarUrl, AvatarUrlHelper.VARIANT_LG))
                 .isAuthorVerified(profile != null && profile.isVerifiedContributor())
                 .content(comment.getContent())
                 .likesCount(comment.getLikesCount())

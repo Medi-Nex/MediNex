@@ -7,6 +7,7 @@ import com.medinex.team.entity.TeamMember;
 import com.medinex.team.repository.TeamMemberRepository;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserProfileRepository;
+import com.medinex.user.service.AvatarUrlHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -82,6 +83,7 @@ public class TeamController {
 
     private TeamMemberDto mapToDto(TeamMember member) {
         UserProfile profile = userProfileRepository.findByUserId(member.getUser().getId()).orElse(null);
+        String avatarUrl = profile != null ? profile.getAvatarUrl() : null;
 
         return TeamMemberDto.builder()
                 .id(member.getId().toString())
@@ -96,7 +98,9 @@ public class TeamController {
                 .portfolioUrl(profile != null ? profile.getPortfolioUrl() : null)
                 .githubUrl(profile != null ? profile.getGithubUrl() : null)
                 .linkedinUrl(profile != null ? profile.getLinkedinUrl() : null)
-                .avatarUrl(profile != null ? profile.getAvatarUrl() : null)
+                .avatarUrl(avatarUrl)
+                .avatarSmUrl(AvatarUrlHelper.deriveVariant(avatarUrl, AvatarUrlHelper.VARIANT_SM))
+                .avatarLgUrl(AvatarUrlHelper.deriveVariant(avatarUrl, AvatarUrlHelper.VARIANT_LG))
                 .isLead(member.isLead())
                 .isPlaceholder(member.isPlaceholder())
                 .publicVisibility(profile == null || profile.isPublicVisible())

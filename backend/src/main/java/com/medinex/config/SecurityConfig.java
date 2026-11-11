@@ -81,6 +81,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/**",
                                 "/api/v1/public/**"
                         ).permitAll()
+                        // Public static media uploads (multi-resolution profile avatars)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/uploads/**").permitAll()
                         // Public project read endpoints: GET is public, write is restricted to admins
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/projects/**").permitAll()
                         .requestMatchers("/api/v1/projects/**").hasAnyRole("SUPER_ADMIN", "ADMIN")

@@ -48,8 +48,8 @@ COPY --from=builder /build/target/spring-boot-loader/ ./
 COPY --from=builder /build/target/snapshot-dependencies/ ./
 COPY --from=builder /build/target/application/ ./
 
-# Set file ownership to non-root user
-RUN chown -R appuser:appgroup /app
+# Set file ownership to non-root user and prepare persistent uploads folder
+RUN mkdir -p /app/uploads && chown -R appuser:appgroup /app /app/uploads
 
 # Switch to non-root user
 USER appuser:appgroup

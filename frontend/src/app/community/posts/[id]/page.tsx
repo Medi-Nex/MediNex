@@ -25,6 +25,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getUserProfileHref } from "@/lib/media";
 import {
   getPostById,
   getPostComments,
@@ -314,13 +316,20 @@ export default function SinglePostPage({ params }: PostPageProps) {
             {/* Author Header */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-teal-500 to-emerald-700 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
-                  {post.authorFullName ? post.authorFullName.slice(0, 2).toUpperCase() : "MX"}
-                </div>
+                <UserAvatar
+                  src={post.authorAvatarUrl}
+                  smSrc={post.authorAvatarSmUrl}
+                  lgSrc={post.authorAvatarLgUrl}
+                  fullName={post.authorFullName}
+                  username={post.authorUsername}
+                  size="md"
+                  clickable
+                  className="w-11 h-11"
+                />
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <Link
-                      href={`/team/${post.authorUsername}`}
+                      href={getUserProfileHref(post.authorUsername)}
                       className="font-bold text-sm text-medinex-text hover:text-medinex-teal hover:underline"
                     >
                       {post.authorFullName}
@@ -562,20 +571,32 @@ export default function SinglePostPage({ params }: PostPageProps) {
                   <CardBody className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center justify-center">
-                          {comment.authorFullName ? comment.authorFullName.slice(0, 2).toUpperCase() : "MX"}
-                        </div>
+                        <UserAvatar
+                          src={comment.authorAvatarUrl}
+                          smSrc={comment.authorAvatarSmUrl}
+                          lgSrc={comment.authorAvatarLgUrl}
+                          fullName={comment.authorFullName}
+                          username={comment.authorUsername}
+                          size="sm"
+                          clickable
+                        />
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-xs text-medinex-text">
+                            <Link
+                              href={getUserProfileHref(comment.authorUsername)}
+                              className="font-semibold text-xs text-medinex-text hover:text-medinex-teal hover:underline"
+                            >
                               {comment.authorFullName}
-                            </span>
+                            </Link>
                             {comment.isAuthorVerified && (
                               <ShieldCheck className="w-3.5 h-3.5 text-medinex-teal" />
                             )}
-                            <span className="text-[11px] font-mono text-medinex-teal">
+                            <Link
+                              href={getUserProfileHref(comment.authorUsername)}
+                              className="text-[11px] font-mono text-medinex-teal hover:underline"
+                            >
                               @{comment.authorUsername}
-                            </span>
+                            </Link>
                           </div>
                           <span className="text-[10px] text-slate-400">
                             {new Date(comment.createdAt).toLocaleString()}
@@ -626,13 +647,28 @@ export default function SinglePostPage({ params }: PostPageProps) {
                         {comment.replies.map((reply) => (
                           <div key={reply.id} className="p-2.5 rounded-xl bg-slate-50 space-y-1">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-semibold text-xs text-medinex-text">
+                              <div className="flex items-center gap-2">
+                                <UserAvatar
+                                  src={reply.authorAvatarUrl}
+                                  smSrc={reply.authorAvatarSmUrl}
+                                  lgSrc={reply.authorAvatarLgUrl}
+                                  fullName={reply.authorFullName}
+                                  username={reply.authorUsername}
+                                  size="xs"
+                                  clickable
+                                />
+                                <Link
+                                  href={getUserProfileHref(reply.authorUsername)}
+                                  className="font-semibold text-xs text-medinex-text hover:text-medinex-teal transition-colors"
+                                >
                                   {reply.authorFullName}
-                                </span>
-                                <span className="text-[10px] font-mono text-medinex-teal">
+                                </Link>
+                                <Link
+                                  href={getUserProfileHref(reply.authorUsername)}
+                                  className="text-[10px] font-mono text-medinex-teal hover:underline"
+                                >
                                   @{reply.authorUsername}
-                                </span>
+                                </Link>
                                 <span className="text-[10px] text-slate-400">
                                   &bull; {new Date(reply.createdAt).toLocaleDateString()}
                                 </span>

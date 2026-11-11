@@ -28,4 +28,5 @@ public class NotificationDto {
     private String actorUsername;
     private String actorFullName;
     private String actorAvatarUrl;
+    private String actorAvatarSmUrl;
 }

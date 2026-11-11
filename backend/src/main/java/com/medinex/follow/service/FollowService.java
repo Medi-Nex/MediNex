@@ -13,6 +13,7 @@ import com.medinex.team.repository.TeamRepository;
 import com.medinex.user.entity.User;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserRepository;
+import com.medinex.user.service.AvatarUrlHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -387,13 +388,17 @@ public class FollowService {
         boolean isFollowing = currentUserId != null &&
                 userFollowRepository.existsByFollowerIdAndFollowingId(currentUserId, user.getId());
 
+        String avatarUrl = profile != null ? profile.getAvatarUrl() : null;
+
         return FollowUserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .headline(profile != null ? profile.getHeadline() : null)
                 .designation(profile != null ? profile.getDesignation() : null)
-                .avatarUrl(profile != null ? profile.getAvatarUrl() : null)
+                .avatarUrl(avatarUrl)
+                .avatarSmUrl(AvatarUrlHelper.deriveVariant(avatarUrl, AvatarUrlHelper.VARIANT_SM))
+                .avatarLgUrl(AvatarUrlHelper.deriveVariant(avatarUrl, AvatarUrlHelper.VARIANT_LG))
                 .isVerifiedContributor(profile != null && profile.isVerifiedContributor())
                 .isFollowing(isFollowing)
                 .followedAt(followedAt)

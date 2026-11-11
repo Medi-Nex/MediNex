@@ -20,6 +20,8 @@ public class FollowUserDto {
     private String headline;
     private String designation;
     private String avatarUrl;
+    private String avatarSmUrl;
+    private String avatarLgUrl;
 
     @JsonProperty("isVerifiedContributor")
     private boolean isVerifiedContributor;

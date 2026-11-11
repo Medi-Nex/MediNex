@@ -16,6 +16,8 @@ export interface PostDto {
   authorUsername: string;
   authorFullName: string;
   authorAvatarUrl?: string;
+  authorAvatarSmUrl?: string;
+  authorAvatarLgUrl?: string;
   authorDesignation?: string;
   isAuthorVerified: boolean;
   content: string;
@@ -40,6 +42,8 @@ export interface CommentDto {
   authorUsername: string;
   authorFullName: string;
   authorAvatarUrl?: string;
+  authorAvatarSmUrl?: string;
+  authorAvatarLgUrl?: string;
   isAuthorVerified: boolean;
   content: string;
   likesCount: number;

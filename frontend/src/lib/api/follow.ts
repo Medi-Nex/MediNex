@@ -22,6 +22,8 @@ export interface FollowUserDto {
   headline?: string;
   designation?: string;
   avatarUrl?: string;
+  avatarSmUrl?: string;
+  avatarLgUrl?: string;
   isVerifiedContributor: boolean;
   isFollowing: boolean;
   followedAt?: string;
@@ -44,8 +46,10 @@ export interface FollowRequestDto {
     id: string;
     username: string;
     fullName: string;
-    email: string;
+    email?: string;
     avatarUrl?: string;
+    avatarSmUrl?: string;
+    avatarLgUrl?: string;
     designation?: string;
   };
   status: string;

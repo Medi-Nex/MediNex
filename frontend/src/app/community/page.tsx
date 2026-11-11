@@ -23,7 +23,9 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useAuth } from "@/lib/auth-context";
+import { getUserProfileHref } from "@/lib/media";
 import {
   getCommunityFeed,
   createPost,
@@ -424,9 +426,16 @@ export default function CommunityFeedPage() {
                   </div>
                 )}
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#063D38] to-[#0D9488] text-white flex items-center justify-center font-bold text-sm shrink-0">
-                    {user.fullName.charAt(0)}
-                  </div>
+                  <UserAvatar
+                    src={user.avatarUrl}
+                    smSrc={user.avatarSmUrl}
+                    lgSrc={user.avatarLgUrl}
+                    fullName={user.fullName}
+                    username={user.username}
+                    size="md"
+                    shape="rounded"
+                    clickable
+                  />
                   <div className="flex-1 space-y-2">
                     <textarea
                       rows={3}
@@ -611,22 +620,20 @@ export default function CommunityFeedPage() {
                 {/* Author row */}
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-sm text-[#063D38] shrink-0">
-                      {post.authorAvatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={post.authorAvatarUrl}
-                          alt={post.authorFullName}
-                          className="w-full h-full object-cover rounded-xl"
-                        />
-                      ) : (
-                        post.authorFullName?.charAt(0) || post.authorUsername.charAt(0).toUpperCase()
-                      )}
-                    </div>
+                    <UserAvatar
+                      src={post.authorAvatarUrl}
+                      smSrc={post.authorAvatarSmUrl}
+                      lgSrc={post.authorAvatarLgUrl}
+                      fullName={post.authorFullName || post.authorUsername}
+                      username={post.authorUsername}
+                      size="md"
+                      shape="rounded"
+                      clickable
+                    />
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
-                          href={`/team/${post.authorUsername}`}
+                          href={getUserProfileHref(post.authorUsername)}
                           className="font-bold text-sm text-slate-900 hover:text-[#0D9488] transition-colors"
                         >
                           {post.authorFullName || post.authorUsername}
@@ -648,7 +655,13 @@ export default function CommunityFeedPage() {
                         )}
                       </div>
                       <p className="text-xs text-slate-500">
-                        @{post.authorUsername} &bull; {new Date(post.createdAt).toLocaleDateString()}
+                        <Link
+                          href={getUserProfileHref(post.authorUsername)}
+                          className="hover:text-[#0D9488] font-mono transition-colors"
+                        >
+                          @{post.authorUsername}
+                        </Link>{" "}
+                        &bull; {new Date(post.createdAt).toLocaleDateString()}
                         {post.authorDesignation && (
                           <span className="hidden sm:inline"> &bull; {post.authorDesignation}</span>
                         )}
@@ -830,21 +843,37 @@ export default function CommunityFeedPage() {
                           <div key={c.id} className="pt-2.5 space-y-2">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-start gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-xs text-[#063D38] shrink-0 mt-0.5">
-                                  {c.authorFullName?.charAt(0) || c.authorUsername.charAt(0)}
-                                </div>
+                                <UserAvatar
+                                  src={c.authorAvatarUrl}
+                                  smSrc={c.authorAvatarSmUrl}
+                                  lgSrc={c.authorAvatarLgUrl}
+                                  fullName={c.authorFullName || c.authorUsername}
+                                  username={c.authorUsername}
+                                  size="sm"
+                                  clickable
+                                  className="mt-0.5"
+                                />
                                 <div className="space-y-0.5">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-bold text-xs text-slate-900">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <Link
+                                      href={getUserProfileHref(c.authorUsername)}
+                                      className="font-bold text-xs text-slate-900 hover:text-[#0D9488] transition-colors"
+                                    >
                                       {c.authorFullName || c.authorUsername}
-                                    </span>
+                                    </Link>
                                     {c.isAuthorVerified && (
                                       <span title="Verified Contributor">
                                         <ShieldCheck className="w-3 h-3 text-[#0D9488]" />
                                       </span>
                                     )}
+                                    <Link
+                                      href={getUserProfileHref(c.authorUsername)}
+                                      className="text-[10px] font-mono text-slate-400 hover:text-[#0D9488] transition-colors"
+                                    >
+                                      @{c.authorUsername}
+                                    </Link>
                                     <span className="text-[10px] text-slate-400">
-                                      {new Date(c.createdAt).toLocaleDateString()}
+                                      &bull; {new Date(c.createdAt).toLocaleDateString()}
                                     </span>
                                   </div>
                                   <p className="text-xs text-slate-700 leading-relaxed">{c.content}</p>
@@ -890,12 +919,31 @@ export default function CommunityFeedPage() {
                               <div className="pl-9 space-y-2 pt-1.5 border-l-2 border-slate-100 ml-4">
                                 {c.replies.map((reply) => (
                                   <div key={reply.id} className="flex items-start gap-2">
-                                    <CornerDownRight className="w-3 h-3 text-slate-300 mt-1 shrink-0" />
+                                    <CornerDownRight className="w-3 h-3 text-slate-300 mt-1.5 shrink-0" />
+                                    <UserAvatar
+                                      src={reply.authorAvatarUrl}
+                                      smSrc={reply.authorAvatarSmUrl}
+                                      lgSrc={reply.authorAvatarLgUrl}
+                                      fullName={reply.authorFullName || reply.authorUsername}
+                                      username={reply.authorUsername}
+                                      size="xs"
+                                      clickable
+                                      className="mt-0.5"
+                                    />
                                     <div className="flex-1 space-y-0.5">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="font-bold text-[11px] text-slate-900">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <Link
+                                          href={getUserProfileHref(reply.authorUsername)}
+                                          className="font-bold text-[11px] text-slate-900 hover:text-[#0D9488] transition-colors"
+                                        >
                                           {reply.authorFullName || reply.authorUsername}
-                                        </span>
+                                        </Link>
+                                        <Link
+                                          href={getUserProfileHref(reply.authorUsername)}
+                                          className="text-[10px] font-mono text-slate-400 hover:text-[#0D9488] transition-colors"
+                                        >
+                                          @{reply.authorUsername}
+                                        </Link>
                                         <span className="text-[9px] text-slate-400">
                                           {new Date(reply.createdAt).toLocaleDateString()}
                                         </span>

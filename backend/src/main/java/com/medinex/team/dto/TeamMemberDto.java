@@ -27,6 +27,8 @@ public class TeamMemberDto {
     private String githubUrl;
     private String linkedinUrl;
     private String avatarUrl;
+    private String avatarSmUrl;
+    private String avatarLgUrl;
 
     @JsonProperty("isLead")
     private boolean isLead;

@@ -7,6 +7,7 @@ import { Menu, X, Activity, ChevronRight, ShieldCheck, ShieldAlert, LogOut, Layo
 import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { getUnreadNotificationCount } from "@/lib/api/notifications";
 
 const NAV_LINKS = [
@@ -163,6 +164,29 @@ export default function Navbar() {
                     </Link>
                   )}
 
+                  <Link
+                    href={`/users/${encodeURIComponent(user.username)}`}
+                    className={clsx(
+                      "inline-flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full border transition-colors",
+                      isDarkHero && !scrolled
+                        ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                        : "border-medinex-border bg-slate-50 text-medinex-text hover:border-medinex-teal/60"
+                    )}
+                    title={`View @${user.username} public profile`}
+                  >
+                    <UserAvatar
+                      src={user.avatarUrl}
+                      smSrc={user.avatarSmUrl}
+                      fullName={user.fullName}
+                      username={user.username}
+                      size="sm"
+                      className="border-0 shadow-none"
+                    />
+                    <span className="text-xs font-semibold max-w-[110px] truncate">
+                      {user.username}
+                    </span>
+                  </Link>
+
                   <Link href="/dashboard">
                     <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5">
                       <LayoutDashboard className="w-3.5 h-3.5 text-medinex-teal" />
@@ -254,6 +278,22 @@ export default function Navbar() {
               <div className="pt-4 border-t border-slate-100">
                 {isAuthenticated && user ? (
                   <div className="space-y-2">
+                    <Link
+                      href={`/users/${encodeURIComponent(user.username)}`}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200"
+                    >
+                      <UserAvatar
+                        src={user.avatarUrl}
+                        smSrc={user.avatarSmUrl}
+                        fullName={user.fullName}
+                        username={user.username}
+                        size="sm"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">{user.fullName}</p>
+                        <p className="text-[11px] font-mono text-medinex-teal truncate">@{user.username}</p>
+                      </div>
+                    </Link>
                     <div className="grid grid-cols-2 gap-2 pb-2">
                       <Link
                         href="/dashboard/notifications"

@@ -60,11 +60,14 @@ services:
       MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-medinexbd.noreply@gmail.com}
       MAIL_FROM_NAME: ${MAIL_FROM_NAME:-MediNex Platform}
+      UPLOAD_DIR: /app/uploads
       REDIS_HOST: redis
       REDIS_PORT: 6379
     ports:
       - "${SERVER_PORT:-8082}:8080"
       - "${MANAGEMENT_SERVER_PORT:-8083}:8081"
+    volumes:
+      - medinex_uploads:/app/uploads
     networks:
       - medinex-network
     healthcheck:
@@ -170,6 +173,8 @@ services:
 volumes:
   medinex_pgdata:
     name: medinex_pgdata
+  medinex_uploads:
+    name: medinex_uploads
   medinex_minio_data:
     name: medinex_minio_data
 

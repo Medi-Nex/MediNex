@@ -10,6 +10,7 @@ import com.medinex.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -19,12 +20,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final AvatarImageService avatarImageService;
 
     @Transactional(readOnly = true)
     public UserDto getUserByUsername(String username) {
         User user = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
-        return UserDto.fromEntity(user);
+        return UserDto.fromPublicEntity(user);
     }
 
     @Transactional
@@ -37,8 +39,7 @@ public class UserService {
             userRepository.save(user);
         }
 
-        UserProfile profile = userProfileRepository.findByUserId(userId)
-                .orElseGet(() -> UserProfile.builder().user(user).build());
+        UserProfile profile = getOrCreateProfile(user);
 
         if (request.getHeadline() != null) profile.setHeadline(request.getHeadline());
         if (request.getDesignation() != null) profile.setDesignation(request.getDesignation());
@@ -52,8 +53,42 @@ public class UserService {
         if (request.getLinkedinUrl() != null) profile.setLinkedinUrl(request.getLinkedinUrl());
         if (request.getIsPublicVisible() != null) profile.setPublicVisible(request.getIsPublicVisible());
 
-        userProfileRepository.save(profile);
+        UserProfile savedProfile = userProfileRepository.save(profile);
+        user.setProfile(savedProfile);
 
         return UserDto.fromEntity(user);
+    }
+
+    @Transactional
+    public UserDto uploadAvatar(UUID userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        UserProfile profile = getOrCreateProfile(user);
+        AvatarImageService.AvatarVariants variants = avatarImageService.processAndStoreAvatar(userId, file);
+        profile.setAvatarUrl(variants.mdUrl());
+        UserProfile savedProfile = userProfileRepository.save(profile);
+        user.setProfile(savedProfile);
+
+        return UserDto.fromEntity(user);
+    }
+
+    @Transactional
+    public UserDto removeAvatar(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        avatarImageService.deleteAvatarsForUser(userId);
+        UserProfile profile = getOrCreateProfile(user);
+        profile.setAvatarUrl(null);
+        UserProfile savedProfile = userProfileRepository.save(profile);
+        user.setProfile(savedProfile);
+
+        return UserDto.fromEntity(user);
+    }
+
+    private UserProfile getOrCreateProfile(User user) {
+        return userProfileRepository.findByUserId(user.getId())
+                .orElseGet(() -> UserProfile.builder().user(user).isPublicVisible(true).build());
     }
 }

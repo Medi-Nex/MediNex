@@ -9,12 +9,15 @@ import {
   Users,
   Bell,
   Settings,
+  ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useAuth } from "@/lib/auth-context";
 import { getUserFollowStats } from "@/lib/api/follow";
+import { getUserProfileHref } from "@/lib/media";
 
 export default function DashboardOverviewPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -57,20 +60,38 @@ export default function DashboardOverviewPage() {
       {/* Top Header */}
       <section className="bg-medinex-dark text-white py-12 border-b border-emerald-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-medinex-mint uppercase tracking-wider font-semibold">
-                Community Dashboard
-              </span>
-              {user.isTeamMember && <Badge variant="teal" size="sm">Team Member</Badge>}
+          <div className="flex items-center gap-4">
+            <UserAvatar
+              src={user.avatarUrl}
+              smSrc={user.avatarSmUrl}
+              lgSrc={user.avatarLgUrl}
+              fullName={user.fullName}
+              username={user.username}
+              size="lg"
+              shape="rounded"
+              clickable
+            />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-medinex-mint uppercase tracking-wider font-semibold">
+                  Community Dashboard
+                </span>
+                {user.isTeamMember && <Badge variant="teal" size="sm">Team Member</Badge>}
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Welcome back, {user.fullName}
+              </h1>
+              <p className="text-xs text-slate-400">@{user.username} &bull; {user.email}</p>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Welcome back, {user.fullName}
-            </h1>
-            <p className="text-xs text-slate-400">@{user.username} &bull; {user.email}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={getUserProfileHref(user.username)}>
+              <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5 border-emerald-800 text-slate-200 hover:text-white">
+                <ExternalLink className="w-3.5 h-3.5 text-medinex-mint" />
+                <span>Public Profile</span>
+              </Button>
+            </Link>
             <Link href="/dashboard/settings">
               <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5 border-emerald-800 text-slate-200 hover:text-white">
                 <Settings className="w-3.5 h-3.5 text-medinex-mint" />

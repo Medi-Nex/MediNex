@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -26,10 +26,14 @@ import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
 import { TeamMember } from "@/types";
 import { FollowButton } from "@/components/follow/FollowButton";
 import { getUserFollowStats } from "@/lib/api/follow";
+import { authApi } from "@/lib/api/auth";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getUserProfileHref } from "@/lib/media";
 
 export default function MemberProfilePage() {
   const params = useParams();
-  const username = params?.username as string;
+  const router = useRouter();
+  const username = decodeURIComponent((params?.username as string) || "");
 
   const [member, setMember] = useState<TeamMember | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -54,25 +58,89 @@ export default function MemberProfilePage() {
   }, [username]);
 
   useEffect(() => {
-    // Check localStorage first for updated profile
-    const saved = typeof window !== "undefined" ? localStorage.getItem(`medinex_member_${username}`) : null;
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setMember(parsed);
-        setFormData(parsed);
-        return;
-      } catch (e) {
-        console.error("Failed to parse saved member", e);
-      }
-    }
+    if (!username) return;
+    let cancelled = false;
 
-    const defaultMember = INITIAL_TEAM_MEMBERS.find((m) => m.username === username);
-    if (defaultMember) {
-      setMember(defaultMember);
-      setFormData(defaultMember);
-    }
-  }, [username]);
+    const resolveMember = async () => {
+      const saved = typeof window !== "undefined" ? localStorage.getItem(`medinex_member_${username}`) : null;
+      let baseMember: TeamMember | null = null;
+      if (saved) {
+        try {
+          baseMember = JSON.parse(saved);
+        } catch (e) {
+          console.error("Failed to parse saved member", e);
+        }
+      }
+      if (!baseMember) {
+        baseMember = INITIAL_TEAM_MEMBERS.find((m) => m.username.toLowerCase() === username.toLowerCase()) || null;
+      }
+
+      try {
+        const apiUser = await authApi.getPublicProfile(username);
+        if (cancelled) return;
+
+        if (!baseMember && !apiUser.isTeamMember) {
+          router.replace(getUserProfileHref(username));
+          return;
+        }
+
+        const merged: TeamMember = baseMember
+          ? {
+              ...baseMember,
+              fullName: apiUser.fullName || baseMember.fullName,
+              designation: apiUser.designation || baseMember.designation,
+              department: apiUser.department || baseMember.department,
+              university: apiUser.university || baseMember.university,
+              bio: apiUser.bio || baseMember.bio,
+              skills: apiUser.skills && apiUser.skills.length > 0 ? apiUser.skills : baseMember.skills,
+              responsibilities:
+                apiUser.responsibilities && apiUser.responsibilities.length > 0
+                  ? apiUser.responsibilities
+                  : baseMember.responsibilities,
+              portfolioUrl: apiUser.portfolioUrl || baseMember.portfolioUrl,
+              githubUrl: apiUser.githubUrl || baseMember.githubUrl,
+              linkedinUrl: apiUser.linkedinUrl || baseMember.linkedinUrl,
+              avatarUrl: apiUser.avatarUrl || baseMember.avatarUrl,
+              avatarSmUrl: apiUser.avatarSmUrl || baseMember.avatarSmUrl,
+              avatarLgUrl: apiUser.avatarLgUrl || baseMember.avatarLgUrl,
+            }
+          : {
+              id: apiUser.id,
+              username: apiUser.username,
+              fullName: apiUser.fullName,
+              designation: apiUser.designation || "MediNex Contributor",
+              department: apiUser.department || "Healthcare Innovation",
+              university: apiUser.university || "MediNex Community",
+              bio: apiUser.bio || "",
+              skills: apiUser.skills || [],
+              responsibilities: apiUser.responsibilities || [],
+              portfolioUrl: apiUser.portfolioUrl || undefined,
+              githubUrl: apiUser.githubUrl || undefined,
+              linkedinUrl: apiUser.linkedinUrl || undefined,
+              avatarUrl: apiUser.avatarUrl || undefined,
+              avatarSmUrl: apiUser.avatarSmUrl || undefined,
+              avatarLgUrl: apiUser.avatarLgUrl || undefined,
+              isLead: false,
+              isPlaceholder: false,
+              publicVisibility: apiUser.isPublicVisible ?? true,
+              displayOrder: 99,
+            };
+
+        setMember(merged);
+        setFormData(merged);
+      } catch {
+        if (!cancelled && baseMember) {
+          setMember(baseMember);
+          setFormData(baseMember);
+        }
+      }
+    };
+
+    resolveMember();
+    return () => {
+      cancelled = true;
+    };
+  }, [username, router]);
 
   if (!member) {
     return (
@@ -167,20 +235,33 @@ export default function MemberProfilePage() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 sm:-mt-20 gap-4 mb-6">
               {/* Avatar */}
               <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border border-medinex-border">
-                <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-extrabold text-3xl text-medinex-deep border border-slate-200 overflow-hidden relative">
-                  <span className="absolute inset-0 flex items-center justify-center font-extrabold text-3xl text-medinex-deep z-0">
-                    {member.username.replace("contributor-", "C")}
-                  </span>
-                  <Image
-                    src={`/images/team/${member.username}.jpg`}
-                    alt={member.fullName}
-                    fill
-                    className="object-cover object-top relative z-10"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
+                {member.avatarUrl ? (
+                  <UserAvatar
+                    src={member.avatarUrl}
+                    smSrc={member.avatarSmUrl}
+                    lgSrc={member.avatarLgUrl}
+                    fullName={member.fullName}
+                    username={member.username}
+                    size="xl"
+                    shape="rounded"
+                    className="!w-full !h-full border-0 shadow-none"
                   />
-                </div>
+                ) : (
+                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-extrabold text-3xl text-medinex-deep border border-slate-200 overflow-hidden relative">
+                    <span className="absolute inset-0 flex items-center justify-center font-extrabold text-3xl text-medinex-deep z-0">
+                      {member.username.replace("contributor-", "C")}
+                    </span>
+                    <Image
+                      src={`/images/team/${member.username}.jpg`}
+                      alt={member.fullName}
+                      fill
+                      className="object-cover object-top relative z-10"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

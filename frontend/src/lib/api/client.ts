@@ -28,8 +28,10 @@ export async function apiClient<T>(
 ): Promise<T> {
   const token = typeof window !== "undefined" ? localStorage.getItem("medinex_access_token") : null;
 
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     Accept: "application/json",
     ...(options.headers as Record<string, string>),
   };

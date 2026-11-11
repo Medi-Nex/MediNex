@@ -23,6 +23,8 @@ public class PostDto {
     private String authorUsername;
     private String authorFullName;
     private String authorAvatarUrl;
+    private String authorAvatarSmUrl;
+    private String authorAvatarLgUrl;
     private String authorDesignation;
 
     @JsonProperty("isAuthorVerified")

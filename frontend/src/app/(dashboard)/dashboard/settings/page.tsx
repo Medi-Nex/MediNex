@@ -21,6 +21,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
+import { AvatarUploadCard } from "@/components/settings/AvatarUploadCard";
 import { authApi } from "@/lib/api/auth";
 import { getBlockedUsers, unblockUser, BlockedUserDto } from "@/lib/api/follow";
 
@@ -191,6 +192,9 @@ export default function DashboardSettingsPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Section 0: Profile Photo & Multi-Resolution Upload */}
+        <AvatarUploadCard />
+
         {/* Section 1: Relational Privacy & Follower Rules */}
         <Card className="border border-medinex-border">
           <CardHeader className="bg-slate-50/80 border-b border-medinex-border p-5">

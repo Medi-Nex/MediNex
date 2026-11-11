@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { AvatarUploadCard } from "@/components/settings/AvatarUploadCard";
 import { useAuth } from "@/lib/auth-context";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
@@ -44,6 +45,15 @@ export default function DashboardProfileEditPage() {
     }
     if (user) {
       setFullName(user.fullName || "");
+      setHeadline(user.headline || "");
+      setDesignation(user.designation || "");
+      setDepartment(user.department || "");
+      setUniversity(user.university || "");
+      setBio(user.bio || "");
+      setSkillsStr(user.skills?.join(", ") || "");
+      setPortfolioUrl(user.portfolioUrl || "");
+      setGithubUrl(user.githubUrl || "");
+      setLinkedinUrl(user.linkedinUrl || "");
     }
   }, [isLoading, isAuthenticated, user, router]);
 
@@ -118,6 +128,10 @@ export default function DashboardProfileEditPage() {
           </CardHeader>
 
           <CardBody className="p-6">
+            <div className="mb-6">
+              <AvatarUploadCard compact />
+            </div>
+
             {successMessage && (
               <div className="p-3 mb-6 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />

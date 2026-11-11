@@ -16,6 +16,9 @@ export interface TeamMember {
   responsibilities: string[];
 
   email?: string;
+  avatarUrl?: string;
+  avatarSmUrl?: string;
+  avatarLgUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   portfolioUrl?: string;

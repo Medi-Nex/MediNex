@@ -9,9 +9,28 @@ export interface AuthUser {
   emailVerified: boolean;
   isTeamMember: boolean;
   isPublicVisible?: boolean;
+  isVerifiedContributor?: boolean;
+  headline?: string | null;
+  designation?: string | null;
+  department?: string | null;
+  university?: string | null;
+  bio?: string | null;
+  skills?: string[];
+  responsibilities?: string[];
+  portfolioUrl?: string | null;
+  githubUrl?: string | null;
+  linkedinUrl?: string | null;
+  avatarUrl?: string | null;
+  avatarSmUrl?: string | null;
+  avatarLgUrl?: string | null;
+  coverImageUrl?: string | null;
   roles: string[];
   createdAt: string;
 }
+
+export type PublicUserProfile = Omit<AuthUser, "email"> & {
+  email?: string | null;
+};
 
 export type UserDto = AuthUser;
 
@@ -107,10 +126,27 @@ export const authApi = {
 
   getMe: () => apiClient<AuthUser>("/auth/me"),
 
+  getPublicProfile: (username: string) =>
+    apiClient<PublicUserProfile>(`/users/${encodeURIComponent(username)}`),
+
   updateProfile: (payload: UpdateProfilePayload) =>
     apiClient<AuthUser>("/users/profile", {
       method: "PUT",
       body: JSON.stringify(payload),
+    }),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiClient<AuthUser>("/users/profile/avatar", {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  removeAvatar: () =>
+    apiClient<AuthUser>("/users/profile/avatar", {
+      method: "DELETE",
     }),
 
   changePassword: (payload: ChangePasswordPayload) =>

@@ -6,6 +6,7 @@ import com.medinex.notification.entity.Notification;
 import com.medinex.notification.entity.NotificationType;
 import com.medinex.notification.repository.NotificationRepository;
 import com.medinex.user.entity.User;
+import com.medinex.user.service.AvatarUrlHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -102,6 +103,7 @@ public class NotificationService {
                 .actorUsername(actorUsername)
                 .actorFullName(actorFullName)
                 .actorAvatarUrl(actorAvatarUrl)
+                .actorAvatarSmUrl(AvatarUrlHelper.deriveVariant(actorAvatarUrl, AvatarUrlHelper.VARIANT_SM))
                 .build();
     }
 }

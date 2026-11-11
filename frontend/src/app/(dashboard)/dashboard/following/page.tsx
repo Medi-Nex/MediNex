@@ -16,6 +16,8 @@ import {
   Sparkles
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getUserProfileHref } from "@/lib/media";
 import { 
   getTeamFollowStats, 
   getUserFollowing, 
@@ -248,22 +250,20 @@ export default function DashboardFollowingPage() {
                   className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-start justify-between gap-4"
                 >
                   <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-base shrink-0">
-                      {u.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={u.avatarUrl}
-                          alt={u.fullName}
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        u.fullName.charAt(0)
-                      )}
-                    </div>
+                    <UserAvatar
+                      src={u.avatarUrl}
+                      smSrc={u.avatarSmUrl}
+                      lgSrc={u.avatarLgUrl}
+                      fullName={u.fullName}
+                      username={u.username}
+                      size="md"
+                      clickable
+                      className="w-12 h-12"
+                    />
                     <div className="space-y-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Link
-                          href={`/team/${u.username}`}
+                          href={getUserProfileHref(u.username)}
                           className="font-bold text-sm text-[#12201E] hover:text-[#0D9488] transition-colors"
                         >
                           {u.fullName}
@@ -274,7 +274,12 @@ export default function DashboardFollowingPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 font-mono">@{u.username}</p>
+                      <Link
+                        href={getUserProfileHref(u.username)}
+                        className="text-xs text-slate-500 font-mono hover:text-[#0D9488] transition-colors block"
+                      >
+                        @{u.username}
+                      </Link>
                       {u.designation && (
                         <p className="text-xs text-slate-600 line-clamp-1 flex items-center gap-1 pt-1">
                           <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
@@ -318,12 +323,28 @@ export default function DashboardFollowingPage() {
               {followRequests.map((req) => (
                 <div key={req.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-sm shrink-0">
-                      {req.requester.fullName.charAt(0)}
-                    </div>
+                    <UserAvatar
+                      src={req.requester.avatarUrl}
+                      smSrc={req.requester.avatarSmUrl}
+                      lgSrc={req.requester.avatarLgUrl}
+                      fullName={req.requester.fullName}
+                      username={req.requester.username}
+                      size="md"
+                      clickable
+                    />
                     <div>
-                      <h4 className="font-bold text-sm text-[#12201E]">{req.requester.fullName}</h4>
-                      <p className="text-xs text-slate-500 font-mono">@{req.requester.username}</p>
+                      <Link
+                        href={getUserProfileHref(req.requester.username)}
+                        className="font-bold text-sm text-[#12201E] hover:text-[#0D9488] transition-colors block"
+                      >
+                        {req.requester.fullName}
+                      </Link>
+                      <Link
+                        href={getUserProfileHref(req.requester.username)}
+                        className="text-xs text-slate-500 font-mono hover:text-[#0D9488] transition-colors"
+                      >
+                        @{req.requester.username}
+                      </Link>
                       {req.requester.designation && (
                         <p className="text-xs text-slate-600 flex items-center gap-1 mt-0.5">
                           <GraduationCap className="w-3 h-3 text-slate-400" />

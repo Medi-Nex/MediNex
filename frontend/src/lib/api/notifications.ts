@@ -22,6 +22,7 @@ export interface NotificationDto {
   actorUsername?: string;
   actorFullName?: string;
   actorAvatarUrl?: string;
+  actorAvatarSmUrl?: string;
 }
 
 export async function getNotifications(

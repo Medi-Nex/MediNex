@@ -31,7 +31,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' blob: data: https://images.unsplash.com https://avatars.githubusercontent.com",
+      "img-src 'self' blob: data: http://localhost:8080 http://127.0.0.1:8080 http://localhost:8082 http://127.0.0.1:8082 https://images.unsplash.com https://avatars.githubusercontent.com https:",
       "font-src 'self' data: https://fonts.gstatic.com",
       "connect-src 'self' http://localhost:8080 http://localhost:8082 http://127.0.0.1:8082 https:",
       "frame-ancestors 'none'",

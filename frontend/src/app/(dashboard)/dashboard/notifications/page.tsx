@@ -13,6 +13,8 @@ import {
   Loader2 
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getUserProfileHref } from "@/lib/media";
 import { 
   getNotifications, 
   markNotificationAsRead, 
@@ -151,15 +153,30 @@ export default function DashboardNotificationsPage() {
                   item.isRead ? "bg-white hover:bg-slate-50/70" : "bg-teal-50/30 hover:bg-teal-50/50"
                 }`}
               >
-                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5 border border-slate-200/60">
-                  {getIcon(item.type)}
-                </div>
+                {item.actorUsername ? (
+                  <UserAvatar
+                    src={item.actorAvatarUrl}
+                    smSrc={item.actorAvatarSmUrl}
+                    fullName={item.actorFullName || item.actorUsername}
+                    username={item.actorUsername}
+                    size="sm"
+                    clickable
+                    className="w-9 h-9 mt-0.5"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5 border border-slate-200/60">
+                    {getIcon(item.type)}
+                  </div>
+                )}
 
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className={`text-sm ${item.isRead ? "text-slate-700" : "font-semibold text-slate-900"}`}>
-                      {item.message}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex shrink-0">{getIcon(item.type)}</span>
+                      <p className={`text-sm ${item.isRead ? "text-slate-700" : "font-semibold text-slate-900"}`}>
+                        {item.message}
+                      </p>
+                    </div>
                     {!item.isRead && (
                       <span className="w-2 h-2 rounded-full bg-[#0D9488] shrink-0" />
                     )}
@@ -171,7 +188,7 @@ export default function DashboardNotificationsPage() {
                       <>
                         <span>&bull;</span>
                         <Link
-                          href={`/team/${item.actorUsername}`}
+                          href={getUserProfileHref(item.actorUsername)}
                           onClick={(e) => e.stopPropagation()}
                           className="text-[#0D9488] hover:underline font-medium font-mono"
                         >

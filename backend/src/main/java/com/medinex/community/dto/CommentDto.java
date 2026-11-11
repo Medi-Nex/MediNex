@@ -25,6 +25,8 @@ public class CommentDto {
     private String authorUsername;
     private String authorFullName;
     private String authorAvatarUrl;
+    private String authorAvatarSmUrl;
+    private String authorAvatarLgUrl;
 
     @JsonProperty("isAuthorVerified")
     private boolean isAuthorVerified;

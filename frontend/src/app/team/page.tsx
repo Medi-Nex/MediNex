@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image"; // Added missing import
 import {
@@ -18,12 +18,41 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
 import { TeamMember } from "@/types";
+import { apiClient } from "@/lib/api/client";
+import { resolveMediaUrl } from "@/lib/media";
 
 export default function TeamPage() {
-  const [members] = useState<TeamMember[]>(INITIAL_TEAM_MEMBERS);
+  const [members, setMembers] = useState<TeamMember[]>(INITIAL_TEAM_MEMBERS);
   const [filterRole, setFilterRole] = useState<string>("ALL");
   const [isFollowingTeam, setIsFollowingTeam] = useState<boolean>(false);
   const [teamFollowersCount, setTeamFollowersCount] = useState<number>(0);
+
+  useEffect(() => {
+    apiClient<Partial<TeamMember>[]>("/team/members")
+      .then((liveMembers) => {
+        if (!Array.isArray(liveMembers) || liveMembers.length === 0) return;
+        setMembers((prev) =>
+          prev.map((local) => {
+            const match = liveMembers.find(
+              (m) => m.username?.toLowerCase() === local.username.toLowerCase()
+            );
+            if (!match) return local;
+            return {
+              ...local,
+              fullName: match.fullName || local.fullName,
+              designation: match.designation || local.designation,
+              department: match.department || local.department,
+              university: match.university || local.university,
+              bio: match.bio || local.bio,
+              avatarUrl: match.avatarUrl || local.avatarUrl,
+              avatarSmUrl: match.avatarSmUrl || local.avatarSmUrl,
+              avatarLgUrl: match.avatarLgUrl || local.avatarLgUrl,
+            };
+          })
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   const handleFollowTeam = () => {
     setIsFollowingTeam(!isFollowingTeam);
@@ -156,31 +185,48 @@ export default function TeamPage() {
                 <CardBody className="space-y-4">
                   {/* Top Bar with Avatar and Badge */}
                   <div className="flex flex-col items-start gap-4">
-                    {/* বড় ছবির জায়গা */}
-                    <div className="w-full aspect-[4/4] md:aspect-[4/4.5] rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative">
+                    <Link
+                      href={`/team/${member.username}`}
+                      className="w-full aspect-[4/4] md:aspect-[4/4.5] rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block group"
+                    >
                       <span className="absolute inset-0 flex items-center justify-center font-bold text-6xl text-slate-300 z-0">
                         {member.username.replace("contributor-", "C")}
                       </span>
-                      <Image
-                        src={`/images/team/${member.username}.jpg`} // আপনার ছবিগুলো .jpg নাকি .png তা খেয়াল করে এক্সটেনশন পাল্টাবেন
-                        alt={member.fullName}
-                        fill
-                        className="object-cover object-top relative z-10"
-                        onError={(e) => {
-                          // যদি ছবি না পাওয়া যায়, তবে এই বক্সে ইনিশিয়াল (C01) দেখাবে
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
+                      {member.avatarLgUrl || member.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={resolveMediaUrl(member.avatarLgUrl || member.avatarUrl)!}
+                          alt={member.fullName}
+                          className="w-full h-full object-cover object-top relative z-10 group-hover:scale-[1.02] transition-transform"
+                        />
+                      ) : (
+                        <Image
+                          src={`/images/team/${member.username}.jpg`} // আপনার ছবিগুলো .jpg নাকি .png তা খেয়াল করে এক্সটেনশন পাল্টাবেন
+                          alt={member.fullName}
+                          fill
+                          className="object-cover object-top relative z-10 group-hover:scale-[1.02] transition-transform"
+                          onError={(e) => {
+                            // যদি ছবি না পাওয়া যায়, তবে এই বক্সে ইনিশিয়াল (C01) দেখাবে
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )}
+                    </Link>
 
                     <div className="flex items-start justify-between w-full">
                       <div>
-                        <h3 className="font-bold text-base text-medinex-text leading-tight">
+                        <Link
+                          href={`/team/${member.username}`}
+                          className="font-bold text-base text-medinex-text leading-tight hover:text-medinex-teal transition-colors block"
+                        >
                           {member.fullName}
-                        </h3>
-                        <p className="text-xs text-medinex-teal font-medium mt-0.5">
+                        </Link>
+                        <Link
+                          href={`/team/${member.username}`}
+                          className="text-xs text-medinex-teal font-medium mt-0.5 hover:underline block"
+                        >
                           @{member.username}
-                        </p>
+                        </Link>
                       </div>
                     </div>
                   </div>
