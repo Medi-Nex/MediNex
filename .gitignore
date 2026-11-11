@@ -54,3 +54,7 @@ backend/uploads/
 # Non-destructive verification backups
 backups/
 
+# IDE extension scratch telemetry
+.github/modernize/
+
+

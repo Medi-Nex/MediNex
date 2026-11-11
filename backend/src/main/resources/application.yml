@@ -15,7 +15,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/medinex_db}
     username: ${SPRING_DATASOURCE_USERNAME:medinex_user}
     password: ${SPRING_DATASOURCE_PASSWORD:medinex_secure_password_dev_only}
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
     hikari:
       maximum-pool-size: 15
       minimum-idle: 5
@@ -37,6 +37,9 @@ spring:
   flyway:
     enabled: ${SPRING_FLYWAY_ENABLED:true}
     baseline-on-migrate: ${SPRING_FLYWAY_BASELINE_ON_MIGRATE:true}
+    url: ${SPRING_FLYWAY_URL:${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/medinex_db}}
+    user: ${SPRING_FLYWAY_USER:${SPRING_DATASOURCE_USERNAME:medinex_user}}
+    password: ${SPRING_FLYWAY_PASSWORD:${SPRING_DATASOURCE_PASSWORD:medinex_secure_password_dev_only}}
     locations: classpath:db/migration
   servlet:
     multipart:
