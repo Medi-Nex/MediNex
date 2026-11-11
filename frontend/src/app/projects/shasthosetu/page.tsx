@@ -39,7 +39,7 @@ export default function ShasthoSetuPage() {
   return (
     <div className="flex flex-col min-h-screen bg-medinex-light pb-20">
       {/* Top Breadcrumb Header */}
-      <div className="sticky top-16 z-30 bg-white/92 backdrop-blur-md border-b border-medinex-border py-3 sm:py-4">
+      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-medinex-border py-3 sm:py-4">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <Link
             href="/projects"

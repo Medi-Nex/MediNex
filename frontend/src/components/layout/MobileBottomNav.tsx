@@ -33,7 +33,7 @@ export default function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/92 backdrop-blur-xl border-t border-medinex-border/90 shadow-[0_-10px_30px_rgba(7,26,24,0.08)] pb-safe"
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-medinex-border shadow-[0_-10px_30px_rgba(7,26,24,0.08)] pb-safe"
     >
       <div className="grid grid-cols-5 items-center h-16 px-1.5">
         {PUBLIC_TABS.map((tab) => {

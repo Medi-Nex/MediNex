@@ -64,18 +64,14 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  const isDarkHero = pathname === "/" || pathname === "/about";
-
   return (
     <>
       <header
         className={clsx(
-          "sticky top-0 z-40 transition-all duration-200 border-b",
+          "sticky top-0 z-40 transition-all duration-200 border-b text-medinex-text",
           scrolled
-            ? "bg-white/92 backdrop-blur-lg shadow-sm border-medinex-border text-medinex-text"
-            : isDarkHero
-            ? "bg-medinex-dark/92 backdrop-blur-lg border-emerald-950/90 text-white"
-            : "bg-white/95 backdrop-blur-md border-medinex-border text-medinex-text"
+            ? "bg-white/95 backdrop-blur-lg shadow-sm border-slate-200/90"
+            : "bg-white/95 backdrop-blur-md border-medinex-border"
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,7 +85,7 @@ export default function Navbar() {
                 <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-medinex-mint" />
               </div>
               <div>
-                <span className={clsx("font-bold text-lg sm:text-xl tracking-tight", isDarkHero && !scrolled ? "text-white" : "text-medinex-text")}>
+                <span className="font-bold text-lg sm:text-xl tracking-tight text-medinex-text">
                   Medi<span className="text-medinex-teal">Nex</span>
                 </span>
                 <span className="hidden xl:block text-[10px] tracking-wider uppercase text-medinex-muted -mt-1 font-semibold whitespace-nowrap">
@@ -110,9 +106,7 @@ export default function Navbar() {
                       "px-1.5 xl:px-2 py-1.5 rounded-lg text-[13px] font-medium transition-colors whitespace-nowrap",
                       isActive
                         ? "text-medinex-teal bg-medinex-teal/10 font-semibold"
-                        : isDarkHero && !scrolled
-                        ? "text-slate-300 hover:text-white hover:bg-white/10"
-                        : "text-slate-600 hover:text-medinex-teal hover:bg-slate-50"
+                        : "text-slate-700 hover:text-medinex-teal hover:bg-slate-100/80"
                     )}
                   >
                     {link.label}
@@ -127,29 +121,19 @@ export default function Navbar() {
                 <div className="flex items-center gap-1 xl:gap-1.5">
                   <Link
                     href="/dashboard/notifications"
-                    className={clsx(
-                      "relative p-1.5 rounded-lg transition-colors",
-                      isDarkHero && !scrolled
-                        ? "text-slate-300 hover:text-white hover:bg-white/10"
-                        : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
-                    )}
+                    className="relative p-1.5 rounded-lg text-slate-600 hover:text-medinex-teal hover:bg-slate-100 transition-colors"
                     title="Notifications"
                     aria-label="View notifications"
                   >
                     <Bell className="w-4 h-4" />
                     {unreadNotifications > 0 && (
-                      <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#0D9488] ring-2 ring-white" />
+                      <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-medinex-teal ring-2 ring-white" />
                     )}
                   </Link>
 
                   <Link
                     href="/dashboard/following"
-                    className={clsx(
-                      "p-1.5 rounded-lg transition-colors",
-                      isDarkHero && !scrolled
-                        ? "text-slate-300 hover:text-white hover:bg-white/10"
-                        : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
-                    )}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-medinex-teal hover:bg-slate-100 transition-colors"
                     title="Following Network"
                     aria-label="View following network"
                   >
@@ -158,12 +142,7 @@ export default function Navbar() {
 
                   <Link
                     href="/dashboard/settings"
-                    className={clsx(
-                      "p-1.5 rounded-lg transition-colors",
-                      isDarkHero && !scrolled
-                        ? "text-slate-300 hover:text-white hover:bg-white/10"
-                        : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
-                    )}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-medinex-teal hover:bg-slate-100 transition-colors"
                     title="Account & Privacy Settings"
                     aria-label="View settings"
                   >
@@ -183,12 +162,7 @@ export default function Navbar() {
 
                   <Link
                     href={`/users/${encodeURIComponent(user.username)}`}
-                    className={clsx(
-                      "inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-full border transition-colors shrink-0",
-                      isDarkHero && !scrolled
-                        ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
-                        : "border-medinex-border bg-slate-50 text-medinex-text hover:border-medinex-teal/60"
-                    )}
+                    className="inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-full border border-medinex-border bg-slate-50 text-medinex-text hover:border-medinex-teal/60 hover:bg-slate-100/70 transition-colors shrink-0"
                     title={`View @${user.username} public profile`}
                     aria-label={`View @${user.username} public profile`}
                   >
@@ -215,10 +189,7 @@ export default function Navbar() {
                     variant="ghost"
                     size="sm"
                     onClick={() => logout()}
-                    className={clsx(
-                      "inline-flex items-center gap-1.5 !px-2.5 !min-h-[34px] whitespace-nowrap",
-                      isDarkHero && !scrolled && "text-slate-300 hover:text-white hover:bg-white/10"
-                    )}
+                    className="inline-flex items-center gap-1.5 !px-2.5 !min-h-[34px] whitespace-nowrap text-slate-700 hover:text-medinex-text hover:bg-slate-100"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sign Out</span>
@@ -227,11 +198,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <Link href="/login">
-                    <Button
-                      variant={isDarkHero && !scrolled ? "ghost" : "outline"}
-                      size="sm"
-                      className={clsx(isDarkHero && !scrolled && "text-white hover:bg-white/10")}
-                    >
+                    <Button variant="outline" size="sm">
                       Sign In
                     </Button>
                   </Link>
@@ -250,12 +217,7 @@ export default function Navbar() {
                 <>
                   <Link
                     href="/dashboard/notifications"
-                    className={clsx(
-                      "relative min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl transition-colors",
-                      isDarkHero && !scrolled
-                        ? "text-slate-200 hover:text-white hover:bg-white/10"
-                        : "text-slate-600 hover:text-medinex-teal hover:bg-slate-100"
-                    )}
+                    className="relative min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-600 hover:text-medinex-teal hover:bg-slate-100 transition-colors"
                     aria-label="Notifications"
                   >
                     <Bell className="w-4 h-4" />
@@ -265,12 +227,7 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href="/dashboard"
-                    className={clsx(
-                      "inline-flex items-center justify-center rounded-full p-0.5 border transition-colors",
-                      isDarkHero && !scrolled
-                        ? "border-white/25 bg-white/10"
-                        : "border-medinex-border bg-slate-50"
-                    )}
+                    className="inline-flex items-center justify-center rounded-full p-0.5 border border-medinex-border bg-slate-50 transition-colors"
                     aria-label="Open Dashboard"
                   >
                     <UserAvatar
@@ -286,12 +243,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/register"
-                  className={clsx(
-                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors",
-                    isDarkHero && !scrolled
-                      ? "bg-medinex-teal text-white hover:bg-medinex-teal-hover"
-                      : "bg-medinex-teal text-white hover:bg-medinex-teal-hover"
-                  )}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-medinex-teal text-white hover:bg-medinex-teal-hover transition-colors"
                 >
                   Join
                 </Link>
@@ -300,12 +252,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={clsx(
-                  "min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl focus:outline-none focus:ring-2 focus:ring-medinex-teal transition-colors",
-                  isDarkHero && !scrolled
-                    ? "text-slate-200 hover:text-white hover:bg-white/10 bg-white/5 border border-white/10"
-                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 bg-slate-50 border border-slate-200/80"
-                )}
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 bg-slate-50 border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-medinex-teal transition-colors"
                 aria-label={isOpen ? "Close main menu" : "Open main menu"}
                 aria-expanded={isOpen}
               >

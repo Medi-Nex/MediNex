@@ -61,7 +61,7 @@ export default function ContactPage() {
             <CardBody className="space-y-4 text-xs text-slate-600">
               <div>
                 <span className="font-bold text-slate-800 block mb-0.5">Project Inquiries</span>
-                <span className="text-medinex-teal font-medium">team@medinex.health</span>
+                <span className="text-medinex-teal font-medium">medinexbd.noreply@gmail.com</span>
               </div>
 
               <div>
