@@ -5,6 +5,8 @@ interface Props {
   children: React.ReactNode;
 }
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export async function generateMetadata({
   params,
 }: {
@@ -13,11 +15,11 @@ export async function generateMetadata({
   const { id } = await params;
   return {
     title: `Community Discussion #${id.slice(0, 8)}`,
-    description: `Read and join this verified health technology discussion on MediNex community platform.`,
+    description: `Read and join this verified health technology discussion on MediNex.`,
     openGraph: {
       title: `Community Discussion #${id.slice(0, 8)} | MediNex`,
-      description: `Read and join this verified health technology discussion on MediNex community platform.`,
-      url: `https://medinex.health/community/posts/${id}`,
+      description: `Read and join this verified health technology discussion on MediNex.`,
+      url: `${APP_URL}/community/posts/${id}`,
       siteName: "MediNex",
       type: "article",
     },

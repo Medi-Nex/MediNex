@@ -243,7 +243,7 @@ export default function DashboardProfileEditPage() {
                   type="text"
                   value={skillsStr}
                   onChange={(e) => setSkillsStr(e.target.value)}
-                  placeholder="e.g. Java, Next.js, FHIR Standards, Telemedicine, UX"
+                  placeholder="e.g. Java, Next.js, HL7 FHIR, Interoperability, UX"
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
                 />
               </div>

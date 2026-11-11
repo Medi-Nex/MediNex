@@ -65,7 +65,23 @@ docker compose down
 > [!CAUTION]
 > **CRITICAL VOLUME WARNING:**
 > **NEVER run `docker compose down -v`** in staging or production environments.
-> The `-v` flag permanently deletes the named volume `medinex_pgdata`, destroying all registered user accounts, team configurations, community posts, and audit logs.
+> The `-v` flag permanently deletes both `medinex_pgdata` (database state) and `medinex_uploads` (uploaded avatars and media variants), destroying persistent data.
+
+### Uploaded Media Volume (`medinex_uploads`) Persistence, Backup & Restore
+`medinex-backend` mounts the persistent named Docker volume `medinex_uploads` at `/app/uploads` (owned by `appuser:10001`). Local host `uploads/` and `backend/uploads/` directories are git-ignored, and pure-Java WebP/JPEG/PNG avatar decoding (`imageio-webp:3.13.1`) runs safely inside the Alpine JRE container.
+
+```bash
+# Backup medinex_uploads to a compressed tar archive
+docker run --rm -v medinex_uploads:/source:ro -v "$(pwd)/backups:/backup" alpine \
+  tar czf /backup/medinex_uploads_backup.tar.gz -C /source .
+
+# Verify archive contents cleanly before restore
+tar -tzf ./backups/medinex_uploads_backup.tar.gz
+
+# Restore medinex_uploads non-destructively into the volume
+docker run --rm -v medinex_uploads:/restore -v "$(pwd)/backups:/backup:ro" alpine \
+  tar xzf /backup/medinex_uploads_backup.tar.gz -C /restore
+```
 
 ---
 

@@ -594,7 +594,7 @@ export default function MemberProfilePage() {
                     </Badge>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Grassroots telemedicine connectivity bridge for rural clinics.
+                    Interoperable digital health record &amp; exchange platform prototype.
                   </p>
                   <Link
                     href="/projects/shasthosetu"

@@ -20,13 +20,13 @@ export default function Footer() {
             </div>
 
             <p className="text-medinex-mint font-medium text-sm">
-              Healthcare Innovation. Connected Communities.
+              Connecting Technology, Research &amp; Healthcare Innovation.
             </p>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              A dedicated team collaboration platform engineered for six contributors participating in
-              <strong> E-Health Hackathon 2026</strong>. Uniting official telemedicine initiatives with an
-              inclusive health tech community.
+              MediNex is a collaborative healthcare technology platform where developers, researchers,
+              and public health professionals explore ideas, build innovative solutions, and
+              collaborate on technology-driven healthcare initiatives.
             </p>
 
             <div className="pt-2 flex items-center gap-3">
@@ -83,7 +83,7 @@ export default function Footer() {
 
           {/* Events & Updates */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white tracking-wider uppercase">Hackathon</h3>
+            <h3 className="text-sm font-semibold text-white tracking-wider uppercase">Platform &amp; Research</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/updates" className="hover:text-medinex-mint transition-colors">
@@ -135,7 +135,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/about#hackathon" className="hover:text-medinex-mint transition-colors">
-                  Hackathon Context
+                  Initiative Background
                 </Link>
               </li>
             </ul>
@@ -149,7 +149,7 @@ export default function Footer() {
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div className="text-xs text-slate-300 leading-relaxed">
-              <strong>Mandatory Healthcare Data Separation Notice:</strong> MediNex does not collect, index, or store patient medical records, personal clinical health information (PHI), or hospital diagnostic logs. All participatory community discussions are strictly public communication. ShasthoSetu is an isolated development pipeline subject to healthcare safety benchmarks.
+              <strong>Mandatory Healthcare Data Separation Notice:</strong> MediNex does not collect, index, or store patient medical records, personal clinical health information (PHI), or hospital diagnostic logs. All participatory community discussions are strictly public communication. ShasthoSetu is an isolated health-record interoperability initiative subject to healthcare safety and privacy benchmarks.
             </div>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function Footer() {
         {/* Bottom row */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div>
-            &copy; {new Date().getFullYear()} MediNex Platform. Built with transparency for E-Health Hackathon 2026.
+            &copy; {new Date().getFullYear()} MediNex Platform. Healthcare Innovation &amp; Technology Platform.
           </div>
           <div className="flex items-center gap-2">
             <HeartHandshake className="w-4 h-4 text-medinex-mint" />

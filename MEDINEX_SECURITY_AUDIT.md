@@ -1,6 +1,6 @@
 # MEDINEX — COMPREHENSIVE DEVSECOPS & SECURITY AUDIT
 
-**Target Platform:** MediNex ("Healthcare Innovation. Connected Communities.")  
+**Target Platform:** MediNex ("MediNex — Healthcare Innovation & Technology Platform")  
 **Audit Standard:** OWASP Top 10:2021, HIPAA Zero-PHI Compliance, CWE Top 25  
 **Auditor:** Senior DevSecOps Engineer & AppSec Lead  
 **Audit Date:** November 11, 2026  
@@ -18,7 +18,7 @@ MediNex is a hybrid community and collaboration platform designed for healthcare
 - **Primary Attack Vectors Analyzed:** Unauthorized data exposure, Broken Object Level Authorization (BOLA/IDOR), PHI leakage into public social feeds, token interception, CSRF/XSS, SQL injection, and administrative privilege escalation.
 - **Key Architectural Strengths:**
   - Robust **Zero-PHI enforcement engine** ([`PhiGuardService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/common/security/PhiGuardService.java)) that actively intercepts and blocks patient identifiers, diagnostic summaries, and prescription dosages (verified via both unit tests and live Docker `POST /api/v1/community/posts` returning HTTP `400`).
-  - Complete architectural segregation: Zero patient health records or telemedicine charts exist in the MediNex community database.
+  - Complete architectural segregation: Zero patient health records or private clinical exchange charts exist in the MediNex community database.
   - Strict database query parameterization via Spring Data JPA (0 SQL injection vectors).
   - Strong password hashing with `BCryptPasswordEncoder(12)`.
   - Method-level and HTTP-layer RBAC enforced on official project and contributor mutations (`SUPER_ADMIN`, `ADMIN` only), backed by `GlobalExceptionHandler` handling `AccessDeniedException` (403) and `AuthenticationException` (401).
@@ -128,7 +128,7 @@ In `SecurityHardeningAndPhiTest.java`, automated tests verified:
 
 #### ShasthoSetu Data Isolation
 - Audited the full PostgreSQL schema: Zero clinical tables exist.
-- ShasthoSetu telemedicine features are strictly segregated from MediNex social features. No patient encounter cards or teleconsultation sessions are persisted in community tables.
+- ShasthoSetu health-record interoperability R&D is strictly segregated from MediNex social features. No patient encounter records or medical charts are persisted in community tables.
 
 ---
 
@@ -198,6 +198,14 @@ In `SecurityHardeningAndPhiTest.java`, automated tests verified:
 
 ---
 
+- **Phase 9 Security & Reliability Hardening (`7663aa8`+):**
+  - **P9-SEC-01 (Resolved):** Plaintext OTP & password reset token logging removed from `EmailService`; transient SMTP failures return `boolean` `false` and abort `resendVerificationEmail` with `503 Service Unavailable` so users are not locked behind a 120s cooldown.
+  - **P9-SEC-02 (Resolved):** Backend `ProfileAccessGuard` strictly enforces `isPublicVisible = false` (`403 Forbidden`) and bidirectional block exclusion across `/users/{username}`, `/followers`, `/following`, `/community/feed`, `/community/posts/{id}`, `/community/users/{username}/posts`, likes/comments, and `/team/members/{username}`, plus case-insensitive username normalization across `CommunityService`, `FollowService`, and `ReportService`.
+  - **P9-SEC-03 (Resolved):** Least-privilege contributor & moderator boundaries: seeded `contributor-01..06` restricted to `ROLE_USER` (`DataInitializer` + Flyway `V6__restrict_contributor_roles.sql`), `/api/v1/auth/me` returns `401 Unauthorized` anonymously, `ROLE_MODERATOR` scoped solely to `/reports/**`, `/posts/**`, `/comments/**`, and `/media/**` (denied `403` on `/stats`, `/users`, `/audit-logs`, `/analytics`, `/settings`, `/team`, and `SUSPEND_USER`), and `ADMIN` blocked from escalating/modifying `ROLE_SUPER_ADMIN` or own roles.
+  - **P9-REL-01 (Resolved):** Pure-Java WebP avatar decoding (`imageio-webp:3.13.1`), `medinex_uploads` restart persistence + backup/restore drill, `.gitignore` exclusions for `uploads/`, Next.js 16 `npm run lint` (`eslint src/`), and controlled Mailpit SMTP wire verification.
+
+---
+
 ## 3. REMEDIATION ROADMAP
 
 ```mermaid
@@ -214,11 +222,12 @@ flowchart TD
         S3["Added 401/403 GlobalExceptionHandler + 6 regression tests"]
     end
 
-    subgraph P2_P3_FollowUp["P2/P3 - Pre-Production Hardening (Non-Blocking for Staging)"]
-        H1["Enforce production secret overrides in .env / secret store"]
-        H2["Add RateLimiter filter on /api/v1/auth/** & HttpOnly refresh cookies"]
-        H3["Wire spring.mail properties, mutual feed blocks & persistent site_settings"]
+    subgraph P9_Hardened["Phase 9 - Privacy, RBAC, Redaction & Media (VERIFIED)"]
+        H1["ProfileAccessGuard isPublicVisible + feed/follow privacy (403)"]
+        H2["EmailService OTP/reset log redaction + 503 resend safety"]
+        H3["V6 contributor ROLE_USER only + MODERATOR/ADMIN/SUPER_ADMIN boundaries"]
+        H4["Pure-Java WebP avatar support + medinex_uploads persistence verified"]
     end
 
-    P0_Resolved --> P1_Resolved --> P2_P3_FollowUp
+    P0_Resolved --> P1_Resolved --> P9_Hardened
 ```

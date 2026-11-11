@@ -27,7 +27,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/admin")
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 @RequiredArgsConstructor
 @Tag(name = "Admin & Moderation Console", description = "Endpoints for platform administration, user management, moderation, and immutable audit logs")
 @SecurityRequirement(name = "bearerAuth")
@@ -36,12 +35,14 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Get real dashboard metrics and statistics")
     public ApiResponse<AdminDashboardStatsDto> getStats() {
         return ApiResponse.ok(adminService.getDashboardStats(), "Admin dashboard statistics retrieved");
     }
 
     @GetMapping("/users")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Get paginated user accounts")
     public ApiResponse<Page<UserDto>> getUsers(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -49,6 +50,7 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Update user status, roles, or team member designation")
     public ApiResponse<UserDto> updateUser(
             @PathVariable UUID id,
@@ -59,6 +61,7 @@ public class AdminController {
     }
 
     @GetMapping("/reports")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Get paginated moderation reports")
     public ApiResponse<Page<ReportDto>> getReports(
             @RequestParam(required = false) ReportStatus status,
@@ -67,6 +70,7 @@ public class AdminController {
     }
 
     @PostMapping("/reports/{id}/resolve")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Resolve or dismiss a moderation report")
     public ApiResponse<Void> resolveReport(
             @PathVariable UUID id,
@@ -77,6 +81,7 @@ public class AdminController {
     }
 
     @PatchMapping("/posts/{id}/moderate")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Moderate community post (hide/unhide)")
     public ApiResponse<Void> moderatePost(
             @PathVariable UUID id,
@@ -87,6 +92,7 @@ public class AdminController {
     }
 
     @PatchMapping("/comments/{id}/moderate")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Moderate community comment (hide/unhide)")
     public ApiResponse<Void> moderateComment(
             @PathVariable UUID id,
@@ -97,6 +103,7 @@ public class AdminController {
     }
 
     @GetMapping("/audit-logs")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Get immutable system audit logs")
     public ApiResponse<Page<AuditLog>> getAuditLogs(
             @PageableDefault(size = 30, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -104,6 +111,7 @@ public class AdminController {
     }
 
     @GetMapping("/posts")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Get paginated posts for moderation")
     public ApiResponse<Page<AdminPostDto>> getPosts(
             @RequestParam(required = false) Boolean hidden,
@@ -112,6 +120,7 @@ public class AdminController {
     }
 
     @GetMapping("/comments")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Get paginated comments for moderation")
     public ApiResponse<Page<AdminCommentDto>> getComments(
             @RequestParam(required = false) Boolean hidden,
@@ -120,6 +129,7 @@ public class AdminController {
     }
 
     @GetMapping("/media")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'MODERATOR')")
     @Operation(summary = "Get paginated media attachments for review")
     public ApiResponse<Page<AdminMediaDto>> getMedia(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -127,18 +137,21 @@ public class AdminController {
     }
 
     @GetMapping("/analytics")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Get comprehensive platform analytics")
     public ApiResponse<AdminAnalyticsDto> getAnalytics() {
         return ApiResponse.ok(adminService.getAnalytics(), "Platform analytics retrieved");
     }
 
     @GetMapping("/settings")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Get platform settings")
     public ApiResponse<AdminSettingsDto> getSettings() {
         return ApiResponse.ok(adminService.getSettings(), "Platform settings retrieved");
     }
 
     @PutMapping("/settings")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Update platform settings")
     public ApiResponse<AdminSettingsDto> updateSettings(
             @RequestBody AdminSettingsDto request,
@@ -147,12 +160,14 @@ public class AdminController {
     }
 
     @GetMapping("/team")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Get all team contributor profiles for admin management")
     public ApiResponse<List<TeamMemberDto>> getTeamMembers() {
         return ApiResponse.ok(adminService.getTeamMembers(), "Team members retrieved");
     }
 
     @PutMapping("/team/{username}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(summary = "Update team member profile by admin")
     public ApiResponse<TeamMemberDto> updateTeamMember(
             @PathVariable String username,

@@ -24,9 +24,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{username}")
-    @Operation(summary = "Get public user profile by username")
-    public ApiResponse<UserDto> getUserByUsername(@PathVariable String username) {
-        UserDto user = userService.getUserByUsername(username);
+    @Operation(summary = "Get user profile by username (enforces private profile access rules)")
+    public ApiResponse<UserDto> getUserByUsername(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable String username) {
+        java.util.UUID viewerId = principal != null ? principal.getId() : null;
+        UserDto user = userService.getUserByUsername(username, viewerId);
         return ApiResponse.ok(user, "User profile retrieved successfully");
     }
 

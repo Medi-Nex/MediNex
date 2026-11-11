@@ -69,13 +69,13 @@ const DEMO_SEED_POSTS: PostDto[] = [
     authorId: "seed-2",
     authorUsername: "contributor-04",
     authorFullName: "Jihad Khan",
-    authorDesignation: "Telemedicine & Mobile Integration Lead",
+    authorDesignation: "Mobile & Interoperable Systems Lead",
     isAuthorVerified: true,
     isOfficialAnnouncement: false,
     isPinned: false,
     isHidden: false,
     content:
-      "[DEMO SEED CONTENT] Researching low-latency audio transmission strategies over high-jitter 2G networks for the ShasthoSetu community triage bridge. We are exploring opus codecs with dynamic bitrate adjustment.",
+      "[DEMO SEED CONTENT] Exploring standardized HL7 FHIR resource schemas and conflict-free offline synchronization strategies for the ShasthoSetu digital health record exchange prototype.",
     likesCount: 3,
     commentsCount: 1,
     media: [],
@@ -554,7 +554,7 @@ export default function CommunityFeedPage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900">Join the Healthcare Innovation Conversation</h3>
-                <p className="text-xs text-slate-500">Sign in to publish posts, share clinical feedback, and like updates.</p>
+                <p className="text-xs text-slate-500">Sign in to publish posts, share technical feedback, and engage with researchers.</p>
               </div>
             </div>
             <Link href="/login" className="shrink-0">

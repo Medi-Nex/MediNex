@@ -470,7 +470,7 @@ export default function DashboardSettingsPage() {
                   Official Team Announcements & Milestones
                 </span>
                 <span className="text-[11px] text-medinex-muted">
-                  Priority notifications for E-Health Hackathon 2026 milestones and ShasthoSetu updates
+                  Priority notifications for MediNex platform updates and ShasthoSetu research milestones
                 </span>
               </div>
               <button

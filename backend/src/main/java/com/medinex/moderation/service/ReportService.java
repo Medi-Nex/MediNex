@@ -27,7 +27,7 @@ public class ReportService {
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reporter user not found"));
 
-        User reportedUser = userRepository.findByUsername(targetUsername)
+        User reportedUser = userRepository.findByUsernameIgnoreCase(targetUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Reported user not found: " + targetUsername));
 
         if (reporter.getId().equals(reportedUser.getId())) {

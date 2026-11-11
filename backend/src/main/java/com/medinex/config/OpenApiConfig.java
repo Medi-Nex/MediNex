@@ -23,7 +23,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("MediNex Platform API")
-                        .description("Backend REST APIs for MediNex — Healthcare Innovation Community Platform (E-Health Hackathon 2026)")
+                        .description("Backend REST APIs for MediNex — Healthcare Innovation & Technology Platform")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("MediNex Innovation Team")

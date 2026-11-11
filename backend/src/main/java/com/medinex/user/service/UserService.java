@@ -21,11 +21,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final AvatarImageService avatarImageService;
+    private final ProfileAccessGuard profileAccessGuard;
 
     @Transactional(readOnly = true)
-    public UserDto getUserByUsername(String username) {
+    public UserDto getUserByUsername(String username, UUID viewerId) {
         User user = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+        profileAccessGuard.requireProfileViewAccess(
+                user,
+                viewerId,
+                "This user profile is private. Only the profile owner and accepted followers can view it."
+        );
         return UserDto.fromPublicEntity(user);
     }
 

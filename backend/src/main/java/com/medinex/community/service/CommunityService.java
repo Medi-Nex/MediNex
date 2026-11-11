@@ -1,7 +1,9 @@
 package com.medinex.community.service;
 
 import com.medinex.common.exception.BadRequestException;
+import com.medinex.common.exception.ForbiddenException;
 import com.medinex.common.exception.ResourceNotFoundException;
+import com.medinex.common.exception.UnauthorizedException;
 import com.medinex.community.dto.*;
 import com.medinex.community.entity.*;
 import com.medinex.community.repository.*;
@@ -13,6 +15,7 @@ import com.medinex.user.entity.User;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserRepository;
 import com.medinex.user.service.AvatarUrlHelper;
+import com.medinex.user.service.ProfileAccessGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,7 @@ public class CommunityService {
     private final BlockRepository blockRepository;
     private final NotificationService notificationService;
     private final PhiGuardService phiGuardService;
+    private final ProfileAccessGuard profileAccessGuard;
 
     // --------------------------------------------------------------------------
     // POST CRUD & FEED
@@ -136,8 +140,7 @@ public class CommunityService {
         log.info("[COMMUNITY] Post {} soft-deleted by user {}", postId, currentUserId);
     }
 
-    @Transactional(readOnly = true)
-    public PostDto getPostById(UUID postId, UUID currentUserId) {
+    private Post validateAndLoadViewablePost(UUID postId, UUID currentUserId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
@@ -145,15 +148,27 @@ public class CommunityService {
             throw new ResourceNotFoundException("Post is unavailable");
         }
 
+        profileAccessGuard.requireProfileViewAccess(
+                post.getAuthor(),
+                currentUserId,
+                "This post belongs to a private profile. Only the profile owner and accepted followers can view it."
+        );
+
         if (post.getVisibility() == PostVisibility.MEMBERS_ONLY && currentUserId == null) {
-            throw new BadRequestException("Authentication required to view this post");
+            throw new UnauthorizedException("Authentication required to view this post");
         }
 
         if (post.getVisibility() == PostVisibility.PRIVATE &&
                 (currentUserId == null || !post.getAuthor().getId().equals(currentUserId))) {
-            throw new BadRequestException("This post is private");
+            throw new ForbiddenException("This post is private and only visible to its author");
         }
 
+        return post;
+    }
+
+    @Transactional(readOnly = true)
+    public PostDto getPostById(UUID postId, UUID currentUserId) {
+        Post post = validateAndLoadViewablePost(postId, currentUserId);
         return mapToPostDto(post, currentUserId);
     }
 
@@ -166,26 +181,20 @@ public class CommunityService {
             visibilities.add(PostVisibility.MEMBERS_ONLY);
         }
 
-        // Collect author IDs to exclude (blocked users)
-        Set<UUID> blockedAuthorIds = null;
-        if (currentUserId != null) {
-            // Find users who have mutual blocks with currentUserId
-            // For simplicity, pass empty set or collect
-            blockedAuthorIds = new HashSet<>();
-        }
-
-        return postRepository.findFeedPosts(visibilities, blockedAuthorIds != null && !blockedAuthorIds.isEmpty() ? blockedAuthorIds : null, pageable)
+        return postRepository.findFeedPosts(visibilities, currentUserId, pageable)
                 .map(post -> mapToPostDto(post, currentUserId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostDto> getUserPosts(String username, UUID currentUserId, Pageable pageable) {
-        User target = userRepository.findByUsername(username)
+        User target = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
-        if (currentUserId != null && blockRepository.areMutuallyBlocked(currentUserId, target.getId())) {
-            throw new BadRequestException("Cannot view posts due to an active block");
-        }
+        profileAccessGuard.requireProfileViewAccess(
+                target,
+                currentUserId,
+                "This user's posts are private. Only the profile owner and accepted followers can view them."
+        );
 
         List<PostVisibility> visibilities = new ArrayList<>();
         visibilities.add(PostVisibility.PUBLIC);
@@ -210,8 +219,7 @@ public class CommunityService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        Post post = validateAndLoadViewablePost(postId, userId);
 
         boolean alreadyLiked = postLikeRepository.existsByPostIdAndUserId(postId, userId);
 
@@ -255,8 +263,7 @@ public class CommunityService {
 
         phiGuardService.validateContent(request.getContent());
 
-        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        Post post = validateAndLoadViewablePost(postId, authorId);
 
         Comment parent = null;
         if (request.getParentCommentId() != null) {
@@ -331,6 +338,7 @@ public class CommunityService {
 
     @Transactional(readOnly = true)
     public Page<CommentDto> getPostComments(UUID postId, UUID currentUserId, Pageable pageable) {
+        validateAndLoadViewablePost(postId, currentUserId);
         return commentRepository.findTopLevelComments(postId, pageable)
                 .map(comment -> {
                     CommentDto dto = mapToCommentDto(comment, currentUserId);

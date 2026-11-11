@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Healthcare Innovation Community Feed",
+  title: "Healthcare Technology Community Feed",
   description:
-    "Participatory healthcare innovation discussions, open-source biomedical informatics dispatches, and collaborative community dialogue for E-Health Hackathon 2026.",
+    "Collaborative healthcare technology discussions, digital health interoperability engineering notes, and public health research dialogue on MediNex.",
   openGraph: {
-    title: "Healthcare Innovation Community Feed | MediNex",
+    title: "Healthcare Technology Community Feed | MediNex",
     description:
-      "Participatory healthcare innovation discussions, open-source biomedical informatics dispatches, and collaborative community dialogue for E-Health Hackathon 2026.",
-    url: "https://medinex.health/community",
+      "Collaborative healthcare technology discussions, digital health engineering notes, and public health research dialogue on MediNex.",
+    url: `${APP_URL}/community`,
     siteName: "MediNex",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Healthcare Innovation Community Feed | MediNex",
+    title: "Healthcare Technology Community Feed | MediNex",
     description:
-      "Public health technology discussions, verified engineering updates, and open collaboration from MediNex.",
+      "Public health technology discussions, engineering notes, and open collaboration from MediNex.",
   },
   alternates: {
     canonical: "/community",

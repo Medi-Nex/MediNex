@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export const metadata: Metadata = {
   title: "Contact & Collaboration Inquiries",
   description:
-    "Get in touch with the MediNex core engineering team for E-Health Hackathon 2026 technical inquiries, research collaboration, and feedback.",
+    "Get in touch with the MediNex team for healthcare technology research collaboration, interoperability discussions, and technical inquiries.",
   openGraph: {
     title: "Contact & Collaboration | MediNex",
     description:
-      "Get in touch with the MediNex core engineering team for E-Health Hackathon 2026 inquiries and collaboration.",
-    url: "https://medinex.health/contact",
+      "Get in touch with the MediNex team for technical inquiries, research collaboration, and healthcare technology initiatives.",
+    url: `${APP_URL}/contact`,
     siteName: "MediNex",
     type: "website",
   },
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Contact & Collaboration | MediNex",
     description:
-      "Get in touch with the MediNex engineering team for E-Health Hackathon 2026.",
+      "Get in touch with the MediNex team for healthcare technology collaboration and technical inquiries.",
   },
   alternates: {
     canonical: "/contact",

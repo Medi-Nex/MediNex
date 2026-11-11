@@ -102,6 +102,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Pure-Java WebP ImageIO decoding support for direct WebP avatar uploads (Alpine musl safe) -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-webp</artifactId>
+			<version>3.13.1</version>
+		</dependency>
+
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>

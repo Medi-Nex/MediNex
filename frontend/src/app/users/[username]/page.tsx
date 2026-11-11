@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { FollowButton } from "@/components/follow/FollowButton";
+import { ApiError } from "@/lib/api/client";
 import { authApi, PublicUserProfile } from "@/lib/api/auth";
 import { getUserFollowStats, FollowStatsDto } from "@/lib/api/follow";
 import { getUserPosts, PostDto } from "@/lib/api/community";
@@ -85,6 +86,19 @@ export default function PublicUserProfilePage() {
             linkedinUrl: apiUser.value.linkedinUrl || teamFallback?.linkedinUrl,
           };
           setProfile(merged);
+        } else if (apiUser.reason instanceof ApiError && apiUser.reason.status === 403) {
+          // Backend enforces private profile access (403); render minimal lock view with Follow button
+          setProfile({
+            id: username,
+            username,
+            fullName: `@${username}`,
+            status: "ACTIVE",
+            emailVerified: true,
+            isTeamMember: false,
+            isPublicVisible: false,
+            roles: [],
+            createdAt: "",
+          });
         } else {
           // Graceful fallback if viewing one of the local static seed contributor usernames offline
           const teamFallback = INITIAL_TEAM_MEMBERS.find(
@@ -398,7 +412,7 @@ export default function PublicUserProfilePage() {
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                     {profile.bio && profile.bio.trim().length > 0
                       ? profile.bio
-                      : `${profile.fullName} is a community innovator on MediNex collaborating on digital health and clinical access solutions.`}
+                      : `${profile.fullName} is a community innovator on MediNex collaborating on digital health and healthcare technology initiatives.`}
                   </p>
 
                   {profile.responsibilities && profile.responsibilities.length > 0 && (

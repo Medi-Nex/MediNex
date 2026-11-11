@@ -28,7 +28,7 @@ export default function TermsPage() {
           <p>
             MediNex is an open platform designed to showcase technological innovation, research specifications,
             and community dialogue around digital health engineering. MediNex is NOT a licensed healthcare
-            provider and does NOT deliver clinical medical diagnoses, prescriptions, or emergency healthcare services.
+            provider and does NOT deliver clinical medical diagnoses, prescriptions, doctor consultations, hospital scheduling, or emergency healthcare services.
           </p>
         </section>
 

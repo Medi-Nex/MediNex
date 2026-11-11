@@ -1,8 +1,8 @@
-# MediNex — Healthcare Innovation Community Platform
+# MediNex — Healthcare Innovation & Technology Platform
 
-> *"Healthcare Innovation. Connected Communities."*
+> *"Connecting Technology, Research & Healthcare Innovation."*
 
-[![E-Health Hackathon 2026](https://img.shields.io/badge/E--Health%20Hackathon-2026%20Contender-0D9488?style=for-the-badge&logo=medscape&logoColor=white)](https://github.com/Medi-Nex)
+[![Healthcare Technology Platform](https://img.shields.io/badge/MediNex-Health%20Tech%20Platform-0D9488?style=for-the-badge&logo=medscape&logoColor=white)](https://github.com/Medi-Nex)
 [![Java 21 LTS](https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
 [![Spring Boot 3.4](https://img.shields.io/badge/Spring%20Boot-3.4.3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Next.js 16 App Router](https://img.shields.io/badge/Next.js-16%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -11,22 +11,24 @@
 
 ---
 
-## 1. Project Mission & Hackathon Context
+## 1. Platform Identity & Collaborative Mission
 
-**MediNex** is a production-grade web platform engineered for an interdisciplinary team of six contributors participating in **E-Health Hackathon 2026**.
+**MediNex** is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, build innovative solutions, and collaborate on technology-driven healthcare initiatives (initially incubated during E-Health Hackathon 2026).
+
+> **Important Positioning Clarification:** MediNex is NOT a telemedicine service provider, doctor consultation marketplace, clinic, or hospital management system.
 
 The platform provides a dual architecture:
-1. **The MediNex Public Community Platform:** An open collaboration ecosystem featuring verified contributor profiles, official team announcements, public project specifications, follower relationships, and discussion feeds.
-2. **The ShasthoSetu Project:** An experimental telemedicine connectivity bridge engineered to connect grassroots rural clinics with specialized tele-consultations over low-bandwidth connections.
+1. **The MediNex Public Community Platform:** An open collaboration ecosystem featuring contributor profiles, official announcements, project specifications, follower relationships, and healthcare technology discussion feeds.
+2. **The ShasthoSetu Project (Featured Initiative):** An interoperable digital health record and exchange platform prototype exploring standardized health data structures, HL7 FHIR alignment, consent workflows, and RBAC.
 
 ---
 
 ## 2. Non-Negotiable Project Rules & Governance
 
 - **Zero Protected Health Information (PHI):** MediNex does **NOT** accept, index, or store patient medical records, personal health identifiers, prescriptions, or clinical diagnostic scans in public community databases.
-- **Strict Data Segregation:** Social community features and ShasthoSetu telemedicine queues reside in separated logical domains. Social tokens cannot access clinical triage streams.
-- **Honest Metrics & Transparency:** Contributor profiles and project milestones use verified placeholder records until confirmed by the team. No fake followers, hospital permissions, clinical trial claims, or hackathon awards are fabricated.
-- **Real Database Persistence:** Powered by PostgreSQL 16 with Flyway schema migrations (V1 baseline + V2 performance indexes).
+- **Strict Data Segregation:** Community social interactions and ShasthoSetu health-record interoperability prototypes reside in separated logical domains. Social tokens grant zero privilege to clinical record pipelines.
+- **Honest Metrics & Transparency:** Implemented capabilities, working prototypes, research concepts, and long-term vision are strictly separated. No fake followers, hospital integrations, regulatory approvals, or clinical trial claims are fabricated.
+- **Real Database Persistence:** Powered by PostgreSQL 16 with deterministic Flyway schema migrations (`V1`–`V6`, including privacy, OTP security, and contributor least-privilege enforcement).
 
 ---
 
@@ -53,15 +55,16 @@ The platform provides a dual architecture:
 
 ### Public Routes:
 - `/` — Premium landing page with hero, mission, and live metrics
-- `/about` — MediNex mission, vision, values, and E-Health Hackathon story
-- `/team` — Official six contributor profiles roster
+- `/about` — MediNex mission, vision, values, and initiative background
+- `/team` — Core multidisciplinary contributor profiles roster
 - `/team/[username]` — Individual dynamic contributor profile with social graph
+- `/users/[username]` — Public and privacy-enforced community profile view
 - `/projects` — Official projects directory
-- `/projects/shasthosetu` — Flagship ShasthoSetu telemedicine bridge specification
+- `/projects/shasthosetu` — Featured ShasthoSetu interoperable health record & exchange architecture
 - `/community` — Public community discourse feed with real-time post creation
 - `/community/posts/[id]` — Shareable permalink discussion thread with nested replies
 - `/updates` — Official team announcements and technical bulletins
-- `/events` — Hackathon demonstration schedule and milestones
+- `/events` — Platform milestones, demonstrations, and technical events
 - `/contact` — Public inquiry and collaboration form
 - `/privacy` — Healthcare governance and privacy policy
 - `/terms` — Terms of service and community guidelines
@@ -147,10 +150,10 @@ npm run dev
 
 | Test Suite | Framework | Count | Execution Time | Status |
 | :--- | :--- | :---: | :---: | :---: |
-| **Backend Integration & Unit** | JUnit 5 / MockMvc / Spring Boot | **37 tests** | 38s | **100% PASS** |
-| **Frontend Unit & Governance** | Node.js Test Runner | **5 tests** | 88ms | **100% PASS** |
-| **Frontend Static Analysis** | ESLint Strict | 37 routes | 5s | **0 Errors, 0 Warnings** |
-| **Frontend Production Build** | Next.js 16 App Router | 37 routes | 1.2s | **37 Prerendered** |
+| **Backend Integration & Unit** | JUnit 5 / MockMvc / Spring Boot | **60 tests (12 classes)** | ~89s | **100% PASS** |
+| **Frontend Unit & Governance** | Node.js Test Runner | **7 tests** | ~142ms | **100% PASS** |
+| **Frontend Static Analysis** | ESLint (`npm run lint`) & `tsc --noEmit` | 37 routes | ~6s | **0 Errors, 0 Warnings** |
+| **Frontend Production Build** | Next.js 16 App Router | 37 routes | ~11s | **37 Compiled** |
 
 ---
 

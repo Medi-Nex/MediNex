@@ -29,14 +29,23 @@ import {
   AdminStats,
   AuditLogItem,
 } from "@/lib/api/admin";
+import { useAuth } from "@/lib/auth-context";
 
 export default function AdminOverviewPage() {
+  const { user } = useAuth();
+  const isAdmin = Boolean(
+    user?.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN")
+  );
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recentLogs, setRecentLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = async () => {
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -56,7 +65,8 @@ export default function AdminOverviewPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
 
   return (
     <div className="space-y-8">
@@ -64,23 +74,27 @@ export default function AdminOverviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-medinex-text tracking-tight">
-            System Administration Overview
+            {isAdmin ? "System Administration Overview" : "Moderation Console Overview"}
           </h1>
           <p className="text-xs text-medinex-muted mt-1">
-            Real-time metrics, platform health indicators, and high-privilege operations
+            {isAdmin
+              ? "Real-time metrics, platform health indicators, and high-privilege operations"
+              : "Content safety review queues, report resolution, and media oversight"}
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadData}
-          disabled={loading}
-          className="self-start sm:self-auto text-xs"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-          Refresh Metrics
-        </Button>
+        {isAdmin && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadData}
+            disabled={loading}
+            className="self-start sm:self-auto text-xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
+            Refresh Metrics
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -90,7 +104,8 @@ export default function AdminOverviewPage() {
         </div>
       )}
 
-      {/* Metrics Grid */}
+      {/* Metrics Grid (Admins only) */}
+      {isAdmin && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Total Users */}
         <Card className="border border-medinex-border hover:border-emerald-300 transition-colors">
@@ -215,13 +230,16 @@ export default function AdminOverviewPage() {
           </CardBody>
         </Card>
       </div>
+      )}
 
       {/* Quick Access Modules */}
       <div>
         <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-          Administrative & Moderation Capabilities
+          {isAdmin ? "Administrative & Moderation Capabilities" : "Moderation Capabilities"}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {isAdmin && (
+          <>
           <Link href="/admin/users" className="group">
             <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
@@ -251,6 +269,8 @@ export default function AdminOverviewPage() {
               </div>
             </div>
           </Link>
+          </>
+          )}
 
           <Link href="/admin/posts" className="group">
             <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
@@ -282,6 +302,7 @@ export default function AdminOverviewPage() {
             </div>
           </Link>
 
+          {isAdmin && (
           <Link href="/admin/projects" className="group">
             <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
@@ -296,6 +317,7 @@ export default function AdminOverviewPage() {
               </div>
             </div>
           </Link>
+          )}
 
           <Link href="/admin/media" className="group">
             <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
@@ -307,7 +329,7 @@ export default function AdminOverviewPage() {
               </div>
               <div className="mt-3">
                 <h3 className="font-bold text-xs text-medinex-text">Media Asset Review</h3>
-                <p className="text-[11px] text-medinex-muted mt-0.5">Diagnostic & image uploads</p>
+                <p className="text-[11px] text-medinex-muted mt-0.5">Community image uploads &amp; safety</p>
               </div>
             </div>
           </Link>
@@ -327,6 +349,8 @@ export default function AdminOverviewPage() {
             </div>
           </Link>
 
+          {isAdmin && (
+          <>
           <Link href="/admin/analytics" className="group">
             <div className="p-4 rounded-2xl bg-white border border-medinex-border group-hover:border-medinex-teal transition-all shadow-xs h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
@@ -371,10 +395,13 @@ export default function AdminOverviewPage() {
               </div>
             </div>
           </Link>
+          </>
+          )}
         </div>
       </div>
 
       {/* Recent Security & Moderation Activity */}
+      {isAdmin && (
       <Card className="border border-medinex-border">
         <CardHeader className="flex flex-row items-center justify-between border-b border-medinex-border p-5">
           <div className="flex items-center gap-2">
@@ -431,6 +458,7 @@ export default function AdminOverviewPage() {
           )}
         </CardBody>
       </Card>
+      )}
     </div>
   );
 }

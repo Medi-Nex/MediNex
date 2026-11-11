@@ -190,7 +190,7 @@ export default function DashboardFollowingPage() {
                   </span>
                 </div>
                 <p className="text-sm text-slate-600 max-w-xl">
-                  &ldquo;Healthcare Innovation. Connected Communities.&rdquo; Official squad of six health-tech innovators participating in E-Health Hackathon 2026.
+                  &ldquo;Connecting Technology, Research &amp; Healthcare Innovation.&rdquo; Multidisciplinary team collaborating on healthcare technology and ShasthoSetu.
                 </p>
                 <div className="flex items-center gap-4 pt-2 text-xs text-slate-500">
                   <span className="font-semibold text-slate-900">{teamStats.followerCount}</span> Followers

@@ -6,12 +6,13 @@ import com.medinex.auth.entity.EmailVerificationToken;
 import com.medinex.auth.entity.PasswordResetToken;
 import com.medinex.auth.repository.EmailVerificationTokenRepository;
 import com.medinex.auth.repository.PasswordResetTokenRepository;
+import com.medinex.common.email.EmailService;
 import com.medinex.user.entity.User;
 import com.medinex.user.model.UserStatus;
 import com.medinex.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,16 +21,22 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -57,6 +64,9 @@ public class AuthIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @MockitoSpyBean
+    private EmailService emailService;
 
     @Test
     void shouldRegisterNewUserSuccessfully() throws Exception {
@@ -327,7 +337,8 @@ public class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(register)))
                 .andExpect(status().isCreated());
 
-        String realOtp = extractOtpForEmail(output, email);
+        String realOtp = captureOtpForEmail(email);
+        assertFalse(output.getAll().contains(realOtp), "Raw verification OTP must never be logged");
 
         VerifyEmailRequest badFormat = VerifyEmailRequest.builder()
                 .email(email)
@@ -370,7 +381,8 @@ public class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(register)))
                 .andExpect(status().isCreated());
 
-        String realOtp = extractOtpForEmail(output, email);
+        String realOtp = captureOtpForEmail(email);
+        assertFalse(output.getAll().contains(realOtp), "Raw verification OTP must never be logged");
         String wrongOtp = realOtp.equals("000000") ? "999999" : "000000";
 
         VerifyEmailRequest wrongReq = VerifyEmailRequest.builder()
@@ -404,10 +416,147 @@ public class AuthIntegrationTest {
                 .andExpect(status().isTooManyRequests());
     }
 
-    private String extractOtpForEmail(CapturedOutput output, String email) {
-        Pattern pattern = Pattern.compile("Dispatching verification OTP to " + Pattern.quote(email) + " \\(OTP: (\\d{6})\\)");
-        Matcher matcher = pattern.matcher(output.getOut());
-        assertTrue(matcher.find(), "Expected 6-digit OTP log entry for " + email);
-        return matcher.group(1);
+    @Test
+    void shouldRedactOtpAndResetTokenFromLogs(CapturedOutput output) throws Exception {
+        String suffix = System.currentTimeMillis() + "_redact";
+        String email = "redact_" + suffix + "@medinex.health";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("redact_" + suffix)
+                .email(email)
+                .fullName("Log Redaction Tester")
+                .password("SecurePass2026!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isCreated());
+
+        String rawOtp = captureOtpForEmail(email);
+
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ForgotPasswordRequest.builder()
+                                .email(email)
+                                .build())))
+                .andExpect(status().isOk());
+
+        String rawResetToken = captureResetTokenForEmail(email);
+
+        String logs = output.getAll();
+        assertFalse(logs.contains(rawOtp), "Verification OTP must never appear in application logs");
+        assertFalse(logs.contains(rawResetToken), "Password reset token must never appear in application logs");
+        assertFalse(logs.contains("(OTP:"), "Logs must not include plaintext OTP markers");
+        assertFalse(logs.contains("(Token:"), "Logs must not include plaintext Token markers");
+
+        // Confirm captured values were real active credentials
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(VerifyEmailRequest.builder()
+                                .email(email)
+                                .otp(rawOtp)
+                                .build())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ResetPasswordRequest.builder()
+                                .token(rawResetToken)
+                                .newPassword("ResetPass2026!")
+                                .build())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectPrivilegedRolesOnPublicRegistration() throws Exception {
+        String suffix = System.currentTimeMillis() + "_pubreg";
+        String payload = """
+                {
+                  "fullName": "Self Escalator",
+                  "username": "pubreg_%s",
+                  "email": "pubreg_%s@medinex.health",
+                  "password": "SecurePass2026!",
+                  "agreeTerms": true,
+                  "roles": ["ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_MODERATOR"]
+                }
+                """.formatted(suffix, suffix);
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.roles", contains("ROLE_USER")))
+                .andExpect(jsonPath("$.data.roles", hasSize(1)));
+
+        User created = userRepository.findByUsernameIgnoreCase("pubreg_" + suffix).orElseThrow();
+        List<String> persistedRoles = created.getRoles().stream().map(r -> r.getName()).toList();
+        assertEquals(List.of("ROLE_USER"), persistedRoles);
+    }
+
+    @Test
+    void shouldNotImposeCooldownAfterTransientResendEmailFailure() throws Exception {
+        String suffix = System.currentTimeMillis() + "_failresend";
+        String email = "failresend_" + suffix + "@medinex.health";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("failresend_" + suffix)
+                .email(email)
+                .fullName("Resend Failure Tester")
+                .password("SecurePass2026!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        EmailVerificationToken initialToken = emailVerificationTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId())
+                .get(0);
+
+        jdbcTemplate.update(
+                "UPDATE email_verification_tokens SET created_at = ? WHERE id = ?",
+                Timestamp.from(Instant.now().minusSeconds(130)),
+                initialToken.getId()
+        );
+
+        ResendVerificationRequest resendReq = ResendVerificationRequest.builder()
+                .email(email)
+                .build();
+
+        // Simulate transient SMTP failure during resend
+        doReturn(false).when(emailService).sendVerificationEmail(eq(email), anyString(), anyString());
+
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resendReq)))
+                .andExpect(status().isServiceUnavailable());
+
+        // Restore real dispatch; immediate retry MUST succeed without waiting 120 seconds
+        reset(emailService);
+
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resendReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+    }
+
+    private String captureOtpForEmail(String email) {
+        ArgumentCaptor<String> otpCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService, atLeastOnce()).sendVerificationEmail(eq(email), anyString(), otpCaptor.capture());
+        List<String> values = otpCaptor.getAllValues();
+        assertFalse(values.isEmpty(), "Expected OTP dispatch to " + email);
+        return values.get(values.size() - 1);
+    }
+
+    private String captureResetTokenForEmail(String email) {
+        ArgumentCaptor<String> tokenCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService, atLeastOnce()).sendPasswordResetEmail(eq(email), anyString(), tokenCaptor.capture());
+        List<String> values = tokenCaptor.getAllValues();
+        assertFalse(values.isEmpty(), "Expected reset token dispatch to " + email);
+        return values.get(values.size() - 1);
     }
 }

@@ -46,3 +46,11 @@ test-results/
 # Flyway / Temporary
 *.tmp
 *.bak
+
+# Local uploads storage (persisted via Docker volume medinex_uploads in Compose)
+uploads/
+backend/uploads/
+
+# Non-destructive verification backups
+backups/
+

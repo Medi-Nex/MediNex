@@ -5,6 +5,7 @@ import com.medinex.audit.entity.AuditLog;
 import com.medinex.audit.repository.AuditLogRepository;
 import com.medinex.auth.dto.UserDto;
 import com.medinex.common.exception.BadRequestException;
+import com.medinex.common.exception.ForbiddenException;
 import com.medinex.common.exception.ResourceNotFoundException;
 import com.medinex.community.entity.Comment;
 import com.medinex.community.entity.Post;
@@ -104,17 +105,20 @@ public class AdminService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin user not found"));
 
-        // If target is super admin and current admin is not, prevent demotion
+        // Protect SUPER_ADMIN accounts and prevent privilege escalation by ordinary admins
         boolean targetIsSuperAdmin = target.getRoles().stream()
                 .anyMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"));
         boolean adminIsSuperAdmin = admin.getRoles().stream()
                 .anyMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"));
 
         if (targetIsSuperAdmin && !adminIsSuperAdmin) {
-            throw new BadRequestException("Only SUPER_ADMIN can modify a SUPER_ADMIN account");
+            throw new ForbiddenException("Only SUPER_ADMIN can modify a SUPER_ADMIN account");
         }
 
         if (request.getStatus() != null) {
+            if (target.getId().equals(admin.getId()) && request.getStatus() != UserStatus.ACTIVE) {
+                throw new BadRequestException("Administrators cannot suspend or deactivate their own active account");
+            }
             target.setStatus(request.getStatus());
         }
 
@@ -125,13 +129,32 @@ public class AdminService {
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
             Set<Role> newRoles = new HashSet<>();
             for (String roleName : request.getRoles()) {
-                String normalized = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
-                roleRepository.findByName(normalized)
-                        .ifPresent(newRoles::add);
+                if (roleName == null || roleName.isBlank()) {
+                    continue;
+                }
+                String normalized = roleName.trim().toUpperCase();
+                if (!normalized.startsWith("ROLE_")) {
+                    normalized = "ROLE_" + normalized;
+                }
+                final String lookupName = normalized;
+                Role role = roleRepository.findByName(lookupName)
+                        .orElseThrow(() -> new BadRequestException("Unknown role: " + lookupName));
+                newRoles.add(role);
             }
-            if (!newRoles.isEmpty()) {
-                target.setRoles(newRoles);
+            if (newRoles.isEmpty()) {
+                throw new BadRequestException("At least one valid role must remain assigned");
             }
+
+            boolean assignsSuperAdmin = newRoles.stream()
+                    .anyMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"));
+            if (assignsSuperAdmin && !adminIsSuperAdmin) {
+                throw new ForbiddenException("Only SUPER_ADMIN can assign SUPER_ADMIN privileges");
+            }
+            if (!adminIsSuperAdmin && target.getId().equals(admin.getId())) {
+                throw new ForbiddenException("Administrators cannot modify their own assigned roles");
+            }
+
+            target.setRoles(newRoles);
         }
 
         target.setUpdatedAt(Instant.now());
@@ -202,8 +225,18 @@ public class AdminService {
                     }
                     break;
                 case "SUSPEND_USER":
+                    boolean actorIsAdmin = admin.getRoles().stream()
+                            .anyMatch(r -> r.getName().equals("ROLE_ADMIN") || r.getName().equals("ROLE_SUPER_ADMIN"));
+                    if (!actorIsAdmin) {
+                        throw new ForbiddenException("Only Administrators can suspend user accounts");
+                    }
                     if (report.getReportedUser() != null) {
                         User user = report.getReportedUser();
+                        boolean reportedIsSuperAdmin = user.getRoles().stream()
+                                .anyMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"));
+                        if (reportedIsSuperAdmin && admin.getRoles().stream().noneMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"))) {
+                            throw new ForbiddenException("Only SUPER_ADMIN can suspend a SUPER_ADMIN account");
+                        }
                         user.setStatus(UserStatus.SUSPENDED);
                         userRepository.save(user);
                     }

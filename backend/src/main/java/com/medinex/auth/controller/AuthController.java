@@ -87,7 +87,7 @@ public class AuthController {
     @Operation(summary = "Get current authenticated user profile")
     public ApiResponse<UserDto> getCurrentUser(@AuthenticationPrincipal UserPrincipal principal) {
         if (principal == null) {
-            return ApiResponse.error("Not authenticated", null);
+            throw new com.medinex.common.exception.UnauthorizedException("Unauthorized: Authentication is required");
         }
         UserDto user = authService.getCurrentUser(principal.getId());
         return ApiResponse.ok(user, "Fetched authenticated profile");

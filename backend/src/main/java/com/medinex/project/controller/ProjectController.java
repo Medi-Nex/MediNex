@@ -71,9 +71,9 @@ public class ProjectController {
                 .problemStatement(p.getProblemStatement())
                 .proposedSolution(p.getProposedSolution())
                 .features(List.of(
-                        Map.of("title", "Offline-First Triage Assessment", "description", "Records structured patient encounters locally and queues for asynchronous sync."),
-                        Map.of("title", "Low-Bandwidth Asynchronous Consultation", "description", "Sends concise clinical cards over 2G/3G instead of heavy video streams."),
-                        Map.of("title", "Strict Data Isolation", "description", "Patient clinical data segregated from public MediNex social community platform.")
+                        Map.of("title", "Standardized Health Data Exchange", "description", "Researches HL7 FHIR-aligned schemas and structured digital health record exchange patterns."),
+                        Map.of("title", "Consent Management, RBAC & Audit Logs", "description", "Models explicit patient consent states, role-based access control, and record access audit trails."),
+                        Map.of("title", "Strict Zero-PHI Separation", "description", "Real patient medical records never enter the public MediNex community platform database.")
                 ))
                 .techStack(p.getTechStack())
                 .stage(p.getStage())

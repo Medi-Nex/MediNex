@@ -6,6 +6,8 @@ interface Props {
   children: React.ReactNode;
 }
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export async function generateMetadata({
   params,
 }: {
@@ -22,7 +24,7 @@ export async function generateMetadata({
   }
 
   const title = `${member.fullName} — ${member.designation}`;
-  const description = `${member.bio.slice(0, 155)}... Official MediNex team member for E-Health Hackathon 2026.`;
+  const description = `${member.bio.slice(0, 155)}... Contributor on the MediNex Healthcare Innovation & Technology Platform.`;
 
   return {
     title,
@@ -30,7 +32,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${title} | MediNex`,
       description,
-      url: `https://medinex.health/team/${username}`,
+      url: `${APP_URL}/team/${username}`,
       siteName: "MediNex",
       type: "profile",
     },

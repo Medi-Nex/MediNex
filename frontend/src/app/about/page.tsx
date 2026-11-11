@@ -16,9 +16,9 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 export const metadata = {
-  title: "About MediNex — Mission, Vision & Hackathon 2026",
+  title: "About MediNex — Healthcare Innovation & Technology Platform",
   description:
-    "Learn about the mission, engineering values, and E-Health Hackathon 2026 participation of the MediNex healthcare innovation platform.",
+    "Learn about MediNex, a collaborative healthcare technology platform uniting developers, researchers, and public health professionals around interoperable digital health solutions.",
 };
 
 export default function AboutPage() {
@@ -31,7 +31,7 @@ export default function AboutPage() {
             The MediNex Story
           </Badge>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Bridging Healthcare Innovation with Connected Communities
+            Connecting Technology, Research &amp; Healthcare Innovation
           </h1>
           <p className="text-slate-300 text-lg max-w-3xl mx-auto leading-relaxed">
             MediNex is built by an interdisciplinary team of six developers, health informatics
@@ -67,7 +67,7 @@ export default function AboutPage() {
               <h2 className="text-2xl font-bold text-medinex-text">Our Vision</h2>
               <p className="text-sm text-medinex-muted leading-relaxed">
                 A healthcare landscape where grassroots healthcare workers in remote community
-                clinics have resilient digital bridges to specialized clinical expertise, supported by
+                healthcare systems have interoperable digital foundations supported by
                 open-source standards and honest, verifiable metrics.
               </p>
             </CardBody>
@@ -81,14 +81,14 @@ export default function AboutPage() {
               <Activity className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-medinex-text">E-Health Hackathon 2026 Context</h2>
+              <h2 className="text-2xl font-bold text-medinex-text">Platform Origin &amp; Collaborative Context</h2>
               <p className="text-xs text-medinex-muted">Official Team Collaboration Project</p>
             </div>
           </div>
 
           <p className="text-sm text-slate-700 leading-relaxed">
             The MediNex platform originated as the official collaborative workspace for our six-member
-            hackathon team. As we tackled rural telemedicine challenges in Bangladesh, we recognized
+            MediNex is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, design interoperable digital health solutions, and collaborate openly. Originating during E-Health Hackathon 2026, our platform bridges software engineering and public health research without operating as a hospital or clinical provider.
             that technical innovation requires both deep engineering discipline (our flagship project,{" "}
             <strong>ShasthoSetu</strong>) and an open community platform to gather feedback from
             fellow students, doctors, and tech advocates.

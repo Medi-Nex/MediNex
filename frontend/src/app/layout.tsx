@@ -18,39 +18,44 @@ const hindSiliguri = Hind_Siliguri({
   display: "swap",
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export const metadata: Metadata = {
   title: {
-    default: "MediNex — Healthcare Innovation. Connected Communities.",
+    default: "MediNex — Healthcare Innovation & Technology Platform",
     template: "%s | MediNex",
   },
   description:
-    "Official collaboration and innovation community platform for the MediNex healthcare engineering team participating in E-Health Hackathon 2026.",
+    "MediNex is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, build innovative solutions, and collaborate on technology-driven healthcare initiatives.",
   keywords: [
+    "MediNex",
     "Healthcare Innovation",
-    "Connected Communities",
-    "E-Health Hackathon 2026",
+    "Healthcare Technology Platform",
     "Digital Health",
+    "Healthcare Interoperability",
+    "Health Information Systems",
+    "Public Health Technology",
     "ShasthoSetu",
-    "Medical Technology",
     "FHIR Standards",
-    "Telemedicine",
+    "AI in Healthcare",
+    "Health Data Security",
   ],
   authors: [{ name: "MediNex Innovation Team" }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://medinex.health"),
+  metadataBase: new URL(APP_URL),
   openGraph: {
-    title: "MediNex — Healthcare Innovation. Connected Communities.",
+    title: "MediNex — Healthcare Innovation & Technology Platform",
     description:
-      "A real team platform connecting healthcare innovators, official projects like ShasthoSetu, and participatory public communities.",
+      "Connecting Technology, Research & Healthcare Innovation. A collaborative platform uniting developers, researchers, and public health professionals.",
     siteName: "MediNex",
     locale: "en_US",
     type: "website",
-    url: "https://medinex.health",
+    url: APP_URL,
   },
   twitter: {
     card: "summary_large_image",
-    title: "MediNex — Healthcare Innovation. Connected Communities.",
+    title: "MediNex — Healthcare Innovation & Technology Platform",
     description:
-      "A real team platform connecting healthcare innovators, official projects like ShasthoSetu, and participatory public communities.",
+      "Connecting Technology, Research & Healthcare Innovation. Explore projects like ShasthoSetu and collaborate on health technology.",
   },
   alternates: {
     canonical: "/",
@@ -72,40 +77,42 @@ const rootStructuredData = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "MedicalOrganization",
-      "@id": "https://medinex.health/#organization",
+      "@type": "Organization",
+      "@id": `${APP_URL}/#organization`,
       "name": "MediNex",
-      "alternateName": "MediNex Healthcare Innovation Platform",
-      "url": "https://medinex.health",
-      "logo": "https://medinex.health/favicon.ico",
+      "alternateName": "MediNex Healthcare Innovation & Technology Platform",
+      "url": APP_URL,
+      "logo": `${APP_URL}/favicon.ico`,
       "description":
-        "Healthcare Innovation and Connected Communities platform for the E-Health Hackathon 2026 engineering team.",
+        "Connecting Technology, Research & Healthcare Innovation. A collaborative healthcare technology platform where developers, researchers, and public health professionals explore and build solutions.",
       "knowsAbout": [
-        "Healthcare Interoperability",
         "Digital Health",
-        "Telemedicine",
-        "Medical Informatics",
-        "FHIR Standards",
+        "Healthcare Interoperability",
+        "Health Information Systems",
+        "Public Health Technology",
+        "Health Data Security",
+        "AI in Healthcare",
+        "HL7 FHIR Standards",
       ],
       "sameAs": ["https://github.com/Medi-Nex/MediNex"],
       "contactPoint": {
         "@type": "ContactPoint",
-        "contactType": "Technical and Research Collaboration",
+        "contactType": "Platform Collaboration and Technical Inquiries",
         "email": "contact@medinex.health",
       },
     },
     {
       "@type": "WebSite",
-      "@id": "https://medinex.health/#website",
-      "url": "https://medinex.health",
+      "@id": `${APP_URL}/#website`,
+      "url": APP_URL,
       "name": "MediNex",
-      "description": "Healthcare Innovation. Connected Communities.",
+      "description": "Connecting Technology, Research & Healthcare Innovation.",
       "publisher": {
-        "@id": "https://medinex.health/#organization",
+        "@id": `${APP_URL}/#organization`,
       },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://medinex.health/community?q={search_term_string}",
+        "target": `${APP_URL}/community?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },

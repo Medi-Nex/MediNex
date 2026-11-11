@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Official Projects Directory & Research Initiatives",
+  title: "Projects & Research Initiatives",
   description:
-    "Explore official healthcare engineering projects by MediNex for E-Health Hackathon 2026, including the core ShasthoSetu telemedicine system and interoperability sandboxes.",
+    "Explore healthcare technology projects by MediNex, including ShasthoSetu (Interoperable Digital Health Record & Exchange Platform) and health-data research initiatives.",
   openGraph: {
-    title: "Official Projects Directory | MediNex",
+    title: "Projects & Research Initiatives | MediNex",
     description:
-      "Explore official healthcare engineering projects by MediNex for E-Health Hackathon 2026, including ShasthoSetu.",
-    url: "https://medinex.health/projects",
+      "Explore healthcare technology initiatives by MediNex, including ShasthoSetu interoperability architecture and research prototypes.",
+    url: `${APP_URL}/projects`,
     siteName: "MediNex",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Official Projects Directory | MediNex",
+    title: "Projects & Research Initiatives | MediNex",
     description:
-      "Official healthcare engineering projects by MediNex for E-Health Hackathon 2026.",
+      "Healthcare technology projects and research initiatives on MediNex.",
   },
   alternates: {
     canonical: "/projects",

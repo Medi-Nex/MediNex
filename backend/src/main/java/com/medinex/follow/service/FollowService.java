@@ -14,6 +14,7 @@ import com.medinex.user.entity.User;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserRepository;
 import com.medinex.user.service.AvatarUrlHelper;
+import com.medinex.user.service.ProfileAccessGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ public class FollowService {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final NotificationService notificationService;
+    private final ProfileAccessGuard profileAccessGuard;
 
     // --------------------------------------------------------------------------
     // USER FOLLOW OPERATIONS
@@ -46,7 +48,7 @@ public class FollowService {
         User follower = userRepository.findById(followerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Follower not found"));
 
-        User target = userRepository.findByUsername(targetUsername)
+        User target = userRepository.findByUsernameIgnoreCase(targetUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Target user not found: " + targetUsername));
 
         if (follower.getId().equals(target.getId())) {
@@ -126,7 +128,7 @@ public class FollowService {
         User follower = userRepository.findById(followerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Follower not found"));
 
-        User target = userRepository.findByUsername(targetUsername)
+        User target = userRepository.findByUsernameIgnoreCase(targetUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Target user not found: " + targetUsername));
 
         userFollowRepository.deleteByFollowerIdAndFollowingId(follower.getId(), target.getId());
@@ -141,7 +143,7 @@ public class FollowService {
 
     @Transactional(readOnly = true)
     public FollowStatsDto getUserFollowStats(UUID currentUserId, String targetUsername) {
-        User target = userRepository.findByUsername(targetUsername)
+        User target = userRepository.findByUsernameIgnoreCase(targetUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + targetUsername));
 
         long followerCount = userFollowRepository.countByFollowingId(target.getId());
@@ -173,8 +175,14 @@ public class FollowService {
 
     @Transactional(readOnly = true)
     public Page<FollowUserDto> getUserFollowers(String username, UUID currentUserId, Pageable pageable) {
-        User target = userRepository.findByUsername(username)
+        User target = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        profileAccessGuard.requireProfileViewAccess(
+                target,
+                currentUserId,
+                "Followers list is private. Only the profile owner and accepted followers can view it."
+        );
 
         return userFollowRepository.findByFollowingIdOrderByCreatedAtDesc(target.getId(), pageable)
                 .map(uf -> mapUserToFollowDto(uf.getFollower(), uf.getCreatedAt(), currentUserId));
@@ -182,8 +190,14 @@ public class FollowService {
 
     @Transactional(readOnly = true)
     public Page<FollowUserDto> getUserFollowing(String username, UUID currentUserId, Pageable pageable) {
-        User target = userRepository.findByUsername(username)
+        User target = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        profileAccessGuard.requireProfileViewAccess(
+                target,
+                currentUserId,
+                "Following list is private. Only the profile owner and accepted followers can view it."
+        );
 
         return userFollowRepository.findByFollowerIdOrderByCreatedAtDesc(target.getId(), pageable)
                 .map(uf -> mapUserToFollowDto(uf.getFollowing(), uf.getCreatedAt(), currentUserId));
@@ -261,7 +275,7 @@ public class FollowService {
         User blocker = userRepository.findById(blockerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Blocker not found"));
 
-        User blocked = userRepository.findByUsername(targetUsername)
+        User blocked = userRepository.findByUsernameIgnoreCase(targetUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Target user not found: " + targetUsername));
 
         if (blocker.getId().equals(blocked.getId())) {
@@ -289,7 +303,7 @@ public class FollowService {
         User blocker = userRepository.findById(blockerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Blocker not found"));
 
-        User blocked = userRepository.findByUsername(targetUsername)
+        User blocked = userRepository.findByUsernameIgnoreCase(targetUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Target user not found: " + targetUsername));
 
         blockRepository.deleteByBlockerIdAndBlockedId(blocker.getId(), blocked.getId());
@@ -320,7 +334,7 @@ public class FollowService {
                 currentUserId, FollowRequestStatus.PENDING, pageable
         ).map(fr -> FollowRequestDto.builder()
                 .id(fr.getId())
-                .requester(UserDto.fromEntity(fr.getRequester()))
+                .requester(UserDto.fromPublicEntity(fr.getRequester()))
                 .status(fr.getStatus().name())
                 .createdAt(fr.getCreatedAt())
                 .build());

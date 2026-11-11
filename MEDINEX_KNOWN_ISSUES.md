@@ -1,6 +1,6 @@
 # MEDINEX — KNOWN ISSUES & TECHNICAL DEBT REGISTER
 
-**Project:** MediNex — *"Healthcare Innovation. Connected Communities."*  
+**Project:** MediNex — *"Connecting Technology, Research & Healthcare Innovation."*  
 **Baseline Audited Commit:** `0074b01`  
 **Remediation Commit:** `142aa7b` (`fix(release): resolve schema drift, project/team authorization, role names, and context path`)  
 **Audit Date:** November 11, 2026  
@@ -10,12 +10,12 @@
 
 ## SUMMARY BY SEVERITY
 
-| Severity | Open | Resolved (`142aa7b`) | Notes |
+| Severity | Open | Resolved (`142aa7b` + Phase 9) | Notes |
 | :--- | :---: | :---: | :--- |
 | **P0 — Blocker** | **0** | **1** | `ISSUE-001` resolved via forward-only Flyway migration `V3` (plus `V4` & root context path alignment discovered during live Docker testing). |
 | **P1 — Critical / High** | **0** | **2** | `ISSUE-002` and `ISSUE-003` resolved via RBAC enforcement, `GlobalExceptionHandler`, and live/unit regression suites. |
-| **P2 — Medium** | **5** | **0** | Non-blocking operational/SMTP/feed/moderation/tooling items tracked below (`ISSUE-004`–`ISSUE-007`, `ISSUE-012`). |
-| **P3 — Low / Debt** | **4** | **0** | Production hardening & build-context optimizations (`ISSUE-008`–`ISSUE-011`). |
+| **P2 — Medium** | **1** | **4** | `ISSUE-004`, `ISSUE-006`, `ISSUE-007`, and `ISSUE-012` (local Mailpit wire dispatch) resolved in Phase 9; `ISSUE-005` (`settingsHolder` DB persistence) remains open. |
+| **P3 — Low / Debt** | **3** | **1** | `ISSUE-010` resolved via `DataInitializer` + `V6__restrict_contributor_roles.sql`; `ISSUE-008`, `ISSUE-009`, `ISSUE-011` tracked below. |
 
 ---
 
@@ -61,37 +61,33 @@
 
 ---
 
-## OPEN P2 — MEDIUM DEFECTS & OPERATIONAL DEBT (NON-BLOCKING FOR STAGING)
+## P2 DEFECTS & OPERATIONAL ITEMS (UPDATED PHASE 9)
 
-### ISSUE-004: Mutual Block Exclusion Incomplete in Community Main Feed
-- **Severity:** **P2 — MEDIUM**
-- **Affected Files:** [`backend/src/main/java/com/medinex/community/service/CommunityService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/community/service/CommunityService.java)
-- **Root Cause:** `getCommunityFeed` initializes `blockedAuthorIds` as an empty `HashSet<>()` instead of querying `BlockRepository` for mutual block IDs (profile post tabs do check mutual blocks).
-- **Recommended Fix:** Populate mutually blocked user IDs from `BlockRepository` in `getCommunityFeed` and `getPostById` before production launch.
+### ISSUE-004 [RESOLVED — P2]: Mutual Block & Private Profile Exclusion in Community Main Feed
+- **Status:** **RESOLVED & VERIFIED** (Phase 9)
+- **Affected Files:** [`PostRepository.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/community/repository/PostRepository.java), [`CommunityService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/community/service/CommunityService.java), [`ProfileAccessGuard.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/user/service/ProfileAccessGuard.java)
+- **Resolution:** Upgraded `PostRepository.findFeedPosts` JPQL query and `CommunityService` / `FollowService` / `UserService` with centralized `ProfileAccessGuard` rules excluding mutually blocked accounts and restricting `isPublicVisible = false` authors to owners and accepted followers.
 
-### ISSUE-005: Platform Site Settings Stored In-Memory (`AtomicReference`)
+### ISSUE-005 [OPEN — P2]: Platform Site Settings Stored In-Memory (`AtomicReference`)
 - **Severity:** **P2 — MEDIUM**
 - **Affected Files:** [`backend/src/main/java/com/medinex/admin/service/AdminService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/admin/service/AdminService.java)
 - **Root Cause:** `settingsHolder` stores `AdminSettingsDto` in JVM memory rather than PostgreSQL.
 - **Recommended Fix:** Add a `site_settings` table via Flyway migration and persist updates in PostgreSQL.
 
-### ISSUE-006: `ROLE_MODERATOR` Lacks Access to Moderation Endpoints
-- **Severity:** **P2 — MEDIUM**
-- **Affected Files:** [`SecurityConfig.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/config/SecurityConfig.java#L98), [`AdminController.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/admin/controller/AdminController.java#L30)
-- **Root Cause:** `/api/v1/admin/**` restricts all routes strictly to `SUPER_ADMIN` and `ADMIN`.
-- **Recommended Fix:** Permit `MODERATOR` on `/api/v1/admin/reports/**`, `/api/v1/admin/posts/**`, and `/api/v1/admin/comments/**`.
+### ISSUE-006 [RESOLVED — P2]: `ROLE_MODERATOR` Access & Boundary Enforcement
+- **Status:** **RESOLVED & VERIFIED** (Phase 9)
+- **Affected Files:** [`SecurityConfig.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/config/SecurityConfig.java), [`AdminController.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/admin/controller/AdminController.java), [`AdminService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/admin/service/AdminService.java)
+- **Resolution:** Permitted `ROLE_MODERATOR` on `/api/v1/admin/reports/**`, `/api/v1/admin/posts/**`, `/api/v1/admin/comments/**`, and `/api/v1/admin/media/**`, while denying `/stats`, `/users/**`, `/audit-logs`, `/analytics`, `/settings`, `/team`, and `SUSPEND_USER` report actions with HTTP `403`.
 
-### ISSUE-007: `npm run lint` Script Compatibility with Next.js 16.4.6
-- **Severity:** **P2 — MEDIUM (Tooling)**
+### ISSUE-007 [RESOLVED — P2]: `npm run lint` Script Compatibility with Next.js 16.4.6
+- **Status:** **RESOLVED & VERIFIED** (Phase 9)
 - **Affected Files:** [`frontend/package.json`](file:///e:/Project/MediNex/frontend/package.json#L9)
-- **Evidence:** `npm run lint` invokes `next lint`, which Next.js 16 treats as a directory path (`frontend\lint`), whereas `npx eslint src/` exits 0 cleanly.
-- **Recommended Fix:** Change `"lint": "next lint"` to `"lint": "eslint src/"` in `frontend/package.json`.
+- **Resolution:** Updated `"lint": "next lint"` to `"lint": "eslint src/"`; verified clean execution (`0` errors, `0` warnings).
 
-### ISSUE-012: `EmailService` SMTP Transport Property Binding Missing for Live Mailpit/SMTP
-- **Severity:** **P2 — MEDIUM**
-- **Affected Files:** [`backend/src/main/resources/application.yml`](file:///e:/Project/MediNex/backend/src/main/resources/application.yml), [`EmailService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/common/email/EmailService.java)
-- **Root Cause:** `compose.yaml` injects `MAIL_HOST` / `MAIL_PORT`, while `application.yml` does not map `spring.mail.host: ${MAIL_HOST:...}` / `spring.mail.port: ${MAIL_PORT:...}`. Consequently, Spring Boot does not instantiate `JavaMailSender` in Docker and `EmailService` falls back cleanly to simulated console logging (`Mailpit` stays healthy, but does not receive SMTP messages).
-- **Recommended Fix:** Add `spring.mail.*` mappings bound to `${MAIL_HOST}` / `${MAIL_PORT}` before enabling live email verification workflows in staging/production.
+### ISSUE-012 [RESOLVED (MAILPIT) — P2]: `EmailService` SMTP Property Binding & Delivery Error Handling
+- **Status:** **RESOLVED FOR MAILPIT WIRE DELIVERY; EXTERNAL GMAIL INBOX NOT INDEPENDENTLY VERIFIED** (Phase 9)
+- **Affected Files:** [`application.yml`](file:///e:/Project/MediNex/backend/src/main/resources/application.yml), [`EmailService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/common/email/EmailService.java), [`AuthService.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/auth/service/AuthService.java)
+- **Resolution:** Removed plaintext OTP/reset-token logging, wired `spring.mail.*` properties and delivery boolean return, prevented `120s` resend cooldown trap on transient SMTP failures (`503`), and verified MIME dispatch through Mailpit (`localhost:1026` / `8026`) plus STARTTLS reachability (`250`/`220`) to `smtp.gmail.com:587`. End-to-end external inbox receipt was not independently run because no controlled external recipient mailbox with readback access is provisioned.
 
 ---
 
@@ -107,11 +103,10 @@
 - **Root Cause:** JWT tokens are currently stored in browser `localStorage`, and no application-layer rate-limiting filter (`Bucket4j` / Redis throttling) is active on `/api/v1/auth/login` or `/forgot-password`.
 - **Recommended Fix:** Add `HttpOnly` refresh cookies and reverse-proxy / Bucket4j throttling before public launch.
 
-### ISSUE-010: Contributor Seed Accounts Defaulting to `ROLE_ADMIN`
-- **Severity:** **P3 — LOW**
-- **Affected Files:** [`backend/src/main/java/com/medinex/config/DataInitializer.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/config/DataInitializer.java#L171-L181)
-- **Root Cause:** Seeded placeholder contributors receive `ROLE_ADMIN` in addition to `ROLE_USER`.
-- **Recommended Fix:** Restrict non-administrator contributor accounts to `ROLE_USER` (and `ROLE_MODERATOR` if needed) in production.
+### ISSUE-010 [RESOLVED — P3]: Contributor Seed Accounts Restricted to `ROLE_USER`
+- **Status:** **RESOLVED & VERIFIED** (Phase 9)
+- **Affected Files:** [`DataInitializer.java`](file:///e:/Project/MediNex/backend/src/main/java/com/medinex/config/DataInitializer.java), [`V6__restrict_contributor_roles.sql`](file:///e:/Project/MediNex/backend/src/main/resources/db/migration/V6__restrict_contributor_roles.sql)
+- **Resolution:** Removed default `ROLE_ADMIN` grant from seeded contributors in `DataInitializer` and applied forward-only Flyway migration `V6` against live PostgreSQL (`contributor-01..06` verified holding `{ROLE_USER}` only).
 
 ### ISSUE-011: Binary Media Upload Endpoint & Local Crash Log Artifact
 - **Severity:** **P3 — LOW**

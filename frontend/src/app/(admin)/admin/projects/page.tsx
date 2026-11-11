@@ -143,7 +143,7 @@ export default function AdminProjectsPage() {
             <span>Project Governance & Initiatives</span>
           </h1>
           <p className="text-xs text-medinex-muted mt-1">
-            Maintain authoritative technical specifications, stage lifecycle, and clinical boundaries for MediNex initiatives.
+            Maintain authoritative technical specifications, stage lifecycle, and Zero-PHI governance boundaries for MediNex initiatives.
           </p>
         </div>
         <Button
@@ -164,7 +164,7 @@ export default function AdminProjectsPage() {
         <div className="space-y-1">
           <span className="font-bold">Architectural Data Isolation Standard:</span>
           <p className="text-[11px] text-teal-800 leading-relaxed">
-            All ShasthoSetu telemedicine telemetry, clinical consultation queues, and patient records are architecturally separated from community tables. No fake clinical validation, authority approvals, or unverified pilot metrics may be claimed without certified evidence.
+            All ShasthoSetu health-record interoperability prototypes, consent workflows, and sample schemas are architecturally separated from public community tables. No unverified pilot metrics, regulatory approvals, or hospital integrations may be claimed without certified evidence.
           </p>
         </div>
       </div>
@@ -371,7 +371,7 @@ export default function AdminProjectsPage() {
                   value={editTechStack}
                   onChange={(e) => setEditTechStack(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-medinex-border focus:outline-none focus:border-medinex-teal"
-                  placeholder="e.g. Next.js, Spring Boot, PostgreSQL, WebRTC, Opus"
+                  placeholder="e.g. Next.js, Spring Boot, PostgreSQL, HL7 FHIR, Docker"
                 />
               </div>
 

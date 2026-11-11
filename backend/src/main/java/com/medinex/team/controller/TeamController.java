@@ -2,21 +2,25 @@ package com.medinex.team.controller;
 
 import com.medinex.common.api.ApiResponse;
 import com.medinex.common.exception.ResourceNotFoundException;
+import com.medinex.common.security.UserPrincipal;
 import com.medinex.team.dto.TeamMemberDto;
 import com.medinex.team.entity.TeamMember;
 import com.medinex.team.repository.TeamMemberRepository;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserProfileRepository;
 import com.medinex.user.service.AvatarUrlHelper;
+import com.medinex.user.service.ProfileAccessGuard;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/team")
@@ -27,22 +31,35 @@ public class TeamController {
 
     private final TeamMemberRepository teamMemberRepository;
     private final UserProfileRepository userProfileRepository;
+    private final ProfileAccessGuard profileAccessGuard;
 
     @GetMapping("/members")
-    @Operation(summary = "Get all six team contributor profiles")
-    public ApiResponse<List<TeamMemberDto>> getMembers() {
+    @Operation(summary = "Get visible team contributor profiles")
+    public ApiResponse<List<TeamMemberDto>> getMembers(@AuthenticationPrincipal UserPrincipal principal) {
+        UUID viewerId = principal != null ? principal.getId() : null;
         List<TeamMember> members = teamMemberRepository.findAllByOrderByDisplayOrderAsc();
 
-        List<TeamMemberDto> dtos = members.stream().map(this::mapToDto).toList();
+        List<TeamMemberDto> dtos = members.stream()
+                .filter(member -> profileAccessGuard.canViewProfile(member.getUser(), viewerId))
+                .map(this::mapToDto)
+                .toList();
         return ApiResponse.ok(dtos, "Fetched " + dtos.size() + " team contributor profiles");
     }
 
     @GetMapping("/members/{username}")
     @Operation(summary = "Get individual contributor profile by username")
-    public ApiResponse<TeamMemberDto> getMemberByUsername(@PathVariable String username) {
+    public ApiResponse<TeamMemberDto> getMemberByUsername(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable String username) {
+        UUID viewerId = principal != null ? principal.getId() : null;
         TeamMember member = teamMemberRepository.findByUserUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Contributor", "username", username));
 
+        profileAccessGuard.requireProfileViewAccess(
+                member.getUser(),
+                viewerId,
+                "This contributor profile is private. Only the owner and accepted followers can view it."
+        );
         return ApiResponse.ok(mapToDto(member), "Fetched contributor profile");
     }
 

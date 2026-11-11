@@ -45,11 +45,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const isAdmin = user?.roles?.some(
-    (role) => role === "ROLE_ADMIN" || role === "ROLE_SUPER_ADMIN"
+  const isAdmin = Boolean(
+    user?.roles?.some((role) => role === "ROLE_ADMIN" || role === "ROLE_SUPER_ADMIN")
+  );
+  const isModerator = Boolean(user?.roles?.includes("ROLE_MODERATOR"));
+  const hasConsoleAccess = isAdmin || isModerator;
+
+  const moderatorAllowedRoutes = [
+    "/admin",
+    "/admin/posts",
+    "/admin/comments",
+    "/admin/media",
+    "/admin/reports",
+  ];
+  const isModeratorAllowedPath = moderatorAllowedRoutes.some(
+    (route) => route === pathname || (route !== "/admin" && pathname.startsWith(route))
   );
 
-  if (!user || !isAdmin) {
+  if (!user || !hasConsoleAccess || (!isAdmin && !isModeratorAllowedPath)) {
     return (
       <div className="min-h-screen bg-medinex-light flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-red-200 text-center shadow-sm">
@@ -58,7 +71,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <h2 className="text-xl font-bold text-medinex-text">Access Restricted</h2>
           <p className="text-sm text-medinex-muted mt-2 leading-relaxed">
-            The MediNex Administrative & Moderation Console requires verified{" "}
+            {!hasConsoleAccess
+              ? "The MediNex Administrative & Moderation Console requires verified "
+              : "This administrative module requires "}
             <code className="text-xs bg-slate-100 px-1 py-0.5 rounded text-medinex-teal">
               ROLE_ADMIN
             </code>{" "}
@@ -66,12 +81,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <code className="text-xs bg-slate-100 px-1 py-0.5 rounded text-medinex-teal">
               ROLE_SUPER_ADMIN
             </code>{" "}
-            privileges.
+            privileges{!hasConsoleAccess ? " (or ROLE_MODERATOR for content moderation)." : "."}
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            <Link href="/dashboard">
+            <Link href={hasConsoleAccess ? "/admin" : "/dashboard"}>
               <Button variant="primary" className="w-full">
-                Return to Personal Dashboard
+                {hasConsoleAccess ? "Return to Moderation Console" : "Return to Personal Dashboard"}
               </Button>
             </Link>
             <Link href="/">
@@ -91,68 +106,79 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       href: "/admin",
       icon: Activity,
       exact: true,
+      moderatorAllowed: true,
     },
     {
       name: "Innovator Accounts",
       href: "/admin/users",
       icon: Users,
       exact: false,
+      moderatorAllowed: false,
     },
     {
       name: "Team Contributors",
       href: "/admin/team",
       icon: UserCheck,
       exact: false,
+      moderatorAllowed: false,
     },
     {
       name: "Post Moderation",
       href: "/admin/posts",
       icon: MessageSquare,
       exact: false,
+      moderatorAllowed: true,
     },
     {
       name: "Comment Moderation",
       href: "/admin/comments",
       icon: MessageCircle,
       exact: false,
+      moderatorAllowed: true,
     },
     {
       name: "Project Governance",
       href: "/admin/projects",
       icon: Layers,
       exact: false,
+      moderatorAllowed: false,
     },
     {
       name: "Media Review",
       href: "/admin/media",
       icon: ImageIcon,
       exact: false,
+      moderatorAllowed: true,
     },
     {
       name: "Moderation Queue",
       href: "/admin/reports",
       icon: Flag,
       exact: false,
+      moderatorAllowed: true,
     },
     {
       name: "Detailed Analytics",
       href: "/admin/analytics",
       icon: BarChart3,
       exact: false,
+      moderatorAllowed: false,
     },
     {
       name: "Audit Trail",
       href: "/admin/audit-logs",
       icon: FileText,
       exact: false,
+      moderatorAllowed: false,
     },
     {
       name: "Site Settings",
       href: "/admin/settings",
       icon: Settings,
       exact: false,
+      moderatorAllowed: false,
     },
-  ];
+  ].filter((item) => isAdmin || item.moderatorAllowed);
 
   return (
     <div className="min-h-screen bg-medinex-light flex flex-col">
@@ -180,7 +206,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="hidden md:flex flex-col text-right">
               <span className="text-xs font-semibold text-slate-200">{user.fullName || user.username}</span>
               <span className="text-[10px] text-emerald-400">
-                {user.roles.includes("ROLE_SUPER_ADMIN") ? "Super Administrator" : "Administrator"}
+                {user.roles.includes("ROLE_SUPER_ADMIN")
+                  ? "Super Administrator"
+                  : user.roles.includes("ROLE_ADMIN")
+                  ? "Administrator"
+                  : "Moderator"}
               </span>
             </div>
             <Link href="/dashboard">

@@ -71,7 +71,9 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public system endpoints
+                        // Authenticated identity endpoints under /api/v1/auth must require valid auth (401 when anonymous)
+                        .requestMatchers("/api/v1/auth/me", "/api/v1/auth/change-password").authenticated()
+                        // Public system & auth endpoints
                         .requestMatchers(
                                 "/actuator/health",
                                 "/actuator/info",
@@ -96,7 +98,14 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/follow-stats").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/followers").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/following").permitAll()
-                        // Admin restricted endpoints
+                        // Moderation queue & content moderation endpoints (admins + moderators)
+                        .requestMatchers(
+                                "/api/v1/admin/reports/**",
+                                "/api/v1/admin/posts/**",
+                                "/api/v1/admin/comments/**",
+                                "/api/v1/admin/media/**"
+                        ).hasAnyRole("SUPER_ADMIN", "ADMIN", "MODERATOR")
+                        // Administrative endpoints (super admin + admin only)
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

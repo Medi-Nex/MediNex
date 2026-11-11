@@ -98,7 +98,13 @@ public class AuthService {
                 .build();
         userProfileRepository.save(profile);
 
-        issueAndDispatchVerificationToken(savedUser);
+        boolean dispatched = issueAndDispatchVerificationToken(savedUser);
+        if (!dispatched) {
+            // Do not keep an un-dispatched verification token so user is never trapped behind a cooldown
+            emailVerificationTokenRepository.deleteAll(
+                    emailVerificationTokenRepository.findAllByUserIdOrderByCreatedAtDesc(savedUser.getId())
+            );
+        }
 
         recordAuditLog(savedUser.getId(), savedUser.getEmail(), "USER_REGISTERED", "User", savedUser.getId().toString());
 
@@ -291,11 +297,17 @@ public class AuthService {
             emailVerificationTokenRepository.flush();
         }
 
-        issueAndDispatchVerificationToken(user);
+        boolean dispatched = issueAndDispatchVerificationToken(user);
+        if (!dispatched) {
+            throw new AppException(
+                    "Unable to dispatch verification code due to a temporary email service error. Please try again.",
+                    HttpStatus.SERVICE_UNAVAILABLE
+            );
+        }
         recordAuditLog(user.getId(), user.getEmail(), "VERIFICATION_EMAIL_RESENT", "User", user.getId().toString());
     }
 
-    private void issueAndDispatchVerificationToken(User user) {
+    private boolean issueAndDispatchVerificationToken(User user) {
         String rawOtp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
         String tokenHash = hashVerificationOtp(user.getId(), rawOtp);
 
@@ -307,7 +319,7 @@ public class AuthService {
                 .build();
         emailVerificationTokenRepository.save(verificationToken);
 
-        emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), rawOtp);
+        return emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), rawOtp);
     }
 
     private String hashVerificationOtp(UUID userId, String otp) {
@@ -328,7 +340,13 @@ public class AuthService {
                     .build();
             passwordResetTokenRepository.save(resetToken);
 
-            emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), rawToken);
+            boolean dispatched = emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), rawToken);
+            if (!dispatched) {
+                throw new AppException(
+                        "Unable to dispatch password reset instructions right now. Please try again later.",
+                        HttpStatus.SERVICE_UNAVAILABLE
+                );
+            }
             recordAuditLog(user.getId(), user.getEmail(), "PASSWORD_RESET_REQUESTED", "User", user.getId().toString());
         });
     }

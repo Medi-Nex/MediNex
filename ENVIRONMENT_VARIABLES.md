@@ -10,13 +10,13 @@ This document provides an exhaustive, authoritative reference for all configurat
 
 ---
 
-## 1. Frontend Client Variables (Next.js 15 App Router)
+## 1. Frontend Client Variables (Next.js 16 App Router)
 
 | Variable Name | Required | Default in Local Dev | Production Example | Description |
 | :--- | :---: | :--- | :--- | :--- |
 | `NEXT_PUBLIC_APP_NAME` | Yes | `MediNex` | `MediNex` | Platform name displayed across browser tabs and headers |
-| `NEXT_PUBLIC_APP_TAGLINE` | Yes | `Healthcare Innovation. Connected Communities.` | `Healthcare Innovation. Connected Communities.` | Official platform tagline |
-| `NEXT_PUBLIC_APP_URL` | Yes | `http://localhost:3002` | `https://medinex.health` | Canonical URL base for OpenGraph, Twitter Cards, and sitemaps |
+| `NEXT_PUBLIC_APP_TAGLINE` | Yes | `Connecting Technology, Research & Healthcare Innovation.` | `Connecting Technology, Research & Healthcare Innovation.` | Official platform tagline |
+| `NEXT_PUBLIC_APP_URL` | Yes | `http://localhost:3002` | `https://medinex-bd.vercel.app` | Canonical URL base for OpenGraph, Twitter Cards, and sitemaps |
 | `NEXT_PUBLIC_API_BASE_URL` | Yes | `http://localhost:8082/api/v1` | `https://api.medinex.health/api/v1` | Backend API gateway destination used by Axios / Fetch clients |
 
 ---
@@ -51,11 +51,15 @@ This document provides an exhaustive, authoritative reference for all configurat
 
 | Variable Name | Required | Default in Local Dev | Production Example | Description |
 | :--- | :---: | :--- | :--- | :--- |
-| `MAIL_HOST` | Yes | `mailpit` | `smtp.sendgrid.net` | Outgoing SMTP server address |
-| `MAIL_PORT` | Yes | `1025` | `587` | SMTP communication port |
-| `MAIL_USERNAME` | Prod | *None (Mailpit)* | `apikey` | SMTP service username |
-| `MAIL_PASSWORD` | Prod | *None (Mailpit)* | `[SENDGRID_API_KEY]` | SMTP service password |
-| `MAIL_FROM_ADDRESS` | Yes | `noreply@medinex.health` | `noreply@medinex.health` | Verified sender address for verification tokens |
+| `MAIL_HOST` | Yes | `mailpit` (or `smtp.gmail.com` via `.env`) | `smtp.sendgrid.net` | Outgoing SMTP server address |
+| `MAIL_PORT` | Yes | `1025` (or `587` via `.env`) | `587` | SMTP communication port |
+| `MAIL_USERNAME` | Prod | *None (Mailpit)* / Gmail sender | `apikey` | SMTP service username |
+| `MAIL_PASSWORD` | Prod | *None (Mailpit)* / Gmail App Password | `[SENDGRID_API_KEY]` | SMTP service password (never commit or log) |
+| `MAIL_SMTP_AUTH` | Yes | `true` (`false` for unauthenticated Mailpit) | `true` | Enables SMTP authentication (`spring.mail.properties.mail.smtp.auth`) |
+| `MAIL_SMTP_STARTTLS` | Yes | `true` (`false` for plain Mailpit) | `true` | Enables/requires SMTP STARTTLS (`mail.smtp.starttls.*`) |
+| `MAIL_FROM_ADDRESS` | Yes | `medinexbd.noreply@gmail.com` | `noreply@medinex.health` | Verified sender address for OTP and password reset dispatches |
+| `MAIL_FROM_NAME` | No | `MediNex Platform` | `MediNex Platform` | Display name used in formatted `From` header |
+| `SERVER_SERVLET_CONTEXT_PATH` | Yes | `/` | `/` | Root servlet context path (controllers map `/api/v1/**` explicitly) |
 
 ---
 

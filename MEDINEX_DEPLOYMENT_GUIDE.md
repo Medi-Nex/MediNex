@@ -183,7 +183,7 @@ docker compose up -d
 ```
 
 ### Step 3: Monitor Migrations & Service Readiness
-Watch backend logs to confirm Flyway applies `V1__init_schema.sql`, `V2__performance_indexes.sql`, `V3__align_collection_tables.sql`, and `V4__align_role_names.sql` cleanly:
+Watch backend logs to confirm Flyway applies `V1` through `V6__restrict_contributor_roles.sql` cleanly (`V6` restricts seeded contributor accounts to `ROLE_USER` while preserving admin accounts and all existing user rows):
 ```bash
 docker compose logs -f backend
 ```
@@ -199,9 +199,22 @@ curl -sI http://127.0.0.1:3002 | grep "HTTP/1.1 200"
 
 ---
 
-## 6. DATABASE BACKUP & DISASTER RECOVERY RUNBOOKS
+## 6. DATABASE & MEDIA VOLUME BACKUP & DISASTER RECOVERY RUNBOOKS
 
-Automated backup scripts with SHA-256 verification and 7-day retention are stored in `infrastructure/scripts/`.
+Automated database backup scripts with SHA-256 verification and 7-day retention are stored in `infrastructure/scripts/`. Never run `docker compose down -v`, as doing so destroys both `medinex_pgdata` and `medinex_uploads` (`/app/uploads`).
+
+### Uploaded Media Volume (`medinex_uploads`) Backup & Restore
+`medinex-backend` mounts `medinex_uploads` at `/app/uploads` (owned by `appuser:10001`). Pure-Java WebP/JPEG/PNG decoding (`imageio-webp:3.13.1`) avoids native `musl` JNI dependencies on Alpine.
+
+```bash
+# Archive medinex_uploads cleanly without stopping PostgreSQL
+docker run --rm -v medinex_uploads:/source:ro -v "$(pwd)/infrastructure/backups:/backup" alpine \
+  tar czf /backup/medinex_uploads_$(date +%Y%m%d).tar.gz -C /source .
+
+# Restore medinex_uploads into persistent volume
+docker run --rm -v medinex_uploads:/restore -v "$(pwd)/infrastructure/backups:/backup:ro" alpine \
+  tar xzf /backup/medinex_uploads_<DATE>.tar.gz -C /restore
+```
 
 ### Automated Daily Backup (Linux Cron Example)
 Add to root crontab (`crontab -e`) to execute daily at 02:00 UTC:

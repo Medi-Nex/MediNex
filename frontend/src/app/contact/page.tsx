@@ -45,8 +45,8 @@ export default function ContactPage() {
             Contact the MediNex Team
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Reach out for research collaboration, technical feedback, or questions regarding our
-            E-Health Hackathon 2026 entry.
+            Reach out for healthcare technology collaboration, interoperability research feedback, or
+            platform inquiries.
           </p>
         </div>
       </section>
@@ -78,9 +78,9 @@ export default function ContactPage() {
               </div>
 
               <div className="pt-2 border-t border-slate-100">
-                <span className="font-bold text-slate-800 block mb-0.5">Hackathon Desk</span>
+                <span className="font-bold text-slate-800 block mb-0.5">Collaboration Desk</span>
                 <p className="text-slate-500">
-                  E-Health Hackathon 2026 Innovation Arena &bull; MediNex Contender Station
+                  MediNex Healthcare Innovation &amp; Technology Platform &bull; Digital Health Research Group
                 </p>
               </div>
             </CardBody>
@@ -177,7 +177,7 @@ export default function ContactPage() {
                         required
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        placeholder="e.g. ShasthoSetu Offline Triage Feedback"
+                        placeholder="e.g. ShasthoSetu FHIR Exchange Architecture Feedback"
                         className="w-full text-xs p-2.5 bg-slate-50/70 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
                       />
                     </div>

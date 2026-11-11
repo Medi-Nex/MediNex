@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://medinex.health";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
   const lastModified = new Date();
 
   const coreRoutes = [
@@ -74,12 +74,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   const teamMemberUsernames = [
-    "lead-architect",
-    "fullstack-engineer",
-    "clinical-advisor",
-    "security-engineer",
-    "product-designer",
-    "qa-specialist",
+    "hasnat",
+    "jihadjp",
+    "tarek",
+    "shopnil",
+    "nabil",
+    "puja",
   ];
 
   const memberRoutes = teamMemberUsernames.map((username) => ({

@@ -2,7 +2,7 @@
 
 ## 1. Cardinal Healthcare Data Isolation Policy (Zero-PHI)
 
-MediNex enforces an absolute security and regulatory boundary in full compliance with E-Health Hackathon 2026 data governance standards:
+MediNex enforces strict healthcare data governance and separation boundaries across its collaborative technology platform:
 
 - **No Protected Health Information (PHI):** The public community platform database does **NOT** collect, index, or store patient medical records, hospital admission records, physician diagnostic prescriptions, national IDs, or clinical imaging scans.
 - **Automated Interception Engine ([`PhiGuardService.java`](backend/src/main/java/com/medinex/common/security/PhiGuardService.java)):** Every community post, comment, and message submission is scanned for clinical indicators before reaching persistence:
@@ -11,7 +11,7 @@ MediNex enforces an absolute security and regulatory boundary in full compliance
   - Clinical diagnostic admissions (`Chief Complaint:`, `Discharge Summary:`, `ICD-10:`).
   - Explicit patient demographic pairings (`Patient Name:`, `Patient DOB:`).
 - **Enforcement Action:** Detected violations are halted immediately and rejected with `400 Bad Request` and an explicit security warning explaining the Zero-PHI policy.
-- **Architectural Segregation:** ShasthoSetu is an isolated experimental development initiative. Social community JWT access tokens possess zero access authority over clinical triage pipelines.
+- **Architectural Segregation:** ShasthoSetu is an isolated interoperable health-record research initiative. Social community JWT access tokens possess zero access authority over clinical or patient-record exchange pipelines.
 
 ---
 
@@ -57,20 +57,23 @@ Least-privilege access is enforced across both backend controllers (`@PreAuthori
 | Capability / Route | `ROLE_SUPER_ADMIN` | `ROLE_ADMIN` | `ROLE_MODERATOR` | `ROLE_USER` | `PUBLIC` (Unauthenticated) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Browse Landing, Team, Projects, Feed** | Allowed | Allowed | Allowed | Allowed | Allowed |
+| **Get Current Authenticated User (`/auth/me`)** | Allowed | Allowed | Allowed | Allowed | Denied (401) |
 | **Publish Posts, Comments, Like** | Allowed | Allowed | Allowed | Allowed | Denied (401) |
 | **Follow Team & Community Users** | Allowed | Allowed | Allowed | Allowed | Denied (401) |
 | **Official Team Announcements** | Allowed | Allowed | Denied | Denied | Denied (403) |
-| **User Status Switch (Suspend/Activate)** | Allowed | Allowed | Denied | Denied | Denied (403) |
-| **Role Modification** | Allowed | Allowed | Denied | Denied | Denied (403) |
-| **Team Contributor Governance** | Allowed | Allowed | Denied | Denied | Denied (403) |
-| **Project Stage & Specs Editing** | Allowed | Allowed | Denied | Denied | Denied (403) |
-| **Content Moderation (Hide/Unhide)** | Allowed | Allowed | Allowed | Denied | Denied (403) |
-| **Resolve Moderation Reports** | Allowed | Allowed | Allowed | Denied | Denied (403) |
-| **Audit Logs Inspection** | Allowed | Allowed | Denied | Denied | Denied (403) |
-| **Platform Runtime Settings** | Allowed | Allowed | Denied | Denied | Denied (403) |
+| **Admin Stats, Users & Analytics** | Allowed | Allowed | Denied (403) | Denied (403) | Denied (401) |
+| **User Status Switch (Suspend/Activate)** | Allowed | Allowed* | Denied (403) | Denied (403) | Denied (401) |
+| **Role Modification** | Allowed | Allowed* | Denied (403) | Denied (403) | Denied (401) |
+| **Team Contributor Governance** | Allowed | Allowed | Denied (403) | Denied (403) | Denied (401) |
+| **Project Stage & Specs Editing** | Allowed | Allowed | Denied (403) | Denied (403) | Denied (401) |
+| **Content Moderation (Posts/Comments/Media)** | Allowed | Allowed | Allowed | Denied (403) | Denied (401) |
+| **Resolve Reports (`HIDE_POST`, `HIDE_COMMENT`, `NONE`)** | Allowed | Allowed | Allowed | Denied (403) | Denied (401) |
+| **Resolve Reports with `SUSPEND_USER`** | Allowed | Allowed* | Denied (403) | Denied (403) | Denied (401) |
+| **Audit Logs Inspection** | Allowed | Allowed | Denied (403) | Denied (403) | Denied (401) |
+| **Platform Runtime Settings** | Allowed | Allowed | Denied (403) | Denied (403) | Denied (401) |
 
 > [!NOTE]
-> Public registration defaults exclusively to `ROLE_USER`. Privileged roles cannot be self-assigned during registration.
+> Public registration defaults exclusively to `ROLE_USER`. Privileged roles cannot be self-assigned during registration. Seeded contributors (`contributor-01`..`contributor-06`) also carry `ROLE_USER` only (`DataInitializer` + Flyway `V6__restrict_contributor_roles.sql`), and `*` non-`SUPER_ADMIN` admins cannot assign/modify `ROLE_SUPER_ADMIN`, suspend `SUPER_ADMIN`, or alter their own roles/status (`403 Forbidden`).
 
 ---
 
@@ -102,16 +105,17 @@ Least-privilege access is enforced across both backend controllers (`@PreAuthori
 
 ---
 
-## 5. Input Validation, XSS Prevention & SQL Injection Defense
+## 5. Input Validation, Privacy Controls, XSS & Media Hardening
 
-- **SQL Injection:** 100% Parameterized queries via Hibernate and Spring Data JPA. Zero raw SQL string concatenation.
+- **Private Profile & Block Isolation ([`ProfileAccessGuard.java`](backend/src/main/java/com/medinex/user/service/ProfileAccessGuard.java)):** Enforces `isPublicVisible` and bidirectional block isolation uniformly across profile lookups, follower/following lists, team contributor profiles, community feeds (`PostRepository.findFeedPosts`), post threads, comments, likes, and user post lists. Private profiles return `403 Forbidden` to anonymous callers and non-followers, admitting only the profile owner and accepted followers (`user_follows`). Anonymous access to `MEMBERS_ONLY` posts or `/api/v1/auth/me` returns `401 Unauthorized`.
+- **Credential Log Redaction ([`EmailService.java`](backend/src/main/java/com/medinex/common/email/EmailService.java)):** Verification OTPs and password reset tokens are strictly omitted from application logs (`(OTP redacted)` / `(token redacted)`). Transient SMTP failures return `false` to `AuthService`, which aborts resend cooldown registration with `503 Service Unavailable`.
+- **SQL Injection:** 100% Parameterized queries via Hibernate and Spring Data JPA. Zero raw SQL string concatenation. Usernames resolve case-insensitively (`findByUsernameIgnoreCase`).
 - **Cross-Site Scripting (XSS):**
   - Content sanitization strips `<script>` blocks and dangerous HTML elements prior to database persistence.
   - React/Next.js default JSX string escaping protects against DOM-based XSS.
-- **Attachment Security:**
-  - Uploaded media attachments require validated MIME types (`image/jpeg`, `image/png`, `image/webp`).
-  - Maximum limit of 4 attachments per post with file size ceilings.
-  - Filenames are normalized to prevent directory traversal vectors.
+- **Attachment & Avatar Media Security ([`AvatarImageService.java`](backend/src/main/java/com/medinex/user/service/AvatarImageService.java)):**
+  - Avatar uploads accept validated JPEG, PNG, and WebP streams (decoded in pure Java via TwelveMonkeys `imageio-webp`), enforce a 5 MB ceiling, strip metadata/EXIF by re-encoding normalized 64px/256px/512px JPEGs, and use normalized UUID filenames to prevent directory traversal.
+  - Community post attachments support up to 4 validated images per post (`image/jpeg`, `image/png`, `image/webp`).
 
 ---
 

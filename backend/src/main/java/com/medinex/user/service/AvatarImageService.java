@@ -44,7 +44,7 @@ public class AvatarImageService {
     private static final long MAX_UPLOAD_BYTES = 5L * 1024L * 1024L;
     private static final int MIN_DIMENSION_PX = 16;
     private static final int MAX_DIMENSION_PX = 4096;
-    private static final Set<String> ALLOWED_FORMATS = Set.of("jpeg", "jpg", "png", "gif", "bmp");
+    private static final Set<String> ALLOWED_FORMATS = Set.of("jpeg", "jpg", "png", "gif", "bmp", "webp");
 
     private final Path avatarsRootDir;
 
@@ -104,17 +104,17 @@ public class AvatarImageService {
     private BufferedImage decodeAndValidateImage(byte[] rawBytes) {
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(rawBytes))) {
             if (iis == null) {
-                throw new BadRequestException("Invalid image format. Please upload PNG, JPEG, GIF, or BMP.");
+                throw new BadRequestException("Invalid image format. Please upload PNG, JPEG, GIF, BMP, or WebP.");
             }
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (!readers.hasNext()) {
-                throw new BadRequestException("Unsupported file type. Please upload PNG, JPEG, GIF, or BMP.");
+                throw new BadRequestException("Unsupported file type. Please upload PNG, JPEG, GIF, BMP, or WebP.");
             }
             ImageReader reader = readers.next();
             try {
                 String formatName = reader.getFormatName() != null ? reader.getFormatName().toLowerCase() : "";
                 if (!ALLOWED_FORMATS.contains(formatName)) {
-                    throw new BadRequestException("Unsupported image format '" + formatName + "'. Use PNG, JPEG, GIF, or BMP.");
+                    throw new BadRequestException("Unsupported image format '" + formatName + "'. Use PNG, JPEG, GIF, BMP, or WebP.");
                 }
                 reader.setInput(iis, true, true);
                 int width = reader.getWidth(0);

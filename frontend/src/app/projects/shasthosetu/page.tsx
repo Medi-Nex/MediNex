@@ -66,7 +66,7 @@ export default function ShasthoSetuPage() {
         <div className="bg-gradient-to-br from-medinex-dark via-medinex-deep to-medinex-dark text-white rounded-2xl p-8 sm:p-12 shadow-elevated border border-emerald-950 space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Badge variant="mint">E-Health Hackathon 2026</Badge>
+              <Badge variant="mint">Digital Health Interoperability</Badge>
               <Badge variant="warning">Stage: {project.stage}</Badge>
             </div>
             <span className="text-xs text-slate-400">Official Flagship Project</span>
@@ -124,7 +124,7 @@ export default function ShasthoSetuPage() {
             <p>
               ShasthoSetu is an experimental digital health technology under active research and development.
               It has <em>not</em> been deployed in live clinical trials, nor approved by regulatory health authorities.
-              All patient medical data and triage transmissions are logically and physically isolated from the MediNex public community platform. No patient records are stored on public social databases.
+              All experimental health-record interoperability schemas are architecturally isolated from the MediNex public community platform. Zero real patient records are stored on public social databases.
             </p>
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function ShasthoSetuPage() {
             <CardHeader className="bg-slate-50/70">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-red-500" />
-                <h2 className="font-bold text-base text-medinex-text">The Rural Healthcare Challenge</h2>
+                <h2 className="font-bold text-base text-medinex-text">The Healthcare Interoperability Challenge</h2>
               </div>
             </CardHeader>
             <CardBody>
@@ -300,10 +300,93 @@ export default function ShasthoSetuPage() {
               </CardHeader>
               <CardBody>
                 <p className="text-xs text-slate-700 leading-relaxed">
-                  Community social feeds and ShasthoSetu telemedicine queues reside in separated logical spaces. Social tokens cannot access clinical triage streams.
+                  Community social feeds and ShasthoSetu health-record interoperability prototypes reside in separated logical domains. Social authentication tokens grant zero access to private health-data pipelines.
                 </p>
               </CardBody>
             </Card>
+          </div>
+        </div>
+
+        {/* Transparent Implementation & Maturity Roadmap */}
+        <div className="mt-10 bg-white border border-medinex-border rounded-2xl p-6 sm:p-8 shadow-subtle space-y-6">
+          <div className="space-y-2">
+            <Badge variant="teal">Project Transparency &amp; Maturity Matrix</Badge>
+            <h2 className="text-xl sm:text-2xl font-bold text-medinex-text">
+              Implementation Status &amp; Development Roadmap
+            </h2>
+            <p className="text-xs sm:text-sm text-medinex-muted leading-relaxed">
+              ShasthoSetu is an active healthcare technology initiative under MediNex. To prevent ambiguity,
+              implemented platform modules are explicitly separated from prototypes, ongoing research,
+              planned concepts, and long-term architectural vision.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/60 space-y-2">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                1. Implemented (MediNex Platform)
+              </span>
+              <h3 className="text-sm font-bold text-medinex-text">Core Platform &amp; Safety Controls</h3>
+              <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                <li>Project showcase &amp; specification documentation hub</li>
+                <li>Role-Based Access Control (RBAC) &amp; JWT authentication</li>
+                <li>Zero-PHI automated screening on public posts &amp; comments</li>
+                <li>Community discussions &amp; admin governance tools</li>
+              </ul>
+            </div>
+
+            <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/50 space-y-2">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-100 text-teal-800">
+                2. Working Prototypes
+              </span>
+              <h3 className="text-sm font-bold text-medinex-text">Foundation &amp; Data Boundaries</h3>
+              <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                <li>ShasthoSetu specification API (Spring Boot &amp; PostgreSQL)</li>
+                <li>Logical isolation between social and research models</li>
+                <li>Modular Next.js interface for bilingual documentation</li>
+                <li>Schema validation &amp; Flyway migration baseline</li>
+              </ul>
+            </div>
+
+            <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/60 space-y-2">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-sky-100 text-sky-800">
+                3. Research &amp; Experiments
+              </span>
+              <h3 className="text-sm font-bold text-medinex-text">Standards &amp; Identity Concepts</h3>
+              <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                <li>HL7 FHIR resource compatibility &amp; data exchange research</li>
+                <li>Digital health record management &amp; summary modeling</li>
+                <li>Patient identity mapping concepts across facilities</li>
+                <li>Optional QR-based patient identity lookup exploration</li>
+              </ul>
+            </div>
+
+            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/60 space-y-2">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                4. Planned Features
+              </span>
+              <h3 className="text-sm font-bold text-medinex-text">Prototype Exchange Modules</h3>
+              <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                <li>Interactive synthetic FHIR bundle exchange sandbox</li>
+                <li>Patient consent management workflow simulator</li>
+                <li>Tamper-evident access audit log viewer prototype</li>
+                <li>Facility-to-facility API exchange test harness</li>
+              </ul>
+            </div>
+
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 md:col-span-2 lg:col-span-2">
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-200 text-slate-700">
+                5. Long-Term Vision (Aspirational Research Direction)
+              </span>
+              <h3 className="text-sm font-bold text-medinex-text">Interoperable Healthcare Ecosystem</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Long-term architectural exploration toward standards-based interoperability across
+                clinics, laboratories, and hospitals—where standardized health records can be
+                exchanged with explicit patient consent, strict RBAC, encrypted APIs, and transparent
+                audit trails. ShasthoSetu is not yet integrated with government Health ID systems or live
+                hospital networks, and no nationwide deployment is claimed.
+              </p>
+            </div>
           </div>
         </div>
       </div>

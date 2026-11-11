@@ -16,22 +16,22 @@ const ALL_PROJECTS: ProjectInfo[] = [
   SHASTHOSETU_PROJECT,
   {
     id: "proj-fhir-bridge",
-    title: "Community Clinical Data Interop (Research Sandbox)",
+    title: "FHIR Interoperability Schema Lab (Research Exploration)",
     slug: "fhir-bridge-research",
     shortSummary:
-      "A preliminary research exploration assessing simplified FHIR (Fast Healthcare Interoperability Resources) data models for rural diagnostic clinics.",
+      "An exploratory research initiative evaluating HL7 FHIR resource schemas, standardized coding mappings, and consent-aware data exchange structures.",
     problemStatement:
-      "Community healthcare centers often maintain manual paper registers that cannot exchange data with tertiary medical centers during emergency escalations.",
+      "Fragmented health information systems use incompatible record formats, preventing seamless transfer of longitudinal histories between diagnostic centers, clinics, and hospitals.",
     proposedSolution:
-      "Investigating minimal standardized message schemas that encode immunization, basic vitals, and obstetric history without heavy infrastructure requirements.",
+      "Investigating standardized HL7 FHIR resource mappings, patient identity mapping models, and lightweight validation rules designed for modular digital health record exchange.",
     features: [
       {
-        title: "Standardized Field Mapping",
-        description: "Mapping local Bengali clinic terminology to standardized terminology (LOINC/SNOMED research references).",
+        title: "Standardized Terminology & Schema Mapping",
+        description: "Maps digital health record fields toward standardized healthcare terminologies (LOINC/SNOMED research references).",
       },
       {
-        title: "Micro-Schema Validator",
-        description: "A lightweight validator that tests payload completeness on low-spec devices.",
+        title: "Interoperability Schema Validator",
+        description: "Tests structural payload completeness and consent metadata prior to facility-to-facility exchange.",
       },
     ],
     techStack: ["Java 21", "JSON Schema", "PostgreSQL"],
@@ -72,8 +72,9 @@ export default function ProjectsDirectoryPage() {
               MediNex Innovation Projects
             </h1>
             <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
-              Explore the healthcare engineering initiatives developed by our six-member team for
-              E-Health Hackathon 2026. Every project is explicitly mapped to its verified development stage.
+              Explore healthcare technology initiatives, interoperable health-record prototypes, and research
+              explorations built by the MediNex team. Every project is transparently mapped to its actual
+              implementation maturity stage.
             </p>
           </div>
         </div>

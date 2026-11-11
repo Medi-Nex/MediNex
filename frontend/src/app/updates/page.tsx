@@ -5,8 +5,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { OFFICIAL_ANNOUNCEMENTS } from "@/lib/team-data";
 
 export const metadata = {
-  title: "Official Updates & Announcements",
-  description: "Official technical bulletins and sprint updates from the MediNex team for E-Health Hackathon 2026.",
+  title: "Updates & Research Bulletins",
+  description: "Official engineering bulletins, architecture notes, and project milestones from the MediNex team.",
 };
 
 export default function UpdatesPage() {
@@ -20,8 +20,8 @@ export default function UpdatesPage() {
             Team Announcements &amp; Updates
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Follow our verified progress, architectural decisions, and milestones as we prepare for
-            E-Health Hackathon 2026.
+            Follow verified engineering progress, architectural decisions, and interoperability research
+            notes from the MediNex team.
           </p>
         </div>
       </section>

@@ -6,8 +6,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { OFFICIAL_EVENTS } from "@/lib/team-data";
 
 export const metadata = {
-  title: "Events & Hackathon Schedule",
-  description: "Schedule of hackathon presentations, demonstrations, and community syncs for MediNex.",
+  title: "Events & Platform Milestones",
+  description: "Schedule of technical demonstrations, project milestones, and community syncs for MediNex.",
 };
 
 export default function EventsPage() {
@@ -16,13 +16,13 @@ export default function EventsPage() {
       {/* Dark Header */}
       <section className="bg-medinex-dark text-white py-14 border-b border-emerald-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
-          <Badge variant="mint">Hackathon Calendar</Badge>
+          <Badge variant="mint">Platform Milestones &amp; Events</Badge>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Events &amp; Milestones
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Key demonstration sessions, jury presentations, and live technical workshops for
-            E-Health Hackathon 2026.
+            Technical showcases, collaborative review sessions, and documented milestones across
+            MediNex healthcare technology initiatives.
           </p>
         </div>
       </section>

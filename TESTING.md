@@ -15,14 +15,17 @@ Located in `backend/src/test/java/com/medinex/`:
 | Test Suite / Class | Scope | Executed Tests | Key Assertions & Scenarios | Status |
 | :--- | :--- | :---: | :--- | :---: |
 | [`MediNexApplicationTests.java`](backend/src/test/java/com/medinex/MediNexApplicationTests.java) | Context | 1 | Spring Boot 3.4 context bootstrap and bean wiring verification. | **PASS** |
-| [`TeamControllerTest.java`](backend/src/test/java/com/medinex/team/TeamControllerTest.java) | Team API | 3 | Asserts exactly 6 contributor profiles, individual lookup, 404 error envelope. | **PASS** |
-| [`ProjectControllerTest.java`](backend/src/test/java/com/medinex/project/ProjectControllerTest.java) | Projects API | 1 | Asserts ShasthoSetu specifications, `DEVELOPMENT` stage lifecycle flag, and data isolation notes. | **PASS** |
-| [`AuthIntegrationTest.java`](backend/src/test/java/com/medinex/auth/AuthIntegrationTest.java) | Identity & Auth | 6 | User registration, duplicate email rejection, BCrypt authentication, invalid password rejection, rotating SHA-256 refresh tokens, token revocation. | **PASS** |
-| [`FollowIntegrationTest.java`](backend/src/test/java/com/medinex/follow/FollowIntegrationTest.java) | Follower Graph | 8 | Team follow/unfollow, member follow/unfollow, mutual block enforcement, follow request workflow (pending/accept/reject), self-follow prevention. | **PASS** |
-| [`CommunityIntegrationTest.java`](backend/src/test/java/com/medinex/community/CommunityIntegrationTest.java) | Community Feed | 8 | Post creation with attachments, public feed retrieval, like toggling, hierarchical comments & nested replies, soft deletion, unauthorized update rejection. | **PASS** |
-| [`AdminIntegrationTest.java`](backend/src/test/java/com/medinex/admin/AdminIntegrationTest.java) | Admin Console | 5 | RBAC 403 Forbidden enforcement, real DB stats aggregation, user status & role switches with audit logs, moderation queue resolution, runtime settings & analytics. | **PASS** |
-| [`SecurityHardeningAndPhiTest.java`](backend/src/test/java/com/medinex/security/SecurityHardeningAndPhiTest.java) | DevSecOps & PHI | 5 | Clinical MRN/diagnostic detection, legitimate health tech discussions permitted, post rejection with 400 Bad Request, comment rejection with 400 Bad Request, security headers check. | **PASS** |
-| [`FullUserJourneyE2EIntegrationTest.java`](backend/src/test/java/com/medinex/e2e/FullUserJourneyE2EIntegrationTest.java) | E2E Journey | 1 | Orchestrated multi-step lifecycle: Register -> Login -> Team Follow -> Member Follow -> Post -> Like/Unlike -> Comment/Reply -> Notifications -> Unfollow -> Report -> Admin Resolution. | **PASS** |
+| [`TeamControllerTest.java`](backend/src/test/java/com/medinex/team/TeamControllerTest.java) | Team API | 6 | Asserts 6 contributor profiles, case/lookup behavior, and `401`/`403` update protections. | **PASS** |
+| [`ProjectControllerTest.java`](backend/src/test/java/com/medinex/project/ProjectControllerTest.java) | Projects API | 4 | Asserts ShasthoSetu specifications, `DEVELOPMENT` stage, and `401`/`403` update protections. | **PASS** |
+| [`AuthIntegrationTest.java`](backend/src/test/java/com/medinex/auth/AuthIntegrationTest.java) | Identity & Auth | 13 | OTP verification, resend cooldown, `503` transient SMTP retry preservation, log redaction via `@MockitoSpyBean`, `ROLE_USER`-only registration, refresh token rotation/revocation. | **PASS** |
+| [`EmailServiceTest.java`](backend/src/test/java/com/medinex/common/email/EmailServiceTest.java) | Email Redaction | 2 | Verifies OTP & password-reset token redaction from logs and `false` return on `MailSendException`. | **PASS** |
+| [`FollowIntegrationTest.java`](backend/src/test/java/com/medinex/follow/FollowIntegrationTest.java) | Follower Graph | 6 | Team follow/unfollow, member follow/unfollow, mutual block enforcement, follow requests (pending/accept/reject), self-follow prevention. | **PASS** |
+| [`CommunityIntegrationTest.java`](backend/src/test/java/com/medinex/community/CommunityIntegrationTest.java) | Community Feed | 7 | Post creation, public feed retrieval, like toggling, hierarchical comments/replies, soft deletion, unauthorized update rejection. | **PASS** |
+| [`AdminIntegrationTest.java`](backend/src/test/java/com/medinex/admin/AdminIntegrationTest.java) | Admin Console | 6 | RBAC `403` enforcement, real DB stats, role/status switches with audit logs, moderation queue resolution, settings & analytics. | **PASS** |
+| [`PrivacyAndRbacIntegrationTest.java`](backend/src/test/java/com/medinex/security/PrivacyAndRbacIntegrationTest.java) | Phase 9 Privacy & RBAC | 4 | Private profile `403` (anon/non-follower/pending vs owner/accepted follower), `PRIVATE` post visibility, mixed-case usernames, contributor `ROLE_USER` limit, `ADMIN` vs `SUPER_ADMIN` escalation guard, `ROLE_MODERATOR` boundaries, `/auth/me` `401`. | **PASS** |
+| [`SecurityHardeningAndPhiTest.java`](backend/src/test/java/com/medinex/security/SecurityHardeningAndPhiTest.java) | DevSecOps & PHI | 5 | Clinical MRN/diagnostic detection, health tech dialogue allowed, post & comment `400` rejection, security headers. | **PASS** |
+| [`AvatarUploadIntegrationTest.java`](backend/src/test/java/com/medinex/user/AvatarUploadIntegrationTest.java) | Avatar Media | 5 | Multi-resolution JPEG/PNG resize (`64/256/512px`), lossy VP8 & lossless VP8L WebP uploads, storage reload persistence, invalid upload validation. | **PASS** |
+| [`FullUserJourneyE2EIntegrationTest.java`](backend/src/test/java/com/medinex/e2e/FullUserJourneyE2EIntegrationTest.java) | E2E Journey | 1 | Register -> Login -> Follow -> Post -> Like -> Comment/Reply -> Notifications -> Unfollow -> Report -> Admin Resolution. | **PASS** |
 
 ### Execution Command:
 ```bash
@@ -31,8 +34,8 @@ mvn test
 ```
 **Execution Outcome:**
 ```
-[INFO] Tests run: 37, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS (Total time: 38.316 s)
+[INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
 ```
 
 ---
@@ -46,20 +49,25 @@ Located in `frontend/src/__tests__/`:
 | [`team-data.test.mjs`](frontend/src/__tests__/team-data.test.mjs) | Team & Project Governance | Asserts exactly 6 contributor profiles exist; verified placeholder designations; asserts ShasthoSetu is in `DEVELOPMENT` stage; verifies healthcare data isolation notice. | **PASS** |
 | [`phi-guard.test.mjs`](frontend/src/__tests__/phi-guard.test.mjs) | Zero-PHI Client Guard | Intercepts MRNs, clinic IDs, prescription dosages, diagnostic summaries, and patient demographic pairings; permits legitimate health tech discussions. | **PASS** |
 | [`sitemap-and-seo.test.mjs`](frontend/src/__tests__/sitemap-and-seo.test.mjs) | SEO, Sitemap & Security Headers | Validates all 10 core public routes and 6 contributor routes in sitemap; verifies robots.txt disallows sensitive paths; asserts CSP, HSTS, X-Frame-Options, and image formats. | **PASS** |
+| [`media-and-profile.test.mjs`](frontend/src/__tests__/media-and-profile.test.mjs) | Public Profiles & Multi-Resolution Avatars | Validates clickable profile components, private profile handling, and 64/256/512px avatar wiring across feeds, comments, followers, and settings. | **PASS** |
 
 ### Execution Command:
 ```bash
 cd frontend
 npm test
+npm run lint
+npx tsc --noEmit
 ```
 **Execution Outcome:**
 ```
-✔ Zero-PHI Guard: Intercepts medical record numbers and clinical diagnostics (1.34ms)
-✔ Zero-PHI Guard: Permits legitimate digital health technology collaboration (0.43ms)
-✔ SEO & Sitemap Validation: Asserts all mandatory public routes are registered (1.44ms)
-✔ Security Headers: Verifies CSP, HSTS, and frame protection in next.config.ts (0.34ms)
-✔ Team Data Integrity: Asserts exactly 6 contributor profiles exist (2.60ms)
-ℹ tests 5, pass 5, fail 0 (duration_ms 88.07ms)
+✔ Public User Profile & Multi-Resolution Avatar Components Exist
+✔ Settings, Profile, Community, Posts, Following & Notifications Wire Clickable Profiles & Avatars
+✔ Zero-PHI Guard: Intercepts medical record numbers and clinical diagnostics
+✔ Zero-PHI Guard: Permits legitimate digital health technology collaboration
+✔ SEO & Sitemap Validation: Asserts all mandatory public routes are registered
+✔ Security Headers: Verifies CSP, HSTS, and frame protection in next.config.ts
+✔ Team Data Integrity: Asserts exactly 6 contributor profiles exist
+ℹ tests 7, pass 7, fail 0
 ```
 
 ---
@@ -70,9 +78,9 @@ Located in `frontend/`:
 
 | Verification Gate | Command | Execution Outcome | Status |
 | :--- | :--- | :--- | :---: |
-| **ESLint Strict Analysis** | `cd frontend; npx eslint src/` | Checked all 37 routes, components, hooks, and types | **PASS (0 errors, 0 warnings)** |
-| **TypeScript Strict Checking** | `cd frontend; npm run build` | Verified strict mode, generic types, no unused parameters | **PASS** |
-| **Next.js Production Prerender** | `cd frontend; npm run build` | Standalone output bundle generated; 37 static & dynamic routes compiled | **PASS** |
+| **ESLint Strict Analysis** | `cd frontend; npm run lint` (`eslint src/`) | Checked all routes, components, hooks, and types | **PASS (0 errors, 0 warnings)** |
+| **TypeScript Strict Checking** | `cd frontend; npx tsc --noEmit` | Verified strict mode, generic types, no unused parameters | **PASS** |
+| **Next.js Production Prerender** | `cd frontend; npm run build` | Standalone output bundle generated; 37 routes compiled | **PASS** |
 
 ### Next.js Route Prerender Manifest (37 Routes):
 ```
@@ -185,9 +193,9 @@ sequenceDiagram
 
 | Quality Gate | Minimum Requirement | Verified Result | Assessment |
 | :--- | :--- | :--- | :--- |
-| **Backend Test Coverage** | 100% of core security, auth, community, and follow endpoints | 37 tests across 9 test classes | **PASSED** |
-| **Frontend Unit Tests** | Automated validation of data integrity, zero-PHI, and SEO | 5 tests passing (88ms execution) | **PASSED** |
-| **Frontend Static Analysis** | 0 ESLint errors and 0 warnings | Clean (0 errors, 0 warnings) | **PASSED** |
-| **TypeScript Strict Checking** | Zero `any` escapes on public APIs; strict mode enabled | Verified during production build | **PASSED** |
-| **Production Build** | All routes static or dynamically compiled | 37 routes prerendered without errors | **PASSED** |
+| **Backend Test Coverage** | 100% of core security, auth, community, media, and privacy endpoints | 60 tests across 12 test classes | **PASSED** |
+| **Frontend Unit Tests** | Automated validation of data integrity, zero-PHI, avatars, and SEO | 7 tests passing (Node test runner) | **PASSED** |
+| **Frontend Static Analysis** | 0 ESLint errors and 0 warnings | Clean (`npm run lint` -> `eslint src/`) | **PASSED** |
+| **TypeScript Strict Checking** | Zero `any` escapes on public APIs; strict mode enabled | Verified via `npx tsc --noEmit` & production build | **PASSED** |
+| **Production Build** | All routes static or dynamically compiled | 37 routes compiled without errors | **PASSED** |
 | **Zero-PHI Compliance** | Immediate 400 Bad Request on clinical records | Tested across posts and comments | **PASSED** |

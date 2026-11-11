@@ -31,7 +31,9 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
+import com.medinex.user.service.AvatarImageService;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -248,6 +250,90 @@ public class AvatarUploadIntegrationTest {
 
         Path userAvatarDir = tempUploadDir.resolve("avatars").resolve(userId);
         assertTrue(Files.list(userAvatarDir).findAny().isEmpty(), "Expected old avatar files to be cleaned up");
+    }
+
+    @Test
+    void shouldAcceptDirectWebpLossyAndLosslessUploads() throws Exception {
+        String suffix = System.currentTimeMillis() + "_webp";
+        String token = registerAndLogin("webp_" + suffix, "webp_" + suffix + "@medinex.health", "SecurePass2026!");
+
+        // Real 32x32 VP8 lossy and VP8L lossless WebP bitstreams
+        byte[] lossyWebp = Base64.getDecoder().decode(
+                "UklGRkoAAABXRUJQVlA4ID4AAABQAwCdASogACAAPm0ylkekIqIhKAgAgA2JZQC35oAAQOBEAAD+6WkeRSLGVv/00j/k4/+Tj+i6WJ4oQAAAAA=="
+        );
+        byte[] losslessWebp = Base64.getDecoder().decode(
+                "UklGRh4AAABXRUJQVlA4TBEAAAAvH8AHAAdQyjYUsf+BiOh/AAA="
+        );
+
+        for (byte[] payload : List.of(lossyWebp, losslessWebp)) {
+            MockMultipartFile webpFile = new MockMultipartFile(
+                    "file",
+                    "direct-upload.webp",
+                    "image/webp",
+                    payload
+            );
+
+            MvcResult uploadRes = mockMvc.perform(multipart("/api/v1/users/profile/avatar")
+                            .file(webpFile)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.avatarSmUrl", endsWith("-sm.jpg")))
+                    .andExpect(jsonPath("$.data.avatarUrl", endsWith("-md.jpg")))
+                    .andExpect(jsonPath("$.data.avatarLgUrl", endsWith("-lg.jpg")))
+                    .andReturn();
+
+            JsonNode dataNode = objectMapper.readTree(uploadRes.getResponse().getContentAsString()).get("data");
+            assertImageVariantResolution(dataNode.get("avatarSmUrl").asText(), 64, 64);
+            assertImageVariantResolution(dataNode.get("avatarUrl").asText(), 256, 256);
+            assertImageVariantResolution(dataNode.get("avatarLgUrl").asText(), 512, 512);
+        }
+
+        // Corrupted WebP header must still fail cleanly with 400 Bad Request
+        MockMultipartFile corruptWebp = new MockMultipartFile(
+                "file",
+                "broken.webp",
+                "image/webp",
+                "RIFF\u0000\u0000\u0000\u0000WEBPBADBYTES".getBytes(StandardCharsets.ISO_8859_1)
+        );
+        mockMvc.perform(multipart("/api/v1/users/profile/avatar")
+                        .file(corruptWebp)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldPersistGeneratedAvatarVariantsAcrossStorageServiceReload() throws Exception {
+        String suffix = System.currentTimeMillis() + "_persist";
+        String token = registerAndLogin("persist_" + suffix, "persist_" + suffix + "@medinex.health", "SecurePass2026!");
+
+        MockMultipartFile avatarFile = new MockMultipartFile(
+                "file",
+                "persisted.png",
+                MediaType.IMAGE_PNG_VALUE,
+                createSamplePng(300, 300)
+        );
+
+        MvcResult uploadRes = mockMvc.perform(multipart("/api/v1/users/profile/avatar")
+                        .file(avatarFile)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode dataNode = objectMapper.readTree(uploadRes.getResponse().getContentAsString()).get("data");
+        String userId = dataNode.get("id").asText();
+        String mdUrl = dataNode.get("avatarUrl").asText();
+        String filename = mdUrl.substring(mdUrl.lastIndexOf('/') + 1);
+        String smFilename = filename.replace("-md.jpg", "-sm.jpg");
+        String lgFilename = filename.replace("-md.jpg", "-lg.jpg");
+
+        // Re-instantiate storage service pointed at the same persistent directory (simulating container restart)
+        new AvatarImageService(tempUploadDir.toAbsolutePath().toString());
+        Path userDir = tempUploadDir.resolve("avatars").resolve(userId);
+        for (String expectedName : List.of(smFilename, filename, lgFilename)) {
+            Path stored = userDir.resolve(expectedName);
+            assertTrue(Files.exists(stored), "Persisted variant missing: " + stored);
+            assertTrue(Files.size(stored) > 0, "Persisted variant empty: " + stored);
+        }
     }
 
     private void assertImageVariantResolution(String publicUrl, int expectedW, int expectedH) throws Exception {

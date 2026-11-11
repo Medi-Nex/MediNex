@@ -6,7 +6,7 @@ The MediNex database architecture is engineered on **PostgreSQL 16+** and govern
 
 > [!IMPORTANT]
 > **Cardinal Healthcare Data Isolation Rule:**
-> MediNex does **NOT** accept, index, or persist patient medical records, personal clinical health information (PHI), clinical diagnostics, or hospital records in any public community database table. ShasthoSetu is an isolated engineering initiative whose telemedicine encounters remain separated from community interactions.
+> MediNex does **NOT** accept, index, or persist patient medical records, personal clinical health information (PHI), clinical diagnostics, or hospital records in any public community database table. ShasthoSetu is an isolated interoperable digital health record research initiative whose experimental exchange schemas remain separated from community interactions.
 
 ---
 
@@ -69,6 +69,18 @@ Adds production indexing optimizations targeting high-throughput queries:
 - **`idx_notifications_unread`:** Partial index on `notifications (recipient_id, created_at DESC) WHERE is_read = FALSE`. Accelerates unread badge count queries.
 - **`idx_announcements_published`:** Partial index on `announcements (published_at DESC) WHERE is_published = TRUE`.
 - **`idx_events_date`:** Index on `events (event_date ASC, status)`.
+
+### 3. `V3__align_collection_tables.sql` (Collection Table Alignment)
+Reconciles Hibernate `@ElementCollection` mappings (`project_tech_stack`, `user_profile_skills`, `user_profile_responsibilities`) with `hibernate.ddl-auto: validate`.
+
+### 4. `V4__align_role_names.sql` (Role Authority Alignment)
+Aligns `roles.name` values with Spring Security `ROLE_*` authorities (`ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `ROLE_MODERATOR`, `ROLE_USER`).
+
+### 5. `V5__add_otp_attempts_to_verification_tokens.sql` (OTP Verification Hardening)
+Adds OTP attempt tracking on `email_verification_tokens` to support verification lockout protection.
+
+### 6. `V6__restrict_contributor_roles.sql` (Contributor Least Privilege)
+Forward-only migration ensuring `contributor-01` through `contributor-06` retain `ROLE_USER` and removing unintended `ROLE_ADMIN` / `ROLE_SUPER_ADMIN` grants from `user_roles`.
 
 ---
 

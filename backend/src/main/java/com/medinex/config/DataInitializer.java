@@ -78,8 +78,8 @@ public class DataInitializer implements CommandLineRunner {
             Team newTeam = Team.builder()
                     .name("MediNex Official Team")
                     .slug("medinex-official")
-                    .tagline("Healthcare Innovation. Connected Communities.")
-                    .missionStatement("Dedicated healthcare engineering team participating in E-Health Hackathon 2026.")
+                    .tagline("Connecting Technology, Research & Healthcare Innovation.")
+                    .missionStatement("A collaborative healthcare technology platform uniting developers, researchers, and public health professionals to build digital health solutions.")
                     .officialEmail("team@medinex.health")
                     .githubOrgUrl("https://github.com/Medi-Nex")
                     .build();
@@ -112,19 +112,19 @@ public class DataInitializer implements CommandLineRunner {
                 false, 3);
 
         initContributor(team, "contributor-04", "Contributor 04 [Placeholder]",
-                "Telemedicine & Mobile Integration Lead", "Electrical & Electronic Engineering",
+                "Mobile & Interoperable Systems Lead", "Electrical & Electronic Engineering",
                 "Engineering Faculty [Pending Verification]",
-                "Placeholder profile for Contributor 4. Leading research and interface prototyping for the ShasthoSetu connected telemedicine bridge.",
-                List.of("WebRTC Research", "Low-bandwidth Optimization", "Mobile Architecture"),
-                List.of("Offline queuing prototype", "Low-bandwidth audio testing", "ShasthoSetu specs"),
+                "Placeholder profile for Contributor 4. Leading research and mobile/web interface prototyping for ShasthoSetu health data exchange workflows.",
+                List.of("HL7 FHIR Research", "Interoperability Architecture", "Mobile Architecture"),
+                List.of("Record exchange prototype", "Consent & RBAC flows", "ShasthoSetu specs"),
                 false, 4);
 
         initContributor(team, "contributor-05", "Contributor 05 [Placeholder]",
-                "Clinical Workflow & UX Researcher", "Public Health & Human Factors",
+                "Health Workflow & UX Researcher", "Public Health & Human Factors",
                 "School of Public Health [Pending Verification]",
-                "Placeholder profile for Contributor 5. Conducting user empathy studies, clinical workflow interviews with healthcare workers, and usability evaluations.",
+                "Placeholder profile for Contributor 5. Conducting usability evaluations, health information workflow studies, and bilingual interface research.",
                 List.of("User Research", "Workflow Mapping", "Accessibility Audits", "Figma"),
-                List.of("Field usability research", "Bilingual UX testing", "Clinical journey maps"),
+                List.of("Field usability research", "Bilingual UX testing", "Health workflow maps"),
                 false, 5);
 
         initContributor(team, "contributor-06", "Contributor 06 [Placeholder]",
@@ -141,9 +141,9 @@ public class DataInitializer implements CommandLineRunner {
                     .team(team)
                     .title("ShasthoSetu (স্বাস্থ্যসেতু)")
                     .slug("shasthosetu")
-                    .shortSummary("An experimental smart healthcare connectivity bridge engineered to connect grassroots community clinics and remote healthcare workers with specialized tele-consultation support.")
-                    .problemStatement("In underserved rural regions, community clinics frequently lack on-site specialized physicians. Patients face prohibitive travel costs, delayed diagnoses, and fragmented medical guidance.")
-                    .proposedSolution("ShasthoSetu is designed as an edge-resilient digital health bridge with offline-first structured triage templates, automated vital-sign capture guidelines, and asynchronous doctor consultation routing.")
+                    .shortSummary("An interoperable digital health record and exchange platform prototype exploring standardized health data structures, HL7 FHIR alignment, and consent-aware health record interoperability.")
+                    .problemStatement("Healthcare data across clinics, laboratories, and hospitals is frequently stored in disconnected and incompatible systems. Because records rarely transfer cleanly between facilities, patients face repeated diagnostics and fragmented medical histories.")
+                    .proposedSolution("ShasthoSetu is designed as a standards-oriented digital health record and exchange architecture exploring HL7 FHIR resource alignment, patient identity mapping concepts, consent workflows, role-based access control, audit logging, and optional QR identity lookup patterns.")
                     .techStack(List.of("Next.js App Router", "Java 21 Spring Boot", "PostgreSQL", "Docker"))
                     .stage("DEVELOPMENT")
                     .isFeatured(true)
@@ -168,7 +168,6 @@ public class DataInitializer implements CommandLineRunner {
                                  boolean isLead, int order) {
         User user = userRepository.findByUsernameIgnoreCase(username).orElseGet(() -> {
             Role userRole = roleRepository.findById(RoleType.ROLE_USER.name()).orElseThrow();
-            Role adminRole = roleRepository.findById(RoleType.ROLE_ADMIN.name()).orElseThrow();
 
             User newUser = User.builder()
                     .username(username)
@@ -178,7 +177,7 @@ public class DataInitializer implements CommandLineRunner {
                     .status(UserStatus.ACTIVE)
                     .emailVerified(true)
                     .isTeamMember(true)
-                    .roles(Set.of(userRole, adminRole))
+                    .roles(Set.of(userRole))
                     .build();
             return userRepository.save(newUser);
         });

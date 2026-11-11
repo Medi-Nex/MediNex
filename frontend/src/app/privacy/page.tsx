@@ -56,11 +56,9 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 2 */}
         <section className="space-y-3 bg-white p-6 sm:p-8 rounded-xl border border-medinex-border">
-          <h2 className="text-lg font-bold text-medinex-text">2. Separation of ShasthoSetu Telemedicine R&amp;D</h2>
+          <h2 className="text-lg font-bold text-medinex-text">2. Separation of ShasthoSetu Health Record Exchange R&amp;D</h2>
           <p>
-            ShasthoSetu is an independent telemedicine research initiative. Its experimental triage protocols
-            are managed in an entirely segregated sandbox environment. Social accounts and community tokens
-            issued by MediNex grant zero privilege to any medical triage queues or clinical data stores.
+            ShasthoSetu is an isolated interoperable digital health record research initiative. Its experimental HL7 FHIR schemas and data-exchange prototypes are developed outside the social community database. Social accounts and community tokens issued by MediNex grant zero privilege to clinical health records or medical data stores.
           </p>
         </section>
 

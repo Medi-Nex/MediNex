@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Official Innovation Team — Six Contributor Profiles",
+  title: "Contributors & Research Team",
   description:
-    "Meet the official MediNex contributors participating in E-Health Hackathon 2026. Explore verified roles, research interests, and open-source contributions.",
+    "Meet the multidisciplinary MediNex contributors across software engineering and public health research, building digital health solutions and ShasthoSetu.",
   openGraph: {
-    title: "Official Innovation Team — Six Contributor Profiles | MediNex",
+    title: "Contributors & Research Team | MediNex",
     description:
-      "Meet the official MediNex contributors participating in E-Health Hackathon 2026. Explore verified roles, research interests, and open-source contributions.",
-    url: "https://medinex.health/team",
+      "Meet the multidisciplinary MediNex contributors across software engineering and public health research.",
+    url: `${APP_URL}/team`,
     siteName: "MediNex",
     type: "profile",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Official Innovation Team | MediNex",
+    title: "Contributors & Research Team | MediNex",
     description:
-      "Meet the six official MediNex contributors participating in E-Health Hackathon 2026.",
+      "Meet the software developers and public health researchers behind MediNex.",
   },
   alternates: {
     canonical: "/team",

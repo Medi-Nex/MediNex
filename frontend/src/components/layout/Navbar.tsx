@@ -78,7 +78,7 @@ export default function Navbar() {
                   Medi<span className="text-medinex-teal">Nex</span>
                 </span>
                 <span className="block text-[10px] tracking-wider uppercase text-medinex-muted -mt-1 font-semibold">
-                  E-Health 2026
+                  Health Tech Platform
                 </span>
               </div>
             </Link>
@@ -155,11 +155,13 @@ export default function Navbar() {
                     <Settings className="w-4 h-4" />
                   </Link>
 
-                  {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") && (
+                  {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN" || r === "ROLE_MODERATOR") && (
                     <Link href="/admin">
                       <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5 text-xs">
                         <ShieldAlert className="w-3.5 h-3.5" />
-                        <span>Admin</span>
+                        <span>
+                          {user.roles.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") ? "Admin" : "Moderation"}
+                        </span>
                       </Button>
                     </Link>
                   )}
@@ -310,11 +312,11 @@ export default function Navbar() {
                         <span>Following</span>
                       </Link>
                     </div>
-                    {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") && (
+                    {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN" || r === "ROLE_MODERATOR") && (
                       <Link href="/admin" className="w-full block">
                         <Button variant="primary" className="w-full">
                           <ShieldAlert className="w-4 h-4 mr-1.5" />
-                          Admin Console
+                          {user.roles.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") ? "Admin Console" : "Moderation Console"}
                         </Button>
                       </Link>
                     )}

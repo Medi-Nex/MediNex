@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
 export const metadata: Metadata = {
-  title: "ShasthoSetu — Telemedicine Bridge Architecture",
+  title: "ShasthoSetu — Interoperable Digital Health Record & Exchange",
   description:
-    "ShasthoSetu is the flagship healthcare innovation project by MediNex for E-Health Hackathon 2026. Low-bandwidth rural triage, clinician consultation, and strict zero-PHI isolation.",
+    "ShasthoSetu (স্বাস্থ্যসেতু) is a featured MediNex project exploring interoperable digital health record management, HL7 FHIR alignment, consent-aware exchange, and zero-PHI platform boundaries.",
   openGraph: {
-    title: "ShasthoSetu — Telemedicine Bridge Architecture | MediNex",
+    title: "ShasthoSetu — Interoperable Digital Health Record & Exchange | MediNex",
     description:
-      "Flagship healthcare innovation project by MediNex for E-Health Hackathon 2026. Low-bandwidth rural triage and clinician consultation.",
-    url: "https://medinex.health/projects/shasthosetu",
+      "Featured healthcare interoperability project by MediNex exploring standardized digital health record management, HL7 FHIR alignment, and consent-aware data exchange.",
+    url: `${APP_URL}/projects/shasthosetu`,
     siteName: "MediNex",
     type: "article",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShasthoSetu — Telemedicine Bridge Architecture | MediNex",
+    title: "ShasthoSetu — Interoperable Digital Health Record & Exchange | MediNex",
     description:
-      "Low-bandwidth rural triage and clinician consultation system engineered for E-Health Hackathon 2026.",
+      "Interoperable Digital Health Record & Exchange initiative documented with clear prototype and research boundaries on MediNex.",
   },
   alternates: {
     canonical: "/projects/shasthosetu",
@@ -26,15 +28,15 @@ export const metadata: Metadata = {
 const shasthoSetuJsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "ShasthoSetu",
+  "name": "ShasthoSetu (স্বাস্থ্যসেতু)",
   "applicationCategory": "HealthApplication",
   "operatingSystem": "Web, Cross-platform",
   "description":
-    "Flagship telemedicine bridge connecting rural community healthcare workers with specialized tertiary clinicians over low-bandwidth constraints.",
+    "Interoperable Digital Health Record & Exchange Platform initiative focused on standardized health data exchange, HL7 FHIR compatibility research, and patient consent concepts.",
   "creator": {
     "@type": "Organization",
-    "name": "MediNex Team",
-    "url": "https://medinex.health",
+    "name": "MediNex",
+    "url": APP_URL,
   },
 };
 

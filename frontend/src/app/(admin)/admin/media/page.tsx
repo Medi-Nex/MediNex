@@ -94,7 +94,7 @@ export default function AdminMediaPage() {
             <span>Community Media Asset Review</span>
           </h1>
           <p className="text-xs text-medinex-muted mt-1">
-            Review uploaded image attachments, inspect diagnostic representations for PHI leaks, and enforce media safety.
+            Review uploaded community image attachments, inspect shared visuals for accidental PHI exposure, and enforce media safety.
           </p>
         </div>
         <Button

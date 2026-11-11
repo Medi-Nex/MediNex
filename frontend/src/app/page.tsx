@@ -6,9 +6,11 @@ import Image from "next/image";
 import {
   ArrowRight,
   Users,
-  HeartPulse,
-  WifiOff,
-  Stethoscope,
+  Cpu,
+  Layers,
+  Network,
+  Database,
+  ShieldCheck,
   Lock,
   Globe,
   Mail,
@@ -39,174 +41,205 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
-            {/* Hackathon Badge
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/80 border border-medinex-teal/30 text-xs font-medium text-medinex-mint mb-6">
-              <span className="w-2 h-2 rounded-full bg-medinex-mint animate-pulse" />
-              <span>E-Health Hackathon 2026 Contender</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-slate-300">Six-Member Innovation Team</span>
-            </div>*/}
+              <span className="w-2 h-2 rounded-full bg-medinex-mint" />
+              <span>MediNex &mdash; Healthcare Innovation &amp; Technology Platform</span>
+            </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white">
-              Healthcare Innovation. <br />
+              Building the Future of Healthcare Through{" "}
               <span className="bg-gradient-to-r from-medinex-mint to-medinex-teal bg-clip-text text-transparent">
-                Connected Communities.
+                Technology.
               </span>
             </h1>
 
             {/* Tagline / Subtitle */}
             <p className="mt-6 text-lg sm:text-xl text-slate-300 leading-relaxed font-normal">
-              MediNex is an open healthcare collaboration platform bringing together a
-              dedicated six-contributor engineering team, official medical technologies like{" "}
-              <strong className="text-white font-semibold">ShasthoSetu</strong>, and a public community
-              fostering evidence-backed health solutions.
+              A collaborative space for developers, researchers, and innovators working to solve
+              real-world healthcare challenges through technology.
             </p>
-
-            {/* Honest Disclosure notice
-            <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
-              <ShieldCheck className="w-4 h-4 text-medinex-mint shrink-0" />
-              <span>
-                Transparent architecture: Team profiles and milestones use verified placeholder records until official credentials are provided.
-              </span>
-            </div>*/}
 
             {/* Action Buttons */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/projects/shasthosetu">
+              <Link href="/projects">
                 <Button variant="primary" size="lg" className="group">
-                  <span>Explore ShasthoSetu</span>
+                  <span>Explore Projects</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
 
-              <Link href="/team">
+              <Link href="/community">
                 <Button variant="dark" size="lg" className="border-emerald-800 text-slate-200">
-                  <span>Meet the Contributors</span>
+                  <span>Join Our Community</span>
                 </Button>
               </Link>
 
-              <Link href="/community">
+              <Link href="/team">
                 <Button variant="ghost" size="lg" className="text-slate-300 hover:text-white hover:bg-white/10">
-                  Community Feed
+                  Meet the Contributors
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Honest Metrics Bar (Zero Fabricated Vanity Stats) */}
+          {/* Honest Platform Overview Bar (Zero Fabricated Vanity Stats) */}
           <div className="mt-16 pt-8 border-t border-emerald-950/80 grid grid-cols-2 sm:grid-cols-4 gap-6 text-left">
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">6</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Core Contributors</div>
-              <div className="text-[11px] text-medinex-mint">Configurable Profiles</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">07</div>
+              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Focus Areas</div>
+              <div className="text-[11px] text-medinex-mint">Health Tech &amp; Research</div>
             </div>
             <div>
               <div className="text-2xl sm:text-3xl font-bold text-medinex-mint tracking-tight">01</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Flagship Project</div>
-              <div className="text-[11px] text-slate-400">ShasthoSetu (Development)</div>
+              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Featured Initiative</div>
+              <div className="text-[11px] text-slate-400">ShasthoSetu (Prototype Stage)</div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">6</div>
+              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Core Contributors</div>
+              <div className="text-[11px] text-medinex-mint">Engineers &amp; Researchers</div>
             </div>
             <div>
               <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">100%</div>
               <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Data Segregation</div>
-              <div className="text-[11px] text-medinex-mint">Zero PHI in Social DB</div>
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">2026</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Hackathon Sprint</div>
-              <div className="text-[11px] text-slate-400">E-Health Target</div>
+              <div className="text-[11px] text-slate-400">Zero PHI in Social DB</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ---------------------------------------------------------------------- */}
-      {/* 2. CORE PILLARS (Clean Light Content: #F7FAF9) */}
+      {/* 2. ABOUT MEDINEX & INNOVATION FOCUS AREAS (Clean Light Content: #F7FAF9) */}
       {/* ---------------------------------------------------------------------- */}
       <section className="py-20 bg-medinex-light border-b border-medinex-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="teal" className="mb-3">
-              Platform Architecture
-            </Badge>
-            <h2 className="text-3xl font-bold text-medinex-text tracking-tight sm:text-4xl">
-              Engineered for Real Healthcare Impact
-            </h2>
-            <p className="mt-4 text-base text-medinex-muted leading-relaxed">
-              MediNex balances public community engagement with rigorous architectural boundaries,
-              ensuring that software engineering directly advances accessible care.
-            </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <Badge variant="teal">About MediNex</Badge>
+              <h2 className="text-3xl font-bold text-medinex-text tracking-tight sm:text-4xl">
+                Connecting Technology, Research &amp; Healthcare Innovation.
+              </h2>
+              <p className="text-base text-medinex-muted leading-relaxed">
+                MediNex is a collaborative healthcare technology platform where developers, researchers,
+                and public health professionals explore ideas, build innovative solutions, and
+                collaborate on technology-driven healthcare initiatives.
+              </p>
+              <p className="text-sm text-medinex-muted leading-relaxed">
+                We focus on healthcare software engineering, interoperability research, and transparent
+                documentation—rather than acting as a clinic, hospital system, or consultation service.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/about"
+                  className="inline-flex items-center text-sm font-semibold text-medinex-teal hover:text-medinex-teal-hover"
+                >
+                  <span>Read About MediNex &amp; Governance</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+              <Card hoverEffect>
+                <CardBody className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-medinex-teal/10 text-medinex-teal flex items-center justify-center shrink-0">
+                    <Network className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-medinex-text">Interoperability &amp; R&amp;D</h3>
+                    <p className="text-xs text-medinex-muted mt-1 leading-relaxed">
+                      Incubating software concepts like <strong>ShasthoSetu</strong> to explore
+                      standardized digital health record exchange and FHIR research.
+                    </p>
+                  </div>
+                </CardBody>
+              </Card>
+
+              <Card hoverEffect>
+                <CardBody className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-medinex-teal/10 text-medinex-teal flex items-center justify-center shrink-0">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-medinex-text">Zero-PHI Community Boundary</h3>
+                    <p className="text-xs text-medinex-muted mt-1 leading-relaxed">
+                      Strict isolation ensures personal medical records and clinical charts never
+                      enter public community feeds or social databases.
+                    </p>
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Pillar 1 */}
-            <Card hoverEffect className="p-2">
-              <CardBody className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-medinex-teal/10 text-medinex-teal flex items-center justify-center">
-                  <Stethoscope className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-medinex-text">Official Innovation R&amp;D</h3>
-                <p className="text-sm text-medinex-muted leading-relaxed">
-                  Incubating projects like <strong>ShasthoSetu</strong> to address rural telemedicine
-                  shortages, offline triage protocols, and low-bandwidth doctor consultations.
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href="/projects/shasthosetu"
-                    className="inline-flex items-center text-sm font-semibold text-medinex-teal hover:text-medinex-teal-hover"
-                  >
-                    <span>Inspect ShasthoSetu specs</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Link>
-                </div>
-              </CardBody>
-            </Card>
+          {/* 7 Focus Areas (Explicitly Framed as Focus Areas) */}
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <Badge variant="mint" className="mb-2">Innovation Areas</Badge>
+                <h2 className="text-2xl sm:text-3xl font-bold text-medinex-text tracking-tight">
+                  Research &amp; Technology Focus Areas
+                </h2>
+              </div>
+              <p className="text-xs text-medinex-muted max-w-md">
+                Active exploration domains across software engineering, standards research, and public
+                health innovation.
+              </p>
+            </div>
 
-            {/* Pillar 2 */}
-            <Card hoverEffect className="p-2">
-              <CardBody className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-medinex-teal/10 text-medinex-teal flex items-center justify-center">
-                  <Users className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-medinex-text">Connected Community</h3>
-                <p className="text-sm text-medinex-muted leading-relaxed">
-                  Transparent public feed, follower systems for the official team and individual
-                  members, technical updates, and peer-to-peer discussions.
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href="/community"
-                    className="inline-flex items-center text-sm font-semibold text-medinex-teal hover:text-medinex-teal-hover"
-                  >
-                    <span>View Community Feed</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Link>
-                </div>
-              </CardBody>
-            </Card>
-
-            {/* Pillar 3 */}
-            <Card hoverEffect className="p-2">
-              <CardBody className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-medinex-teal/10 text-medinex-teal flex items-center justify-center">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-medinex-text">Zero Medical Data Exposure</h3>
-                <p className="text-sm text-medinex-muted leading-relaxed">
-                  Strict isolation: patient records, diagnoses, and hospital consultations will never
-                  touch the public social database. DevSecOps compliance from day one.
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href="/privacy"
-                    className="inline-flex items-center text-sm font-semibold text-medinex-teal hover:text-medinex-teal-hover"
-                  >
-                    <span>Read Privacy Architecture</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Link>
-                </div>
-              </CardBody>
-            </Card>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  icon: Layers,
+                  title: "Digital Health",
+                  desc: "Human-centered digital workflows improving healthcare accessibility and continuity.",
+                },
+                {
+                  icon: Network,
+                  title: "Healthcare Interoperability",
+                  desc: "Standardized health data structures, HL7 FHIR alignment, and consent-aware exchange.",
+                },
+                {
+                  icon: Database,
+                  title: "Health Information Systems",
+                  desc: "Modular architectures connecting facilities without brittle data silos.",
+                },
+                {
+                  icon: Cpu,
+                  title: "AI in Healthcare",
+                  desc: "Exploratory research into assistive analytics and ethical decision-support concepts.",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Health Data Security",
+                  desc: "RBAC, Zero-PHI boundaries, audit logging concepts, and privacy-preserving design.",
+                },
+                {
+                  icon: Users,
+                  title: "Public Health Technology",
+                  desc: "Evidence-informed software concepts supporting community and population health research.",
+                },
+                {
+                  icon: BookOpen,
+                  title: "Research & Development",
+                  desc: "Documented technical specifications, iterative prototypes, and transparent progress notes.",
+                },
+              ].map((area) => {
+                const Icon = area.icon;
+                return (
+                  <Card key={area.title} hoverEffect>
+                    <CardBody className="space-y-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-medinex-teal/10 text-medinex-teal flex items-center justify-center">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <h3 className="text-sm font-bold text-medinex-text">{area.title}</h3>
+                      <p className="text-xs text-medinex-muted leading-relaxed">{area.desc}</p>
+                    </CardBody>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -217,13 +250,13 @@ export default function HomePage() {
       <section className="py-20 bg-white border-b border-medinex-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-br from-medinex-dark to-medinex-deep rounded-2xl text-white p-8 sm:p-12 shadow-elevated relative overflow-hidden">
-            <div className="max-w-2xl relative z-10 space-y-6">
+            <div className="max-w-3xl relative z-10 space-y-6">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="mint" className="bg-emerald-950/90 text-medinex-mint border-medinex-mint/40 font-semibold">
-                  Featured Hackathon Initiative
+                  Featured Project &bull; Health Record Interoperability
                 </Badge>
                 <Badge variant="warning" className="bg-amber-950/90 text-amber-300 border-amber-500/40 font-semibold">
-                  Status: In Active Development
+                  Stage: Prototype &amp; Architecture Research
                 </Badge>
               </div>
 
@@ -232,30 +265,43 @@ export default function HomePage() {
               </h2>
 
               <p className="text-slate-200 text-base sm:text-lg leading-relaxed">
-                An experimental telemedicine and community clinic connectivity bridge. Engineered to
-                empower grassroots healthcare workers in remote Bangladeshi rural areas with offline-first
-                triage templates and low-bandwidth doctor routing.
+                An Interoperable Digital Health Record &amp; Exchange Platform initiative exploring how
+                standardized health data schemas, HL7 FHIR alignment, patient consent management, and
+                secure API access can bridge fragmented health records.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div className="flex items-start gap-3">
-                  <WifiOff className="w-5 h-5 text-medinex-mint shrink-0 mt-0.5" />
+                  <Network className="w-5 h-5 text-medinex-mint shrink-0 mt-0.5" />
                   <span className="text-sm text-slate-300">
-                    Offline-first local triage queuing on intermittent networks.
+                    HL7 FHIR compatibility research &amp; standardized health data exchange workflows.
                   </span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <HeartPulse className="w-5 h-5 text-medinex-mint shrink-0 mt-0.5" />
+                  <ShieldCheck className="w-5 h-5 text-medinex-mint shrink-0 mt-0.5" />
                   <span className="text-sm text-slate-300">
-                    Structured vital card summaries instead of bulky video streams.
+                    Patient identity mapping, consent controls, RBAC &amp; access audit log concepts.
                   </span>
                 </div>
               </div>
 
-              <div className="pt-4 flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-2 pt-1">
+                {["Next.js App Router", "Java 21 Spring Boot", "PostgreSQL", "HL7 FHIR (Research)"].map(
+                  (tech) => (
+                    <span
+                      key={tech}
+                      className="px-2.5 py-1 rounded-md bg-white/10 border border-white/15 text-xs text-slate-200"
+                    >
+                      {tech}
+                    </span>
+                  )
+                )}
+              </div>
+
+              <div className="pt-3 flex flex-wrap gap-4">
                 <Link href="/projects/shasthosetu">
                   <Button variant="primary" size="md">
-                    Full ShasthoSetu Documentation
+                    Explore ShasthoSetu Architecture
                   </Button>
                 </Link>
                 <Link href="/projects">
@@ -270,14 +316,28 @@ export default function HomePage() {
       </section>
 
       {/* ---------------------------------------------------------------------- */}
-      {/* 4. SIX-CONTRIBUTOR TEAM PREVIEW */}
+      {/* 4. COLLABORATION & CORE CONTRIBUTORS */}
       {/* ---------------------------------------------------------------------- */}
       <section className="py-20 bg-medinex-light border-b border-medinex-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
+            {[
+              { title: "Software Developers", desc: "Contribute frontend, backend API, and interoperability architecture components." },
+              { title: "Health Researchers", desc: "Shape data standards research, HL7 FHIR schema alignment, and evaluation metrics." },
+              { title: "Public Health Voices", desc: "Provide domain insight on population health workflows and accessibility." },
+              { title: "Students & Innovators", desc: "Join open discussions, review technical progress, and test prototype ideas." },
+            ].map((item) => (
+              <div key={item.title} className="p-4 rounded-xl bg-white border border-medinex-border">
+                <h3 className="text-sm font-bold text-medinex-text">{item.title}</h3>
+                <p className="text-xs text-medinex-muted mt-1 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
               <Badge variant="teal" className="mb-2">
-                E-Health Hackathon 2026 Team
+                Multidisciplinary Core Team
               </Badge>
               <h2 className="text-3xl font-bold text-medinex-text tracking-tight">
                 Contributors
@@ -457,7 +517,7 @@ export default function HomePage() {
             Connect With Healthcare Innovation
           </h2>
           <p className="text-medinex-muted text-base max-w-2xl mx-auto leading-relaxed">
-            Follow our progress as we prepare for E-Health Hackathon 2026. Explore technical updates,
+            Explore our technical documentation, follow ShasthoSetu interoperability research,
             participate in open community discussions, and inspect our architectural design.
           </p>
 

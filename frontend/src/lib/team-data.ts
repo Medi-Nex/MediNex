@@ -271,34 +271,34 @@ export const SHASTHOSETU_PROJECT: ProjectInfo = {
   slug: "shasthosetu",
 
   shortSummary:
-    "An experimental smart healthcare connectivity bridge designed to connect grassroots community clinics and remote healthcare workers with specialized tele-consultation support.",
+    "An interoperable digital health record and exchange platform prototype exploring standardized health data structures, HL7 FHIR alignment, and consent-aware health record interoperability.",
 
   problemStatement:
-    "In underserved rural regions, community clinics frequently lack on-site specialized physicians. Patients face prohibitive travel costs, delayed diagnoses, and fragmented medical guidance. Critical medical emergencies and chronic conditions may go unmonitored due to the absence of resilient, low-bandwidth communication channels between village healthcare assistants and district hospital consultants.",
+    "Across clinics, diagnostic centers, and hospitals, health records are frequently trapped in disconnected and incompatible software silos. Patients often carry fragmented paper histories and undergo duplicate diagnostics, while healthcare institutions lack standardized, consent-governed workflows to exchange records safely with transparent access auditability.",
 
   proposedSolution:
-    "ShasthoSetu is designed as an edge-resilient digital health bridge. It aims to empower frontline healthcare volunteers with structured digital triage templates, vital-sign recording guidelines, offline-first queuing, and asynchronous doctor consultation routing that can operate on limited network connectivity.",
+    "ShasthoSetu is a featured healthcare technology initiative under MediNex exploring standards-oriented digital health record management and interoperable health data exchange. Its research and prototype architecture investigate HL7 FHIR resource alignment, patient identity mapping concepts, explicit consent workflows, role-based access control (RBAC), secure API communication, access audit logs, and optional QR-based patient identity lookup—while enforcing strict Zero-PHI separation from the public MediNex community.",
 
   features: [
     {
-      title: "Offline-First Triage Assessment",
+      title: "Standardized Digital Health Record Exchange",
       description:
-        "Allows rural health workers to record structured patient encounters locally and securely queue them for synchronization when network connectivity resumes.",
+        "Researches structured digital health record schemas and HL7 FHIR-compatible API exchange patterns to enable interoperability across healthcare facilities.",
     },
     {
-      title: "Low-Bandwidth Asynchronous Consultation",
+      title: "Patient Identity Mapping & Optional QR Lookup",
       description:
-        "Doctors receive concise, structured clinical information instead of requiring continuous high-bandwidth video streaming, enabling more practical remote consultation.",
+        "Explores privacy-preserving patient identity mapping models and an optional QR-based lookup concept (research stage; not government Health ID integrated).",
     },
     {
-      title: "Strict Data Isolation & Privacy Guard",
+      title: "Consent Management, RBAC & Audit Logging",
       description:
-        "Patient clinical data and identifiers are kept separate from the public MediNex social community platform.",
+        "Defines patient consent controls, role-based access boundaries, encrypted API communication, and access audit log concepts for record-sharing governance.",
     },
     {
-      title: "Bilingual Bangla & English Interface",
+      title: "Strict Data Isolation & Privacy Guard (Implemented)",
       description:
-        "Designed with intuitive visual elements and Bangla and English language support for community healthcare workers with varying levels of digital literacy.",
+        "Enforces architectural separation and automated Zero-PHI screening so real patient medical records never enter the public MediNex community database.",
     },
   ],
 
@@ -306,7 +306,7 @@ export const SHASTHOSETU_PROJECT: ProjectInfo = {
     "Next.js App Router",
     "Java 21 Spring Boot",
     "PostgreSQL",
-    "WebRTC (Research)",
+    "HL7 FHIR (Research)",
     "Docker",
   ],
 
@@ -372,7 +372,7 @@ export const OFFICIAL_ANNOUNCEMENTS: TeamAnnouncement[] = [
       "Separating public community interactions from patient clinical information.",
 
     content:
-      "MediNex is designed to maintain separation between public social interactions, including posts, follows, and discussions, and clinical services such as ShasthoSetu. Patient medical records, diagnostic information, and personally identifiable clinical information must not be stored in the public community database.",
+      "MediNex is designed to maintain strict separation between public social interactions, including posts, follows, and discussions, and interoperable health-record research initiatives such as ShasthoSetu. Real patient medical records, diagnostic information, and personally identifiable clinical information must not be stored in the public community database.",
 
     category: "TECHNICAL",
   },

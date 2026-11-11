@@ -103,7 +103,7 @@ export default function TeamPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold text-medinex-text">MediNex Official Team Account</h2>
                   <Badge variant="teal" size="sm">
-                    Verified Hackathon Team
+                    Multidisciplinary Core Team
                   </Badge>
                 </div>
                 <p className="text-xs text-medinex-muted mt-0.5">@medinex-official &bull; 6 Core Members</p>
