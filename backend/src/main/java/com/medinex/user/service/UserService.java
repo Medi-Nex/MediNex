@@ -1,19 +1,28 @@
 package com.medinex.user.service;
 
+import com.medinex.audit.entity.AuditLog;
+import com.medinex.audit.repository.AuditLogRepository;
 import com.medinex.auth.dto.UserDto;
+import com.medinex.common.exception.AppException;
+import com.medinex.common.exception.BadRequestException;
 import com.medinex.common.exception.ResourceNotFoundException;
 import com.medinex.user.dto.UpdateProfileRequest;
+import com.medinex.user.dto.UsernameAvailabilityDto;
 import com.medinex.user.entity.User;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserProfileRepository;
 import com.medinex.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -22,6 +31,7 @@ public class UserService {
     private final UserProfileRepository userProfileRepository;
     private final AvatarImageService avatarImageService;
     private final ProfileAccessGuard profileAccessGuard;
+    private final AuditLogRepository auditLogRepository;
 
     @Transactional(readOnly = true)
     public UserDto getUserByUsername(String username, UUID viewerId) {

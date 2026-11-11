@@ -194,21 +194,23 @@ public class DataInitializer implements CommandLineRunner {
                                  String department, String university, String bio,
                                  List<String> skills, List<String> responsibilities,
                                  boolean isLead, int order) {
-        User user = userRepository.findByUsernameIgnoreCase(username).orElseGet(() -> {
-            Role userRole = roleRepository.findById(RoleType.ROLE_USER.name()).orElseThrow();
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .or(() -> userRepository.findByEmailIgnoreCase(email))
+                .orElseGet(() -> {
+                    Role userRole = roleRepository.findById(RoleType.ROLE_USER.name()).orElseThrow();
 
-            User newUser = User.builder()
-                    .username(username)
-                    .fullName(fullName)
-                    .email(email)
-                    .passwordHash(passwordEncoder.encode("Contributor@2026"))
-                    .status(UserStatus.ACTIVE)
-                    .emailVerified(true)
-                    .isTeamMember(true)
-                    .roles(Set.of(userRole))
-                    .build();
-            return userRepository.save(newUser);
-        });
+                    User newUser = User.builder()
+                            .username(username)
+                            .fullName(fullName)
+                            .email(email)
+                            .passwordHash(passwordEncoder.encode("Contributor@2026"))
+                            .status(UserStatus.ACTIVE)
+                            .emailVerified(true)
+                            .isTeamMember(true)
+                            .roles(Set.of(userRole))
+                            .build();
+                    return userRepository.save(newUser);
+                });
 
         if (userProfileRepository.findByUserId(user.getId()).isEmpty()) {
             UserProfile profile = UserProfile.builder()

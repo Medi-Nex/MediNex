@@ -23,6 +23,7 @@ import com.medinex.user.model.UserStatus;
 import com.medinex.user.repository.RoleRepository;
 import com.medinex.user.repository.UserProfileRepository;
 import com.medinex.user.repository.UserRepository;
+import com.medinex.user.service.UsernamePolicy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

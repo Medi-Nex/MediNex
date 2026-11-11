@@ -13,4 +13,5 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, UUID> {
     List<TeamMember> findAllByTeamSlugOrderByDisplayOrderAsc(String teamSlug);
     List<TeamMember> findAllByOrderByDisplayOrderAsc();
     Optional<TeamMember> findByUserUsernameIgnoreCase(String username);
+    Optional<TeamMember> findByUserId(UUID userId);
 }

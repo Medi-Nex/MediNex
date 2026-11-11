@@ -95,7 +95,8 @@ public class SecurityConfig {
                         // Team endpoints: GET is public, contributor profile mutations restricted to admins
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/team/**").permitAll()
                         .requestMatchers("/api/v1/team/members/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-                        // Public user profiles and follower lists
+                        // Public user profiles, handle checks, and follower lists
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/username-availability").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/follow-stats").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/{username}/followers").permitAll()
