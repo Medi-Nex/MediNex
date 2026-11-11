@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Activity, Lock, Mail, User, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [registeredSuccess, setRegisteredSuccess] = useState(false);
 
+  const router = useRouter();
   const { register } = useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -36,6 +38,7 @@ export default function RegisterPage() {
         agreeTerms,
       });
       setRegisteredSuccess(true);
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
     } catch (err) {
       if (err instanceof ApiError) {
         setErrorMessage(err.message);
@@ -76,13 +79,13 @@ export default function RegisterPage() {
                 </div>
                 <h2 className="text-lg font-bold text-medinex-text">Registration Successful!</h2>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  We have dispatched a verification email to <strong>{email}</strong>.
-                  Please confirm your email token to activate your account.
+                  We have dispatched a verification code to <strong>{email}</strong>.
+                  Redirecting you to the verification page...
                 </p>
                 <div className="pt-2">
-                  <Link href="/verify-email">
+                  <Link href={`/verify-email?email=${encodeURIComponent(email.trim())}`}>
                     <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5">
-                      <span>Enter Verification Token</span>
+                      <span>Enter Verification Code / OTP</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   </Link>

@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Activity, MailCheck, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
+  const searchParams = useSearchParams();
+  const targetEmail = searchParams.get("email");
   const [tokenInput, setTokenInput] = useState("");
   const [verified, setVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +87,8 @@ export default function VerifyEmailPage() {
                 <div className="p-3 bg-emerald-50 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
                   <MailCheck className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
                   <span>
-                    A verification token was sent from <strong>medinexbd.noreply@gmail.com</strong> to your registered address. Please check your inbox (and spam folder).
+                    A verification code was sent from <strong>medinexbd.noreply@gmail.com</strong> to{" "}
+                    <strong>{targetEmail || "your registered address"}</strong>. Please check your inbox (and spam folder) and enter it below.
                   </span>
                 </div>
 
@@ -95,15 +99,16 @@ export default function VerifyEmailPage() {
                   <input
                     type="text"
                     required
+                    autoFocus
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
-                    placeholder="Enter token from email"
+                    placeholder="Enter verification code from email"
                     className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal text-center tracking-widest font-mono text-sm"
                   />
                 </div>
 
                 <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-                  Confirm Email Address
+                  Verify Email &amp; Activate Account
                 </Button>
 
                 <div className="text-center pt-2">
@@ -117,5 +122,19 @@ export default function VerifyEmailPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-medinex-light px-4 py-16">
+          <div className="text-xs text-medinex-muted">Loading verification page...</div>
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
