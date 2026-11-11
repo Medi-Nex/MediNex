@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { getUserProfileHref, selectAvatarVariantUrl } from "@/lib/media";
+import { getTeamPortraitFallback, getUserProfileHref, selectAvatarVariantUrl } from "@/lib/media";
 
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl" | "fill";
 
@@ -48,12 +48,7 @@ export function UserAvatar({
   className = "",
   imgClassName = "",
 }: UserAvatarProps) {
-  const KNOWN_TEAM_USERNAMES = new Set(["hasnat", "jihadjp", "tarek", "shopnil", "nabil", "puja"]);
-
-  const teamImageCandidate =
-    username && KNOWN_TEAM_USERNAMES.has(username.toLowerCase())
-      ? `/images/team/${username.toLowerCase()}.jpg`
-      : null;
+  const teamImageCandidate = getTeamPortraitFallback(username, fullName);
 
   const isDefaultAvatar = (url?: string | null) =>
     Boolean(url && (url.includes("default.png") || url.includes("default-avatar") || url.includes("placeholder")));

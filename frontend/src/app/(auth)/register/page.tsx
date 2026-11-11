@@ -1,18 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Activity, Mail, User, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { Activity, Mail, User, CheckCircle2, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth-context";
+import { authApi, UsernameAvailabilityResult } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
+import {
+  USERNAME_MAX_LENGTH,
+  sanitizeUsernameInput,
+  validateUsernameLocally,
+} from "@/lib/username";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<UsernameAvailabilityResult | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -22,6 +30,40 @@ export default function RegisterPage() {
 
   const router = useRouter();
   const { register } = useAuth();
+
+  const localUsernameError = username.length > 0 ? validateUsernameLocally(username) : null;
+
+  useEffect(() => {
+    if (!username || localUsernameError) {
+      setUsernameStatus(null);
+      setIsCheckingUsername(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsCheckingUsername(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await authApi.checkUsernameAvailability(username);
+        if (!cancelled) {
+          setUsernameStatus(res);
+        }
+      } catch {
+        if (!cancelled) {
+          setUsernameStatus(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsCheckingUsername(false);
+        }
+      }
+    }, 320);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [username, localUsernameError]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,12 +173,36 @@ export default function RegisterPage() {
                       <input
                         type="text"
                         required
+                        maxLength={USERNAME_MAX_LENGTH}
                         value={username}
-                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+                        onChange={(e) => setUsername(sanitizeUsernameInput(e.target.value))}
                         placeholder="alexrivera"
-                        className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                        className="w-full text-xs pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
                       />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {isCheckingUsername ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-medinex-teal" />
+                        ) : username.length > 0 && !localUsernameError && usernameStatus?.available ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        ) : username.length > 0 &&
+                          (localUsernameError || (usernameStatus && !usernameStatus.available)) ? (
+                          <AlertCircle className="w-4 h-4 text-rose-500" />
+                        ) : null}
+                      </div>
                     </div>
+                    {username.length > 0 && (
+                      <p className="mt-1 text-[11px]">
+                        {localUsernameError ? (
+                          <span className="text-rose-600">{localUsernameError}</span>
+                        ) : isCheckingUsername ? (
+                          <span className="text-medinex-teal">Checking availability...</span>
+                        ) : usernameStatus ? (
+                          <span className={usernameStatus.available ? "text-emerald-700" : "text-rose-600"}>
+                            {usernameStatus.message}
+                          </span>
+                        ) : null}
+                      </p>
+                    )}
                   </div>
 
                   <div>

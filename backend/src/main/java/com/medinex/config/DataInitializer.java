@@ -230,7 +230,7 @@ public class DataInitializer implements CommandLineRunner {
             userProfileRepository.save(profile);
         }
 
-        if (teamMemberRepository.findByUserUsernameIgnoreCase(username).isEmpty()) {
+        if (teamMemberRepository.findByUserId(user.getId()).isEmpty()) {
             TeamMember member = TeamMember.builder()
                     .team(team)
                     .user(user)

@@ -24,6 +24,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth-context";
 import { AvatarUploadCard } from "@/components/settings/AvatarUploadCard";
 import { BannerUploadCard } from "@/components/settings/BannerUploadCard";
+import { UsernameChangeCard } from "@/components/settings/UsernameChangeCard";
 import { authApi } from "@/lib/api/auth";
 import { getBlockedUsers, unblockUser, BlockedUserDto } from "@/lib/api/follow";
 
@@ -194,7 +195,10 @@ export default function DashboardSettingsPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Section 0: Profile Photo & Multi-Resolution Upload */}
+        {/* Section 0: Account Handle (@username) */}
+        <UsernameChangeCard />
+
+        {/* Section 0a: Profile Photo & Multi-Resolution Upload */}
         <AvatarUploadCard />
 
         {/* Section 0b: Profile Cover Banner Studio */}

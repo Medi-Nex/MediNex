@@ -61,12 +61,19 @@ export default function MemberProfilePage() {
     let cancelled = false;
 
     const resolveMember = async () => {
-      const baseMember =
+      let baseMember =
         INITIAL_TEAM_MEMBERS.find((m) => m.username.toLowerCase() === username.toLowerCase()) || null;
 
       try {
         const apiUser = await authApi.getPublicProfile(username);
         if (cancelled) return;
+
+        if (!baseMember && apiUser.fullName) {
+          baseMember =
+            INITIAL_TEAM_MEMBERS.find(
+              (m) => m.fullName.toLowerCase() === apiUser.fullName.trim().toLowerCase()
+            ) || null;
+        }
 
         if (!baseMember && !apiUser.isTeamMember) {
           router.replace(getUserProfileHref(username));

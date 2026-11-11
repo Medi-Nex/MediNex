@@ -86,3 +86,28 @@ test("Profile Banner Editor, Click-to-Preview Lightbox & Consistent Team Framing
   assert.ok(teamDirSrc.includes("<UserAvatar"), "/team cards must use UserAvatar multi-step fallback");
   assert.ok(homeSrc.includes("<UserAvatar"), "Homepage team cards must use UserAvatar multi-step fallback");
 });
+
+test("Username Change Card, Validation Helper & API Client Are Wired", () => {
+  const usernameHelperPath = path.resolve("./src/lib/username.ts");
+  const usernameCardPath = path.resolve("./src/components/settings/UsernameChangeCard.tsx");
+  const authApiSrc = fs.readFileSync(path.resolve("./src/lib/api/auth.ts"), "utf-8");
+  const mediaSrc = fs.readFileSync(path.resolve("./src/lib/media.ts"), "utf-8");
+  const profileEditSrc = fs.readFileSync(
+    path.resolve("./src/app/(dashboard)/dashboard/profile/page.tsx"),
+    "utf-8"
+  );
+  const settingsSrc = fs.readFileSync(
+    path.resolve("./src/app/(dashboard)/dashboard/settings/page.tsx"),
+    "utf-8"
+  );
+  const registerSrc = fs.readFileSync(path.resolve("./src/app/(auth)/register/page.tsx"), "utf-8");
+
+  assert.ok(fs.existsSync(usernameHelperPath), "Shared username validation helper must exist");
+  assert.ok(fs.existsSync(usernameCardPath), "Reusable UsernameChangeCard component must exist");
+  assert.ok(authApiSrc.includes("checkUsernameAvailability"), "authApi must expose checkUsernameAvailability");
+  assert.ok(authApiSrc.includes("updateUsername"), "authApi must expose updateUsername");
+  assert.ok(mediaSrc.includes("getTeamPortraitFallback"), "media.ts must expose shared team portrait fallback");
+  assert.ok(profileEditSrc.includes("<UsernameChangeCard"), "Profile edit page must render UsernameChangeCard");
+  assert.ok(settingsSrc.includes("<UsernameChangeCard"), "Settings page must render UsernameChangeCard");
+  assert.ok(registerSrc.includes("checkUsernameAvailability"), "Register page must check live username availability");
+});

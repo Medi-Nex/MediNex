@@ -111,6 +111,126 @@ public class UserService {
         return saveProfileAndMap(user, profile);
     }
 
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityDto checkUsernameAvailability(String rawUsername, UUID currentUserId) {
+        String normalized = UsernamePolicy.normalize(rawUsername);
+
+        if (currentUserId != null) {
+            User currentUser = userRepository.findById(currentUserId).orElse(null);
+            if (currentUser != null && normalized.equalsIgnoreCase(currentUser.getUsername())) {
+                return buildAvailability(
+                        normalized,
+                        true,
+                        true,
+                        true,
+                        "CURRENT_USERNAME",
+                        "This is already your current username."
+                );
+            }
+        }
+
+        if (!UsernamePolicy.isValidSyntax(normalized)) {
+            return buildAvailability(
+                    normalized,
+                    false,
+                    false,
+                    false,
+                    "INVALID_FORMAT",
+                    "Use 3-50 characters (a-z, 0-9, _, -), starting and ending with a letter or number."
+            );
+        }
+
+        if (UsernamePolicy.isReserved(normalized)) {
+            return buildAvailability(
+                    normalized,
+                    false,
+                    false,
+                    false,
+                    "RESERVED",
+                    "This username is reserved for platform navigation."
+            );
+        }
+
+        if (userRepository.existsByUsernameIgnoreCase(normalized)) {
+            return buildAvailability(
+                    normalized,
+                    true,
+                    false,
+                    false,
+                    "TAKEN",
+                    "@" + normalized + " is already taken."
+            );
+        }
+
+        return buildAvailability(
+                normalized,
+                true,
+                true,
+                false,
+                "OK",
+                "@" + normalized + " is available."
+        );
+    }
+
+    @Transactional
+    public UserDto updateUsername(UUID userId, String rawUsername) {
+        User user = findUserOrThrow(userId);
+        String normalized = UsernamePolicy.normalize(rawUsername);
+
+        if (normalized.equalsIgnoreCase(user.getUsername())) {
+            throw new BadRequestException("New username must be different from your current username");
+        }
+
+        UsernamePolicy.validateOrThrow(normalized);
+
+        if (userRepository.existsByUsernameIgnoreCase(normalized)) {
+            throw new AppException("This username is already taken", HttpStatus.CONFLICT);
+        }
+
+        String previousUsername = user.getUsername();
+        user.setUsername(normalized);
+        try {
+            User savedUser = userRepository.saveAndFlush(user);
+            recordUsernameAudit(savedUser);
+            log.info("[USER] Username updated for userId={}: {} -> {}", savedUser.getId(), previousUsername, normalized);
+            return UserDto.fromEntity(savedUser);
+        } catch (DataIntegrityViolationException ex) {
+            throw new AppException("This username is already taken", HttpStatus.CONFLICT);
+        }
+    }
+
+    private UsernameAvailabilityDto buildAvailability(
+            String normalized,
+            boolean valid,
+            boolean available,
+            boolean current,
+            String reason,
+            String message) {
+        return UsernameAvailabilityDto.builder()
+                .username(normalized)
+                .valid(valid)
+                .available(available)
+                .current(current)
+                .reason(reason)
+                .message(message)
+                .profilePath(normalized.isEmpty() ? null : "/users/" + normalized)
+                .build();
+    }
+
+    private void recordUsernameAudit(User user) {
+        try {
+            auditLogRepository.save(AuditLog.builder()
+                    .actorId(user.getId())
+                    .actorEmail(user.getEmail())
+                    .action("USERNAME_CHANGED")
+                    .targetEntity("User")
+                    .targetId(user.getId().toString())
+                    .build());
+        } catch (Exception e) {
+            log.error("Failed to record USERNAME_CHANGED audit log: {}", e.getMessage());
+        }
+    }
+
     private User findUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));

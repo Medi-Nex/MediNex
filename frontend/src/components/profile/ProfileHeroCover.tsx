@@ -8,9 +8,7 @@ import { ImagePreviewModal } from "@/components/ui/ImagePreviewModal";
 import { BannerCropUploadModal } from "@/components/settings/BannerCropUploadModal";
 import { useAuth } from "@/lib/auth-context";
 import { AuthUser } from "@/lib/api/auth";
-import { resolveMediaUrl, selectAvatarVariantUrl } from "@/lib/media";
-
-const KNOWN_TEAM_USERNAMES = new Set(["hasnat", "jihadjp", "tarek", "shopnil", "nabil", "puja"]);
+import { getTeamPortraitFallback, resolveMediaUrl, selectAvatarVariantUrl } from "@/lib/media";
 
 export interface ProfileHeroSubject {
   id?: string;
@@ -72,9 +70,7 @@ export function ProfileHeroCover({
       "xl"
     ) || resolveMediaUrl(rawAvatarUrl);
 
-  const teamPortraitFallback = KNOWN_TEAM_USERNAMES.has(subject.username.toLowerCase())
-    ? `/images/team/${subject.username.toLowerCase()}.jpg`
-    : null;
+  const teamPortraitFallback = getTeamPortraitFallback(subject.username, subject.fullName);
 
   const avatarPreviewSrc = highResAvatar || teamPortraitFallback;
 

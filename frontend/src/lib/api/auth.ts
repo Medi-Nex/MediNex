@@ -75,6 +75,16 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+export interface UsernameAvailabilityResult {
+  username: string;
+  valid: boolean;
+  available: boolean;
+  current: boolean;
+  reason: "OK" | "CURRENT_USERNAME" | "INVALID_FORMAT" | "RESERVED" | "TAKEN" | string;
+  message: string;
+  profilePath: string | null;
+}
+
 export const authApi = {
   register: (payload: RegisterPayload) =>
     apiClient<AuthUser>("/auth/register", {
@@ -129,10 +139,21 @@ export const authApi = {
   getPublicProfile: (username: string) =>
     apiClient<PublicUserProfile>(`/users/${encodeURIComponent(username)}`),
 
+  checkUsernameAvailability: (username: string) =>
+    apiClient<UsernameAvailabilityResult>(
+      `/users/username-availability?username=${encodeURIComponent(username)}`
+    ),
+
   updateProfile: (payload: UpdateProfilePayload) =>
     apiClient<AuthUser>("/users/profile", {
       method: "PUT",
       body: JSON.stringify(payload),
+    }),
+
+  updateUsername: (username: string) =>
+    apiClient<AuthUser>("/users/profile/username", {
+      method: "PUT",
+      body: JSON.stringify({ username }),
     }),
 
   uploadAvatar: (file: File) => {

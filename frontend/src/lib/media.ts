@@ -69,3 +69,35 @@ export function getUserProfileHref(username?: string | null): string {
   if (!username) return "/community";
   return `/users/${encodeURIComponent(username)}`;
 }
+
+const KNOWN_TEAM_PORTRAITS: Record<string, string> = {
+  hasnat: "/images/team/hasnat.jpg",
+  jihadjp: "/images/team/jihadjp.jpg",
+  tarek: "/images/team/tarek.jpg",
+  shopnil: "/images/team/shopnil.jpg",
+  nabil: "/images/team/nabil.jpg",
+  puja: "/images/team/puja.jpg",
+};
+
+const KNOWN_TEAM_PORTRAITS_BY_NAME: Record<string, string> = {
+  "md abu hasnat abdullah": "/images/team/hasnat.jpg",
+  "jihad khan": "/images/team/jihadjp.jpg",
+  "m tarek rahman": "/images/team/tarek.jpg",
+  "md. khairul anam shopnil": "/images/team/shopnil.jpg",
+  "md. nabil shikdar": "/images/team/nabil.jpg",
+  "paromita karmoker puja": "/images/team/puja.jpg",
+};
+
+/**
+ * Resolves the bundled team portrait fallback path by handle or verified contributor name
+ * so contributor cards retain portraits even after a handle rename.
+ */
+export function getTeamPortraitFallback(
+  username?: string | null,
+  fullName?: string | null
+): string | null {
+  const byUsername = username ? KNOWN_TEAM_PORTRAITS[username.trim().toLowerCase()] : null;
+  if (byUsername) return byUsername;
+  const byName = fullName ? KNOWN_TEAM_PORTRAITS_BY_NAME[fullName.trim().toLowerCase()] : null;
+  return byName || null;
+}

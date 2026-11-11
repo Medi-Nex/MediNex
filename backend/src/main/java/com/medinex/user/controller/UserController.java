@@ -26,6 +26,16 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping("/username-availability")
+    @Operation(summary = "Check whether a candidate username handle is valid and available")
+    public ApiResponse<UsernameAvailabilityDto> checkUsernameAvailability(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(value = "username", defaultValue = "") String username) {
+        java.util.UUID viewerId = principal != null ? principal.getId() : null;
+        UsernameAvailabilityDto result = userService.checkUsernameAvailability(username, viewerId);
+        return ApiResponse.ok(result, "Username availability checked");
+    }
+
     @GetMapping("/{username}")
     @Operation(summary = "Get user profile by username (enforces private profile access rules)")
     public ApiResponse<UserDto> getUserByUsername(
@@ -45,6 +55,17 @@ public class UserController {
             @RequestBody UpdateProfileRequest request) {
         UserDto updated = userService.updateProfile(principal.getId(), request);
         return ApiResponse.ok(updated, "Profile updated successfully");
+    }
+
+    @PutMapping("/profile/username")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Change authenticated user's unique @username handle")
+    public ApiResponse<UserDto> updateUsername(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody UpdateUsernameRequest request) {
+        UserDto updated = userService.updateUsername(principal.getId(), request.getUsername());
+        return ApiResponse.ok(updated, "Username updated successfully");
     }
 
     @PostMapping(value = "/profile/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

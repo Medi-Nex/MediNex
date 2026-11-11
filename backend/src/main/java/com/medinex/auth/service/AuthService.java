@@ -65,11 +65,14 @@ public class AuthService {
 
     @Transactional
     public UserDto register(RegisterRequest request) {
+        String normalizedUsername = UsernamePolicy.normalize(request.getUsername());
+        UsernamePolicy.validateOrThrow(normalizedUsername);
+
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             throw new AppException("Email address is already in use", HttpStatus.CONFLICT);
         }
 
-        if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
+        if (userRepository.existsByUsernameIgnoreCase(normalizedUsername)) {
             throw new AppException("Username is already taken", HttpStatus.CONFLICT);
         }
 
@@ -82,7 +85,7 @@ public class AuthService {
 
         User user = User.builder()
                 .fullName(request.getFullName().trim())
-                .username(request.getUsername().trim().toLowerCase())
+                .username(normalizedUsername)
                 .email(request.getEmail().trim().toLowerCase())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .status(UserStatus.PENDING_VERIFICATION)
