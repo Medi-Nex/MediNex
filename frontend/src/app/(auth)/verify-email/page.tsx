@@ -84,7 +84,7 @@ export default function VerifyEmailPage() {
                 <div className="p-3 bg-emerald-50 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
                   <MailCheck className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
                   <span>
-                    A verification token was sent to your registered address. (Check Mailpit at http://localhost:8026).
+                    A verification token was sent from <strong>medinexbd.noreply@gmail.com</strong> to your registered address. Please check your inbox (and spam folder).
                   </span>
                 </div>
 

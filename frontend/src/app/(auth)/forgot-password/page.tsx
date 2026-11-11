@@ -67,8 +67,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <h2 className="text-base font-bold text-medinex-text">Reset Token Dispatched</h2>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  If an account exists for <strong>{email}</strong>, a secure reset token has been dispatched.
-                  Check local development emails at <span className="font-mono text-medinex-teal">http://localhost:8026</span> via Mailpit.
+                  If an account exists for <strong>{email}</strong>, a secure reset token has been dispatched from <span className="font-mono text-medinex-teal">medinexbd.noreply@gmail.com</span>. Please check your inbox (and spam folder).
                 </p>
                 <div className="pt-2 flex flex-col gap-2">
                   <Link href="/reset-password">
