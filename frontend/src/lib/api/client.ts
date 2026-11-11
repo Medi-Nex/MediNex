@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from "@/lib/env";
+
 // MediNex API Client
 
 export interface ApiEnvelope<T> {
@@ -20,13 +22,12 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1";
-
 export async function apiClient<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const token = typeof window !== "undefined" ? localStorage.getItem("medinex_access_token") : null;
+  const apiBaseUrl = endpoint.startsWith("http") ? "" : getApiBaseUrl();
 
   const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 
@@ -40,7 +41,7 @@ export async function apiClient<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith("http") ? endpoint : `${apiBaseUrl}${endpoint}`;
 
   try {
     const response = await fetch(url, {

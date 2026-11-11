@@ -26,9 +26,9 @@ COPY . .
 
 # Set environment for build (inline NEXT_PUBLIC_* into client bundle)
 ARG NEXT_PUBLIC_APP_NAME="MediNex"
-ARG NEXT_PUBLIC_APP_TAGLINE="Healthcare Innovation. Connected Communities."
+ARG NEXT_PUBLIC_APP_TAGLINE="Connecting Technology, Research & Healthcare Innovation."
 ARG NEXT_PUBLIC_APP_URL="http://localhost:3002"
-ARG NEXT_PUBLIC_API_BASE_URL="http://localhost:8082/api/v1"
+ARG NEXT_PUBLIC_API_BASE_URL=""
 
 ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
 ENV NEXT_PUBLIC_APP_TAGLINE=${NEXT_PUBLIC_APP_TAGLINE}

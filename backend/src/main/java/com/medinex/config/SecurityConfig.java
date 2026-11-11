@@ -76,6 +76,7 @@ public class SecurityConfig {
                         // Public system & auth endpoints
                         .requestMatchers(
                                 "/actuator/health",
+                                "/actuator/health/**",
                                 "/actuator/info",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -121,7 +122,12 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .toList();
+
+        if (origins.contains("*")) {
+            throw new IllegalStateException("CORS wildcard '*' is disallowed when allowCredentials is enabled");
+        }
 
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

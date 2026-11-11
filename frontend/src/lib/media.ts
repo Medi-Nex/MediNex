@@ -1,11 +1,8 @@
-const DEFAULT_API_BASE = "http://localhost:8080/api/v1";
+import { getApiOrigin } from "@/lib/env";
 
 export type AvatarVariant = "sm" | "md" | "lg";
 
-export function getApiOrigin(): string {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE;
-  return apiBase.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
-}
+export { getApiOrigin };
 
 /**
  * Resolves relative backend upload paths (`/uploads/...`) against the configured API origin

@@ -54,17 +54,16 @@ RUN mkdir -p /app/uploads && chown -R appuser:appgroup /app /app/uploads
 # Switch to non-root user
 USER appuser:appgroup
 
-# Environment defaults
+# Environment defaults (single-port PaaS binds to $PORT; Docker Compose can override MANAGEMENT_SERVER_PORT=8081)
 ENV SPRING_PROFILES_ACTIVE=prod \
     SERVER_PORT=8080 \
-    MANAGEMENT_SERVER_PORT=8081 \
     JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
 
-# Expose primary application and management actuator ports
+# Expose application and optional management actuator ports
 EXPOSE 8080 8081
 
-# Docker container healthcheck against Spring Boot Actuator
+# Docker container healthcheck against Spring Boot Actuator (respects dynamic management/app port)
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
-  CMD wget -qO- http://127.0.0.1:8081/actuator/health | grep -q '"status":"UP"' || exit 1
+  CMD sh -c 'wget -qO- "http://127.0.0.1:${MANAGEMENT_SERVER_PORT:-${PORT:-${SERVER_PORT:-8080}}}/actuator/health" | grep -q "\"status\":\"UP\"" || exit 1'
 
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

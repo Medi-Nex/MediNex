@@ -15,7 +15,7 @@ services:
       TZ: UTC
       PGTZ: UTC
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - medinex_pgdata:/var/lib/postgresql/data
       - ./infrastructure/docker/postgres/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
@@ -43,6 +43,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       SERVER_PORT: 8080
+      MANAGEMENT_SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-medinex_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-medinex_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-medinex_secure_password_dev_only}
@@ -86,7 +87,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_NAME: "MediNex"
-        NEXT_PUBLIC_APP_TAGLINE: "Healthcare Innovation. Connected Communities."
+        NEXT_PUBLIC_APP_TAGLINE: "Connecting Technology, Research & Healthcare Innovation."
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}
     container_name: medinex-frontend
@@ -97,7 +98,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       NEXT_PUBLIC_APP_NAME: "MediNex"
-      NEXT_PUBLIC_APP_TAGLINE: "Healthcare Innovation. Connected Communities."
+      NEXT_PUBLIC_APP_TAGLINE: "Connecting Technology, Research & Healthcare Innovation."
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}
     ports:

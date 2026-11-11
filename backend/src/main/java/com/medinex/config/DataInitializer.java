@@ -18,11 +18,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +33,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
+    private static final String DEFAULT_DEV_ADMIN_PASSWORD = "Admin@SecurePass2026!";
+
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
@@ -38,6 +42,13 @@ public class DataInitializer implements CommandLineRunner {
     private final TeamMemberRepository teamMemberRepository;
     private final ProjectRepository projectRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Environment environment;
+
+    @Value("${medinex.seed.enabled:true}")
+    private boolean seedEnabled;
+
+    @Value("${medinex.seed.demo-users-enabled:true}")
+    private boolean demoUsersEnabled;
 
     @Value("${medinex.seed.admin-email:admin@medinex.health}")
     private String adminEmail;
@@ -48,7 +59,13 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        log.info("[DATA INITIALIZER] Verifying core roles, team accounts, and placeholder profiles...");
+        if (!seedEnabled) {
+            log.info("[DATA INITIALIZER] Seeding disabled via medinex.seed.enabled=false.");
+            return;
+        }
+        boolean isProd = Arrays.asList(environment.getActiveProfiles()).contains("prod");
+        log.info("[DATA INITIALIZER] Verifying core roles and baseline platform records (prod={}, demoUsers={})...",
+                isProd, demoUsersEnabled);
 
         // 1. Initialize Roles
         Role superAdminRole = initRole(RoleType.ROLE_SUPER_ADMIN.name(), "Super Administrator with full authority");
@@ -56,21 +73,27 @@ public class DataInitializer implements CommandLineRunner {
         Role moderatorRole = initRole(RoleType.ROLE_MODERATOR.name(), "Content moderator");
         Role userRole = initRole(RoleType.ROLE_USER.name(), "Standard community user");
 
-        // 2. Initialize Seed Admin (if not exists)
+        // 2. Initialize Seed Admin (if not exists and credentials are safe for current profile)
         if (!userRepository.existsByEmailIgnoreCase(adminEmail)) {
-            User admin = User.builder()
-                    .fullName("MediNex Lead Administrator")
-                    .username("medinex-admin")
-                    .email(adminEmail)
-                    .passwordHash(passwordEncoder.encode(adminPassword))
-                    .status(UserStatus.ACTIVE)
-                    .emailVerified(true)
-                    .isTeamMember(true)
-                    .roles(Set.of(superAdminRole, adminRole, userRole))
-                    .build();
-            userRepository.save(admin);
-            userProfileRepository.save(UserProfile.builder().user(admin).designation("System Administrator").build());
-            log.info("[DATA INITIALIZER] Seed administrator created: {}", adminEmail);
+            boolean hasPassword = adminPassword != null && !adminPassword.isBlank();
+            boolean isInsecureProdDefault = isProd && DEFAULT_DEV_ADMIN_PASSWORD.equals(adminPassword);
+            if (!hasPassword || isInsecureProdDefault) {
+                log.warn("[DATA INITIALIZER] Skipping default admin creation in prod profile: supply an explicit non-default SEED_ADMIN_PASSWORD.");
+            } else {
+                User admin = User.builder()
+                        .fullName("MediNex Lead Administrator")
+                        .username("medinex-admin")
+                        .email(adminEmail)
+                        .passwordHash(passwordEncoder.encode(adminPassword))
+                        .status(UserStatus.ACTIVE)
+                        .emailVerified(true)
+                        .isTeamMember(true)
+                        .roles(Set.of(superAdminRole, adminRole, userRole))
+                        .build();
+                userRepository.save(admin);
+                userProfileRepository.save(UserProfile.builder().user(admin).designation("System Administrator").build());
+                log.info("[DATA INITIALIZER] Seed administrator created: {}", adminEmail);
+            }
         }
 
         // 3. Initialize Official Team
@@ -86,54 +109,58 @@ public class DataInitializer implements CommandLineRunner {
             return teamRepository.save(newTeam);
         });
 
-        // 4. Initialize 6 Contributor Placeholder Profiles
-        initContributor(team, "contributor-01", "Contributor 01 [Placeholder]",
-                "Team Lead & Systems Architect", "Computer Science & Engineering",
-                "University Engineering Department [Pending Verification]",
-                "Placeholder profile for Contributor 1. Responsible for system architecture, backend integration, and project coordination for E-Health Hackathon 2026.",
-                List.of("Distributed Systems", "Java Spring Boot", "PostgreSQL", "System Architecture"),
-                List.of("Platform architecture", "Data isolation oversight", "Hackathon coordination"),
-                true, 1);
+        // 4. Initialize 6 Contributor Placeholder Profiles (non-prod / explicit opt-in only)
+        if (!demoUsersEnabled) {
+            log.info("[DATA INITIALIZER] Skipping demo placeholder contributor credentials (demo-users-enabled=false).");
+        } else {
+            initContributor(team, "contributor-01", "Contributor 01 [Placeholder]",
+                    "Team Lead & Systems Architect", "Computer Science & Engineering",
+                    "University Engineering Department [Pending Verification]",
+                    "Placeholder profile for Contributor 1. Responsible for system architecture, backend integration, and project coordination for E-Health Hackathon 2026.",
+                    List.of("Distributed Systems", "Java Spring Boot", "PostgreSQL", "System Architecture"),
+                    List.of("Platform architecture", "Data isolation oversight", "Hackathon coordination"),
+                    true, 1);
 
-        initContributor(team, "contributor-02", "Contributor 02 [Placeholder]",
-                "Full-Stack Web & Next.js Specialist", "Software Engineering",
-                "Institute of Information Technology [Pending Verification]",
-                "Placeholder profile for Contributor 2. Spearheading front-end interface development, responsive UI accessibility (WCAG 2.2), and community feed components.",
-                List.of("Next.js App Router", "TypeScript", "Tailwind CSS", "React Hook Form"),
-                List.of("Frontend views", "Hybrid design implementation", "Core Web Vitals"),
-                false, 2);
+            initContributor(team, "contributor-02", "Contributor 02 [Placeholder]",
+                    "Full-Stack Web & Next.js Specialist", "Software Engineering",
+                    "Institute of Information Technology [Pending Verification]",
+                    "Placeholder profile for Contributor 2. Spearheading front-end interface development, responsive UI accessibility (WCAG 2.2), and community feed components.",
+                    List.of("Next.js App Router", "TypeScript", "Tailwind CSS", "React Hook Form"),
+                    List.of("Frontend views", "Hybrid design implementation", "Core Web Vitals"),
+                    false, 2);
 
-        initContributor(team, "contributor-03", "Contributor 03 [Placeholder]",
-                "Health Informatics & Data Architect", "Biomedical Engineering & Informatics",
-                "Department of Biomedical Science [Pending Verification]",
-                "Placeholder profile for Contributor 3. Specializing in healthcare data schemas, standards evaluation, and relational database migrations.",
-                List.of("PostgreSQL", "Data Modeling", "Health Informatics Research", "Relational Indexing"),
-                List.of("Schema migrations", "Data segregation enforcement", "Compliance research"),
-                false, 3);
+            initContributor(team, "contributor-03", "Contributor 03 [Placeholder]",
+                    "Health Informatics & Data Architect", "Biomedical Engineering & Informatics",
+                    "Department of Biomedical Science [Pending Verification]",
+                    "Placeholder profile for Contributor 3. Specializing in healthcare data schemas, standards evaluation, and relational database migrations.",
+                    List.of("PostgreSQL", "Data Modeling", "Health Informatics Research", "Relational Indexing"),
+                    List.of("Schema migrations", "Data segregation enforcement", "Compliance research"),
+                    false, 3);
 
-        initContributor(team, "contributor-04", "Contributor 04 [Placeholder]",
-                "Mobile & Interoperable Systems Lead", "Electrical & Electronic Engineering",
-                "Engineering Faculty [Pending Verification]",
-                "Placeholder profile for Contributor 4. Leading research and mobile/web interface prototyping for ShasthoSetu health data exchange workflows.",
-                List.of("HL7 FHIR Research", "Interoperability Architecture", "Mobile Architecture"),
-                List.of("Record exchange prototype", "Consent & RBAC flows", "ShasthoSetu specs"),
-                false, 4);
+            initContributor(team, "contributor-04", "Contributor 04 [Placeholder]",
+                    "Mobile & Interoperable Systems Lead", "Electrical & Electronic Engineering",
+                    "Engineering Faculty [Pending Verification]",
+                    "Placeholder profile for Contributor 4. Leading research and mobile/web interface prototyping for ShasthoSetu health data exchange workflows.",
+                    List.of("HL7 FHIR Research", "Interoperability Architecture", "Mobile Architecture"),
+                    List.of("Record exchange prototype", "Consent & RBAC flows", "ShasthoSetu specs"),
+                    false, 4);
 
-        initContributor(team, "contributor-05", "Contributor 05 [Placeholder]",
-                "Health Workflow & UX Researcher", "Public Health & Human Factors",
-                "School of Public Health [Pending Verification]",
-                "Placeholder profile for Contributor 5. Conducting usability evaluations, health information workflow studies, and bilingual interface research.",
-                List.of("User Research", "Workflow Mapping", "Accessibility Audits", "Figma"),
-                List.of("Field usability research", "Bilingual UX testing", "Health workflow maps"),
-                false, 5);
+            initContributor(team, "contributor-05", "Contributor 05 [Placeholder]",
+                    "Health Workflow & UX Researcher", "Public Health & Human Factors",
+                    "School of Public Health [Pending Verification]",
+                    "Placeholder profile for Contributor 5. Conducting usability evaluations, health information workflow studies, and bilingual interface research.",
+                    List.of("User Research", "Workflow Mapping", "Accessibility Audits", "Figma"),
+                    List.of("Field usability research", "Bilingual UX testing", "Health workflow maps"),
+                    false, 5);
 
-        initContributor(team, "contributor-06", "Contributor 06 [Placeholder]",
-                "DevSecOps & Compliance Specialist", "Information Security",
-                "Faculty of Computer & Information Science [Pending Verification]",
-                "Placeholder profile for Contributor 6. Responsible for container orchestration, secure token infrastructure, automated test pipelines, and vulnerability assessments.",
-                List.of("Docker & Compose", "Spring Security", "Linux Hardening", "JWT Architecture"),
-                List.of("Container configurations", "OWASP compliance checks", "DevOps orchestration"),
-                false, 6);
+            initContributor(team, "contributor-06", "Contributor 06 [Placeholder]",
+                    "DevSecOps & Compliance Specialist", "Information Security",
+                    "Faculty of Computer & Information Science [Pending Verification]",
+                    "Placeholder profile for Contributor 6. Responsible for container orchestration, secure token infrastructure, automated test pipelines, and vulnerability assessments.",
+                    List.of("Docker & Compose", "Spring Security", "Linux Hardening", "JWT Architecture"),
+                    List.of("Container configurations", "OWASP compliance checks", "DevOps orchestration"),
+                    false, 6);
+        }
 
         // 5. Initialize ShasthoSetu Project
         if (projectRepository.findBySlug("shasthosetu").isEmpty()) {

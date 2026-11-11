@@ -5,6 +5,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,9 @@ import java.util.*;
 @Component
 public class JwtTokenProvider {
 
+    private static final String KNOWN_DEV_FALLBACK_SECRET =
+            "4c56e297893a778c187e1451b5c2a13b4f59837651a2d48698ecb819f3900cb93ad9871f92e071e6d1f054817a1936c5";
+
     private final SecretKey key;
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
@@ -27,7 +31,18 @@ public class JwtTokenProvider {
     public JwtTokenProvider(
             @Value("${medinex.jwt.secret-key}") String secretKey,
             @Value("${medinex.jwt.access-token-expiration-ms:900000}") long accessTokenExpirationMs,
-            @Value("${medinex.jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs) {
+            @Value("${medinex.jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs,
+            Environment environment) {
+
+        boolean isProd = Arrays.asList(environment.getActiveProfiles()).contains("prod");
+        if (isProd) {
+            if (secretKey == null || secretKey.isBlank()) {
+                throw new IllegalStateException("JWT_SECRET_KEY must be set in production profile");
+            }
+            if (KNOWN_DEV_FALLBACK_SECRET.equals(secretKey.trim())) {
+                throw new IllegalStateException("Refusing to start production profile with the repository dev JWT_SECRET_KEY");
+            }
+        }
 
         byte[] keyBytes;
         try {
@@ -41,6 +56,9 @@ public class JwtTokenProvider {
 
         // Ensure minimum 256 bits (32 bytes) for HMAC-SHA256
         if (keyBytes.length < 32) {
+            if (isProd) {
+                throw new IllegalStateException("JWT_SECRET_KEY must provide at least 256 bits (32 bytes) in production");
+            }
             keyBytes = Arrays.copyOf(keyBytes, 32);
         }
 
