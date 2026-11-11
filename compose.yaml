@@ -51,7 +51,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-4c56e297893a778c187e1451b5c2a13b4f59837651a2d48698ecb819f3900cb93ad9871f92e071e6d1f054817a1936c5}
       JWT_ACCESS_TOKEN_EXPIRATION_MS: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:-900000}
       JWT_REFRESH_TOKEN_EXPIRATION_MS: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:-604800000}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3002,http://frontend:3000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://frontend:3000}
       MAIL_HOST: mailpit
       MAIL_PORT: 1025
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@medinex.health}
@@ -76,6 +76,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_NAME: "MediNex"
+        NEXT_PUBLIC_APP_TAGLINE: "Healthcare Innovation. Connected Communities."
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3002}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8082/api/v1}
     container_name: medinex-frontend
     restart: unless-stopped
     depends_on:

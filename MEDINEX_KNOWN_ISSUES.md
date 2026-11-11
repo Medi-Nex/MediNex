@@ -97,10 +97,10 @@
 
 ## OPEN P3 — LOW ISSUES & HARDENING RECOMMENDATIONS
 
-### ISSUE-008: Missing `frontend/.dockerignore` Increases Build Context Size
+### ISSUE-008 [PARTIALLY RESOLVED]: Frontend `.dockerignore` Added; Optional `backend/.dockerignore`
 - **Severity:** **P3 — LOW**
-- **Root Cause:** `compose.yaml` builds `./frontend`, while `.dockerignore` only resides at the repository root, increasing Docker build context transfer size.
-- **Recommended Fix:** Copy `.dockerignore` into `frontend/.dockerignore` and `backend/.dockerignore`.
+- **Root Cause:** `compose.yaml` builds `./frontend`, while `.dockerignore` previously resided only at the repository root.
+- **Status:** Added [`frontend/.dockerignore`](file:///e:/Project/MediNex/frontend/.dockerignore) (reducing Docker frontend build context transfer to `141.17kB` during rebuild); `backend/.dockerignore` remains an optional minor cleanup (`backend` context is `15.18kB`).
 
 ### ISSUE-009: Auth Rate Limiting & Token Cookie Hardening
 - **Severity:** **P3 — LOW**
