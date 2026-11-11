@@ -57,7 +57,7 @@ USER appuser:appgroup
 # Environment defaults (single-port PaaS binds to $PORT; Docker Compose can override MANAGEMENT_SERVER_PORT=8081)
 ENV SPRING_PROFILES_ACTIVE=prod \
     SERVER_PORT=8080 \
-    JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+    JAVA_TOOL_OPTIONS="-Xms128m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=64m -XX:+UseContainerSupport -XX:+ExitOnOutOfMemoryError"
 
 # Expose application and optional management actuator ports
 EXPOSE 8080 8081
