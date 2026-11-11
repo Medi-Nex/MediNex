@@ -51,3 +51,38 @@ test("Settings, Profile, Community, Posts, Following & Notifications Wire Clicka
   assert.ok(notificationsSrc.includes("getUserProfileHref(item.actorUsername)"), "Notifications must link to actor profile");
   assert.ok(cspSrc.includes("http://localhost:8082"), "CSP img-src must permit backend media origin");
 });
+
+test("Profile Banner Editor, Click-to-Preview Lightbox & Consistent Team Framing Exist", () => {
+  const previewModalPath = path.resolve("./src/components/ui/ImagePreviewModal.tsx");
+  const bannerCropModalPath = path.resolve("./src/components/settings/BannerCropUploadModal.tsx");
+  const bannerCardPath = path.resolve("./src/components/settings/BannerUploadCard.tsx");
+  const profileHeroPath = path.resolve("./src/components/profile/ProfileHeroCover.tsx");
+
+  assert.ok(fs.existsSync(previewModalPath), "ImagePreviewModal lightbox must exist");
+  assert.ok(fs.existsSync(bannerCropModalPath), "BannerCropUploadModal crop editor must exist");
+  assert.ok(fs.existsSync(bannerCardPath), "BannerUploadCard settings card must exist");
+  assert.ok(fs.existsSync(profileHeroPath), "ProfileHeroCover shared hero component must exist");
+
+  const profileEditSrc = fs.readFileSync(
+    path.resolve("./src/app/(dashboard)/dashboard/profile/page.tsx"),
+    "utf-8"
+  );
+  const settingsSrc = fs.readFileSync(
+    path.resolve("./src/app/(dashboard)/dashboard/settings/page.tsx"),
+    "utf-8"
+  );
+  const usersProfileSrc = fs.readFileSync(path.resolve("./src/app/users/[username]/page.tsx"), "utf-8");
+  const teamMemberSrc = fs.readFileSync(path.resolve("./src/app/team/[username]/page.tsx"), "utf-8");
+  const teamDirSrc = fs.readFileSync(path.resolve("./src/app/team/page.tsx"), "utf-8");
+  const homeSrc = fs.readFileSync(path.resolve("./src/app/page.tsx"), "utf-8");
+
+  assert.ok(profileEditSrc.includes("<BannerUploadCard"), "Profile edit page must render BannerUploadCard");
+  assert.ok(settingsSrc.includes("<BannerUploadCard"), "Settings page must render BannerUploadCard");
+  assert.ok(usersProfileSrc.includes("<ProfileHeroCover"), "/users/[username] must use shared ProfileHeroCover");
+  assert.ok(teamMemberSrc.includes("<ProfileHeroCover"), "/team/[username] must use shared ProfileHeroCover");
+
+  assert.ok(!teamDirSrc.includes("aspect-[16/10]"), "/team portraits must not crop faces with mobile aspect-[16/10]");
+  assert.ok(!homeSrc.includes("aspect-[16/10]"), "Homepage portraits must not crop faces with mobile aspect-[16/10]");
+  assert.ok(teamDirSrc.includes("<UserAvatar"), "/team cards must use UserAvatar multi-step fallback");
+  assert.ok(homeSrc.includes("<UserAvatar"), "Homepage team cards must use UserAvatar multi-step fallback");
+});

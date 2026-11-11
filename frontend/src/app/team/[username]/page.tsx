@@ -3,12 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { ProfileHeroCover } from "@/components/profile/ProfileHeroCover";
 import {
   ArrowLeft,
   Edit3,
-  Save,
-  X,
   Globe,
   CheckCircle2,
   Calendar,
@@ -17,6 +15,7 @@ import {
   Share2,
   Mail,
   BookOpen,
+  ShieldCheck,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
 import { Badge } from "@/components/ui/Badge";
@@ -27,23 +26,23 @@ import { TeamMember } from "@/types";
 import { FollowButton } from "@/components/follow/FollowButton";
 import { getUserFollowStats } from "@/lib/api/follow";
 import { authApi } from "@/lib/api/auth";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { useAuth } from "@/lib/auth-context";
 import { getUserProfileHref } from "@/lib/media";
 
 export default function MemberProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const username = decodeURIComponent((params?.username as string) || "");
 
   const [member, setMember] = useState<TeamMember | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Form state for editing
-  const [formData, setFormData] = useState<Partial<TeamMember>>({});
+  const isOwner = Boolean(user && username && user.username.toLowerCase() === username.toLowerCase());
+  const isAdmin = Boolean(user?.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN"));
 
   useEffect(() => {
     if (username) {
@@ -62,18 +61,8 @@ export default function MemberProfilePage() {
     let cancelled = false;
 
     const resolveMember = async () => {
-      const saved = typeof window !== "undefined" ? localStorage.getItem(`medinex_member_${username}`) : null;
-      let baseMember: TeamMember | null = null;
-      if (saved) {
-        try {
-          baseMember = JSON.parse(saved);
-        } catch (e) {
-          console.error("Failed to parse saved member", e);
-        }
-      }
-      if (!baseMember) {
-        baseMember = INITIAL_TEAM_MEMBERS.find((m) => m.username.toLowerCase() === username.toLowerCase()) || null;
-      }
+      const baseMember =
+        INITIAL_TEAM_MEMBERS.find((m) => m.username.toLowerCase() === username.toLowerCase()) || null;
 
       try {
         const apiUser = await authApi.getPublicProfile(username);
@@ -84,25 +73,29 @@ export default function MemberProfilePage() {
           return;
         }
 
+        const isNotBlank = (val?: string | null): val is string => Boolean(val && val.trim().length > 0);
+
         const merged: TeamMember = baseMember
           ? {
               ...baseMember,
-              fullName: apiUser.fullName || baseMember.fullName,
-              designation: apiUser.designation || baseMember.designation,
-              department: apiUser.department || baseMember.department,
-              university: apiUser.university || baseMember.university,
-              bio: apiUser.bio || baseMember.bio,
+              fullName: isNotBlank(apiUser.fullName) ? apiUser.fullName : baseMember.fullName,
+              designation: isNotBlank(apiUser.designation) ? apiUser.designation : baseMember.designation,
+              department: isNotBlank(apiUser.department) ? apiUser.department : baseMember.department,
+              university: isNotBlank(apiUser.university) ? apiUser.university : baseMember.university,
+              bio: isNotBlank(apiUser.bio) ? apiUser.bio : baseMember.bio,
               skills: apiUser.skills && apiUser.skills.length > 0 ? apiUser.skills : baseMember.skills,
               responsibilities:
                 apiUser.responsibilities && apiUser.responsibilities.length > 0
                   ? apiUser.responsibilities
                   : baseMember.responsibilities,
-              portfolioUrl: apiUser.portfolioUrl || baseMember.portfolioUrl,
-              githubUrl: apiUser.githubUrl || baseMember.githubUrl,
-              linkedinUrl: apiUser.linkedinUrl || baseMember.linkedinUrl,
-              avatarUrl: apiUser.avatarUrl || baseMember.avatarUrl,
-              avatarSmUrl: apiUser.avatarSmUrl || baseMember.avatarSmUrl,
-              avatarLgUrl: apiUser.avatarLgUrl || baseMember.avatarLgUrl,
+              portfolioUrl: isNotBlank(apiUser.portfolioUrl) ? apiUser.portfolioUrl : baseMember.portfolioUrl,
+              githubUrl: isNotBlank(apiUser.githubUrl) ? apiUser.githubUrl : baseMember.githubUrl,
+              linkedinUrl: isNotBlank(apiUser.linkedinUrl) ? apiUser.linkedinUrl : baseMember.linkedinUrl,
+              email: isNotBlank(apiUser.email) ? apiUser.email : baseMember.email,
+              avatarUrl: isNotBlank(apiUser.avatarUrl) ? apiUser.avatarUrl : baseMember.avatarUrl,
+              avatarSmUrl: isNotBlank(apiUser.avatarSmUrl) ? apiUser.avatarSmUrl : baseMember.avatarSmUrl,
+              avatarLgUrl: isNotBlank(apiUser.avatarLgUrl) ? apiUser.avatarLgUrl : baseMember.avatarLgUrl,
+              coverImageUrl: isNotBlank(apiUser.coverImageUrl) ? apiUser.coverImageUrl : baseMember.coverImageUrl,
             }
           : {
               id: apiUser.id,
@@ -120,6 +113,7 @@ export default function MemberProfilePage() {
               avatarUrl: apiUser.avatarUrl || undefined,
               avatarSmUrl: apiUser.avatarSmUrl || undefined,
               avatarLgUrl: apiUser.avatarLgUrl || undefined,
+              coverImageUrl: apiUser.coverImageUrl || undefined,
               isLead: false,
               isPlaceholder: false,
               publicVisibility: apiUser.isPublicVisible ?? true,
@@ -127,11 +121,9 @@ export default function MemberProfilePage() {
             };
 
         setMember(merged);
-        setFormData(merged);
       } catch {
         if (!cancelled && baseMember) {
           setMember(baseMember);
-          setFormData(baseMember);
         }
       }
     };
@@ -155,21 +147,6 @@ export default function MemberProfilePage() {
       </div>
     );
   }
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updated: TeamMember = {
-      ...member,
-      ...formData,
-      isPlaceholder: false, // Once modified with verified information, clear placeholder mark
-    } as TeamMember;
-
-    setMember(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`medinex_member_${username}`, JSON.stringify(updated));
-    }
-    setIsEditing(false);
-  };
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
@@ -200,87 +177,62 @@ export default function MemberProfilePage() {
               <Share2 className="w-3.5 h-3.5" />
               <span>{copiedLink ? "Link Copied!" : "Share Profile"}</span>
             </button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-              className="inline-flex items-center gap-1.5"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>{isEditing ? "Cancel Editing" : "Edit Profile Info"}</span>
-            </Button>
+            {isOwner ? (
+              <Link href="/dashboard/profile">
+                <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5">
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit My Profile</span>
+                </Button>
+              </Link>
+            ) : isAdmin ? (
+              <Link href="/admin/team">
+                <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Manage Team</span>
+                </Button>
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         {/* Profile Card Banner */}
-        <div className="bg-white border border-medinex-border rounded-2xl overflow-hidden shadow-subtle">
-          {/* Cover gradient */}
-          <div className="h-36 sm:h-48 bg-gradient-to-r from-medinex-dark via-medinex-deep to-medinex-teal relative">
-            <div className="absolute top-4 right-4 flex gap-2">
-              {member.isPlaceholder ? (
-                <Badge variant="placeholder" size="sm">
-                  Placeholder — Pending Verified Credentials
-                </Badge>
-              ) : (
-                <Badge variant="mint" size="sm">
-                  Verified Contributor Information
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          <div className="px-6 sm:px-8 pb-8 pt-0 relative">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 sm:-mt-20 gap-4 mb-6">
-              {/* Avatar */}
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border border-medinex-border">
-                {member.avatarUrl ? (
-                  <UserAvatar
-                    src={member.avatarUrl}
-                    smSrc={member.avatarSmUrl}
-                    lgSrc={member.avatarLgUrl}
-                    fullName={member.fullName}
-                    username={member.username}
-                    size="xl"
-                    shape="rounded"
-                    className="!w-full !h-full border-0 shadow-none"
-                  />
-                ) : (
-                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-extrabold text-3xl text-medinex-deep border border-slate-200 overflow-hidden relative">
-                    <span className="absolute inset-0 flex items-center justify-center font-extrabold text-3xl text-medinex-deep z-0">
-                      {member.username.replace("contributor-", "C")}
-                    </span>
-                    <Image
-                      src={`/images/team/${member.username}.jpg`}
-                      alt={member.fullName}
-                      fill
-                      className="object-cover object-top relative z-10"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3 self-start sm:self-auto pt-2">
-                <FollowButton
-                  username={member.username}
-                  initialIsFollowing={isFollowing}
-                  initialHasPendingRequest={hasPendingRequest}
-                  size="md"
-                  onFollowChange={(newIsFollowing, delta) => {
-                    setIsFollowing(newIsFollowing);
-                    setFollowerCount((prev) => Math.max(0, prev + delta));
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Profile Identity Details */}
-            <div className="space-y-4">
+        <ProfileHeroCover
+          subject={member}
+          onUpdated={(updatedUser) => {
+            setMember((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    coverImageUrl: updatedUser.coverImageUrl || undefined,
+                    avatarUrl: updatedUser.avatarUrl || prev.avatarUrl,
+                    avatarSmUrl: updatedUser.avatarSmUrl || prev.avatarSmUrl,
+                    avatarLgUrl: updatedUser.avatarLgUrl || prev.avatarLgUrl,
+                  }
+                : prev
+            );
+          }}
+          badges={
+            <Badge variant="mint" size="sm">
+              Verified Contributor Profile
+            </Badge>
+          }
+          actions={
+            <FollowButton
+              username={member.username}
+              initialIsFollowing={isFollowing}
+              initialHasPendingRequest={hasPendingRequest}
+              size="md"
+              onFollowChange={(newIsFollowing, delta) => {
+                setIsFollowing(newIsFollowing);
+                setFollowerCount((prev) => Math.max(0, prev + delta));
+              }}
+            />
+          }
+        >
+          {/* Profile Identity Details */}
+          <div className="space-y-4">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-medinex-text">
@@ -369,165 +321,8 @@ export default function MemberProfilePage() {
                   </a>
                 )}
               </div>
-            </div>
           </div>
-        </div>
-
-        {/* In-Place Editing Form (When Toggle Active) */}
-        {isEditing && (
-          <Card className="border-2 border-medinex-teal shadow-elevated">
-            <CardHeader className="bg-slate-50/80 flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-medinex-text">Update Contributor Profile Information</h3>
-                <p className="text-xs text-medinex-muted">
-                  Replace placeholder text with verified real credentials for {member.fullName}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="text-slate-400 hover:text-slate-700"
-                aria-label="Close form"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </CardHeader>
-
-            <form onSubmit={handleSave}>
-              <CardBody className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Full Legal / Preferred Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.fullName || ""}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      required
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Official Designation
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.designation || ""}
-                      onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                      required
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Academic Department
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.department || ""}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      required
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      University / Affiliation
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.university || ""}
-                      onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                      required
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Biography (Verified Overview)
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formData.bio || ""}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    required
-                    className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email || ""}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="user@example.com"
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Portfolio / Web URL
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.portfolioUrl || ""}
-                      onChange={(e) => setFormData({ ...formData, portfolioUrl: e.target.value })}
-                      placeholder="https://example.com"
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      GitHub Profile URL
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.githubUrl || ""}
-                      onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-                      placeholder="https://github.com/username"
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      LinkedIn Profile URL
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.linkedinUrl || ""}
-                      onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
-                      placeholder="https://linkedin.com/in/username"
-                      className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-medinex-teal focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="primary" size="sm" className="inline-flex items-center gap-1.5">
-                    <Save className="w-3.5 h-3.5" />
-                    <span>Save Real Details</span>
-                  </Button>
-                </div>
-              </CardBody>
-            </form>
-          </Card>
-        )}
+        </ProfileHeroCover>
 
         {/* Detailed Sections: Bio, Responsibilities, Focus Areas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

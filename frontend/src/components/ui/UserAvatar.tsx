@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { getUserProfileHref, selectAvatarVariantUrl } from "@/lib/media";
 
-export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl" | "fill";
 
 const SIZE_CLASSES: Record<AvatarSize, string> = {
   xs: "w-6 h-6 text-[10px]",
@@ -12,6 +12,7 @@ const SIZE_CLASSES: Record<AvatarSize, string> = {
   md: "w-10 h-10 text-xs",
   lg: "w-14 h-14 text-base",
   xl: "w-28 h-28 sm:w-32 sm:h-32 text-3xl",
+  fill: "w-full h-full text-4xl sm:text-5xl",
 };
 
 const SHAPE_CLASSES: Record<"circle" | "rounded" | "square", string> = {
@@ -31,6 +32,7 @@ export interface UserAvatarProps {
   clickable?: boolean;
   href?: string;
   className?: string;
+  imgClassName?: string;
 }
 
 export function UserAvatar({
@@ -44,23 +46,53 @@ export function UserAvatar({
   clickable = false,
   href,
   className = "",
+  imgClassName = "",
 }: UserAvatarProps) {
-  const chosenUrl = selectAvatarVariantUrl(
-    { smUrl: smSrc, mdUrl: src, lgUrl: lgSrc },
-    size
-  );
+  const KNOWN_TEAM_USERNAMES = new Set(["hasnat", "jihadjp", "tarek", "shopnil", "nabil", "puja"]);
 
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const teamImageCandidate =
+    username && KNOWN_TEAM_USERNAMES.has(username.toLowerCase())
+      ? `/images/team/${username.toLowerCase()}.jpg`
+      : null;
+
+  const isDefaultAvatar = (url?: string | null) =>
+    Boolean(url && (url.includes("default.png") || url.includes("default-avatar") || url.includes("placeholder")));
+
+  const variantSlot = size === "fill" ? "lg" : size;
+
+  const rawCandidates = [
+    selectAvatarVariantUrl({ smUrl: smSrc, mdUrl: src, lgUrl: lgSrc }, variantSlot),
+    selectAvatarVariantUrl({ mdUrl: src }, "md"),
+    selectAvatarVariantUrl({ lgUrl: lgSrc, mdUrl: src }, "lg"),
+    selectAvatarVariantUrl({ smUrl: smSrc, mdUrl: src }, "sm"),
+    teamImageCandidate,
+  ];
+
+  const candidates: string[] = [];
+  for (const candidate of rawCandidates) {
+    if (candidate && !isDefaultAvatar(candidate) && !candidates.includes(candidate)) {
+      candidates.push(candidate);
+    }
+  }
+
+  const candidateKey = candidates.join("|");
+  const [candidateIndex, setCandidateIndex] = useState(0);
 
   useEffect(() => {
-    setFailedUrl(null);
-  }, [chosenUrl]);
+    setCandidateIndex(0);
+  }, [candidateKey]);
 
-  const showImage = Boolean(chosenUrl) && failedUrl !== chosenUrl;
-  const initialsSource = (fullName || username || "MX").trim();
-  const initials = initialsSource.length >= 2
-    ? initialsSource.slice(0, 2).toUpperCase()
-    : initialsSource.toUpperCase();
+  const currentImgSrc = candidates[candidateIndex] ?? null;
+  const showImage = Boolean(currentImgSrc);
+
+  const initialsParts = (fullName || username || "MN")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const initials =
+    initialsParts.length >= 2
+      ? `${initialsParts[0][0]}${initialsParts[initialsParts.length - 1][0]}`.toUpperCase()
+      : (initialsParts[0] || "MN").slice(0, 2).toUpperCase();
 
   const frame = (
     <span
@@ -69,12 +101,12 @@ export function UserAvatar({
       {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={chosenUrl!}
+          src={currentImgSrc!}
           alt={fullName || username || "User avatar"}
           loading="lazy"
           decoding="async"
-          onError={() => setFailedUrl(chosenUrl)}
-          className="w-full h-full object-cover"
+          onError={() => setCandidateIndex((idx) => idx + 1)}
+          className={`w-full h-full object-cover object-top ${imgClassName}`}
         />
       ) : (
         <span>{initials}</span>

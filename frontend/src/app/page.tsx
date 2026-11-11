@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import {
   ArrowRight,
   Users,
@@ -21,8 +21,38 @@ import { Badge } from "@/components/ui/Badge";
 import { Card, CardBody } from "@/components/ui/Card";
 import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
 import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
+import { TeamMember } from "@/types";
+import { apiClient } from "@/lib/api/client";
 
 export default function HomePage() {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(INITIAL_TEAM_MEMBERS);
+
+  useEffect(() => {
+    apiClient<Partial<TeamMember>[]>("/team/members")
+      .then((liveMembers) => {
+        if (!Array.isArray(liveMembers) || liveMembers.length === 0) return;
+        setTeamMembers((prev) =>
+          prev.map((local) => {
+            const match = liveMembers.find(
+              (m) => m.username?.toLowerCase() === local.username.toLowerCase()
+            );
+            if (!match) return local;
+            return {
+              ...local,
+              fullName: match.fullName || local.fullName,
+              designation: match.designation || local.designation,
+              department: match.department || local.department,
+              university: match.university || local.university,
+              bio: match.bio || local.bio,
+              avatarUrl: match.avatarUrl || local.avatarUrl,
+              avatarSmUrl: match.avatarSmUrl || local.avatarSmUrl,
+              avatarLgUrl: match.avatarLgUrl || local.avatarLgUrl,
+            };
+          })
+        );
+      })
+      .catch(() => {});
+  }, []);
   return (
     <div className="flex flex-col min-h-screen">
       {/* ---------------------------------------------------------------------- */}
@@ -347,8 +377,8 @@ export default function HomePage() {
                 Contributors
               </h2>
               <p className="mt-2 text-medinex-muted text-sm max-w-xl">
-                Each profile is structured with verified placeholder identities and can be updated by
-                the team once finalized. No fabricated personal credentials or awards are displayed.
+                Meet the interdisciplinary engineers, researchers, and public health contributors
+                building MediNex and ShasthoSetu.
               </p>
             </div>
             <div className="mt-4 md:mt-0">
@@ -362,37 +392,30 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {INITIAL_TEAM_MEMBERS.map((member) => (
+            {teamMembers.map((member) => (
               <Card key={member.id} hoverEffect className="flex flex-col justify-between group">
                 <CardBody className="space-y-4">
                   <div className="flex flex-col items-start gap-3.5">
                     <Link
                       href={`/team/${member.username}`}
-                      className="w-full aspect-[16/10] sm:aspect-[4/4.2] rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/60 border border-slate-200/90 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block"
+                      className="w-full aspect-[4/4.2] rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/60 border border-slate-200/90 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block group"
                     >
-                      <span className="absolute inset-0 flex items-center justify-center font-bold text-5xl sm:text-6xl text-slate-300/90 z-0">
-                        {member.username.replace("contributor-", "C")}
-                      </span>
-
-                      <Image
-                        src={`/images/team/${member.username}.jpg`}
-                        alt={member.fullName}
-                        fill
-                        className="object-cover object-top relative z-10 group-hover:scale-[1.03] transition-transform duration-300"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
+                      <UserAvatar
+                        src={member.avatarUrl}
+                        smSrc={member.avatarSmUrl}
+                        lgSrc={member.avatarLgUrl}
+                        fullName={member.fullName}
+                        username={member.username}
+                        size="fill"
+                        shape="rounded"
+                        className="border-0 shadow-none !from-slate-100 !to-emerald-50/70 !text-medinex-deep"
+                        imgClassName="group-hover:scale-[1.03] transition-transform duration-300"
                       />
 
                       <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5">
                         {member.isLead && (
                           <Badge variant="teal" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
                             Team Lead
-                          </Badge>
-                        )}
-                        {member.isPlaceholder && (
-                          <Badge variant="placeholder" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
-                            Verified Placeholder
                           </Badge>
                         )}
                       </div>

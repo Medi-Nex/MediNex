@@ -67,29 +67,48 @@ public class UserService {
 
     @Transactional
     public UserDto uploadAvatar(UUID userId, MultipartFile file) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-
+        User user = findUserOrThrow(userId);
         UserProfile profile = getOrCreateProfile(user);
         AvatarImageService.AvatarVariants variants = avatarImageService.processAndStoreAvatar(userId, file);
         profile.setAvatarUrl(variants.mdUrl());
-        UserProfile savedProfile = userProfileRepository.save(profile);
-        user.setProfile(savedProfile);
-
-        return UserDto.fromEntity(user);
+        return saveProfileAndMap(user, profile);
     }
 
     @Transactional
     public UserDto removeAvatar(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-
+        User user = findUserOrThrow(userId);
         avatarImageService.deleteAvatarsForUser(userId);
         UserProfile profile = getOrCreateProfile(user);
         profile.setAvatarUrl(null);
+        return saveProfileAndMap(user, profile);
+    }
+
+    @Transactional
+    public UserDto uploadBanner(UUID userId, MultipartFile file) {
+        User user = findUserOrThrow(userId);
+        UserProfile profile = getOrCreateProfile(user);
+        String bannerUrl = avatarImageService.processAndStoreBanner(userId, file);
+        profile.setCoverImageUrl(bannerUrl);
+        return saveProfileAndMap(user, profile);
+    }
+
+    @Transactional
+    public UserDto removeBanner(UUID userId) {
+        User user = findUserOrThrow(userId);
+        avatarImageService.deleteBannerForUser(userId);
+        UserProfile profile = getOrCreateProfile(user);
+        profile.setCoverImageUrl(null);
+        return saveProfileAndMap(user, profile);
+    }
+
+    private User findUserOrThrow(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+    }
+
+    private UserDto saveProfileAndMap(User user, UserProfile profile) {
         UserProfile savedProfile = userProfileRepository.save(profile);
         user.setProfile(savedProfile);
-
         return UserDto.fromEntity(user);
     }
 

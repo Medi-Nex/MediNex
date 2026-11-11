@@ -52,6 +52,29 @@ public class EmailService {
                         recipientName, rawToken));
     }
 
+    /**
+     * Dispatches a public contact inquiry to the official platform inbox without header injection.
+     */
+    public boolean sendContactInquiry(String senderName, String senderEmail, String category, String subject, String message) {
+        String cleanName = sanitizeSingleLine(senderName);
+        String cleanEmail = sanitizeSingleLine(senderEmail);
+        String cleanCategory = sanitizeSingleLine(category);
+        String cleanSubject = sanitizeSingleLine(subject);
+        String recipient = fromAddress != null && !fromAddress.isBlank() ? fromAddress.trim() : "medinexbd.noreply@gmail.com";
+
+        log.info("[EMAIL SERVICE] Dispatching public contact inquiry [{}] from {}", cleanCategory, cleanEmail);
+        return sendEmail(
+                recipient,
+                String.format("[MediNex Contact - %s] %s", cleanCategory, cleanSubject),
+                String.format("New Contact Inquiry via MediNex Portal\n\nFrom: %s <%s>\nCategory: %s\nSubject: %s\n\nMessage:\n%s",
+                        cleanName, cleanEmail, cleanCategory, cleanSubject, message)
+        );
+    }
+
+    private String sanitizeSingleLine(String input) {
+        return input == null ? "" : input.replaceAll("[\\r\\n]+", " ").trim();
+    }
+
     private boolean sendEmail(String to, String subject, String body) {
         if (mailSender == null || mailHost == null || mailHost.isBlank()) {
             log.debug("[EMAIL SERVICE] SMTP host not configured; skipped live dispatch to {} (subject: {})", to, subject);

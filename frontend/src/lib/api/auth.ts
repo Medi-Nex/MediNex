@@ -149,6 +149,20 @@ export const authApi = {
       method: "DELETE",
     }),
 
+  uploadBanner: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiClient<AuthUser>("/users/profile/banner", {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  removeBanner: () =>
+    apiClient<AuthUser>("/users/profile/banner", {
+      method: "DELETE",
+    }),
+
   changePassword: (payload: ChangePasswordPayload) =>
     apiClient<void>("/auth/change-password", {
       method: "POST",

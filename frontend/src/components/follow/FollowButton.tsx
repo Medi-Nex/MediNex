@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, UserCheck, Clock, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
@@ -32,6 +32,14 @@ export function FollowButton({
   const [hasPendingRequest, setHasPendingRequest] = useState(initialHasPendingRequest);
   const [loading, setLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    setIsFollowing(initialIsFollowing);
+  }, [initialIsFollowing]);
+
+  useEffect(() => {
+    setHasPendingRequest(initialHasPendingRequest);
+  }, [initialHasPendingRequest]);
 
   // If user is viewing their own profile, hide follow button
   if (targetType === "user" && user && username && user.username.toLowerCase() === username.toLowerCase()) {

@@ -42,15 +42,15 @@ test.describe("MediNex Live Stack Read-Only Verification", () => {
     await page.goto("/users/Contributor-01");
     await expect(page.getByText("@contributor-01")).toBeVisible();
 
-    // Community feed clickable profile link navigation
+    // Community feed clickable real author profile link navigation
     await page.goto("/community");
-    const authorLink = page
-      .locator('a[href="/users/contributor-01"]')
-      .first();
+    const authorLink = page.locator('a[href^="/users/"]').first();
     await expect(authorLink).toBeVisible();
+    const authorHref = await authorLink.getAttribute("href");
+    expect(authorHref).toMatch(/^\/users\/.+/);
     await authorLink.click();
-    await expect(page).toHaveURL(/\/users\/contributor-01/i);
-    await expect(page.getByText("@contributor-01")).toBeVisible();
+    await expect(page).toHaveURL(/\/users\/.+/i);
+    await expect(page.locator("text=/^@[a-z0-9._-]+$/i").first()).toBeVisible();
 
     // Team page clickable navigation
     await page.goto("/team");

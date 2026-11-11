@@ -114,7 +114,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
     department: "Department of Computer Science & Engineering",
     university: "Daffodil International University",
 
-    bio: "Team contributor at MediNex. Additional professional information, technical skills, and project responsibilities are awaiting confirmation.",
+    bio: "Core Software Developer contributing to MediNex web interfaces, React.js frontend engineering, and database-backed healthcare technology features.",
 
     skills: [
       "React.js",
@@ -420,3 +420,13 @@ export const OFFICIAL_EVENTS: TeamEvent[] = [
       "A technical demonstration session for presenting the ShasthoSetu architecture and collecting project feedback.",
   },
 ];
+
+export function getInitials(fullName: string): string {
+  const parts = fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length === 0) return "MN";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}

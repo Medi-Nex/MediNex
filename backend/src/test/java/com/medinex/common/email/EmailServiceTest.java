@@ -60,4 +60,34 @@ class EmailServiceTest {
         String logs = output.getAll();
         assertFalse(logs.contains("918273"));
     }
+
+    @Test
+    void shouldDispatchContactInquiryWithSanitizedHeaders() {
+        JavaMailSender sender = mock(JavaMailSender.class);
+        EmailService service = new EmailService();
+        ReflectionTestUtils.setField(service, "mailSender", sender);
+        ReflectionTestUtils.setField(service, "fromAddress", "team@medinex.test");
+        ReflectionTestUtils.setField(service, "fromName", "MediNex Test");
+        ReflectionTestUtils.setField(service, "mailHost", "localhost");
+        ReflectionTestUtils.setField(service, "mailPassword", "");
+        ReflectionTestUtils.setField(service, "smtpAuth", false);
+
+        boolean sent = service.sendContactInquiry(
+                "Dr. Alice\r\nBcc: evil@attacker.test",
+                "alice@example.org",
+                "COLLABORATION",
+                "FHIR Inquiry\nInjected-Header: true",
+                "Hello team!"
+        );
+
+        assertTrue(sent);
+        verify(sender, times(1)).send(argThat((SimpleMailMessage msg) ->
+                msg.getSubject() != null
+                        && !msg.getSubject().contains("\n")
+                        && !msg.getSubject().contains("\r")
+                        && msg.getTo() != null
+                        && msg.getTo().length == 1
+                        && "team@medinex.test".equals(msg.getTo()[0])
+        ));
+    }
 }

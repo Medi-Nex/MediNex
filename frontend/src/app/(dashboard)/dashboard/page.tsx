@@ -17,6 +17,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useAuth } from "@/lib/auth-context";
 import { getUserFollowStats } from "@/lib/api/follow";
+import { getUserPosts } from "@/lib/api/community";
 import { getUserProfileHref } from "@/lib/media";
 
 export default function DashboardOverviewPage() {
@@ -26,6 +27,7 @@ export default function DashboardOverviewPage() {
     followerCount: 0,
     followingCount: 0,
   });
+  const [postsCount, setPostsCount] = useState<number>(0);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -41,6 +43,12 @@ export default function DashboardOverviewPage() {
             followerCount: stats.followerCount,
             followingCount: stats.followingCount,
           });
+        })
+        .catch(() => {});
+
+      getUserPosts(user.username, 0, 1)
+        .then((page) => {
+          setPostsCount(page.totalElements ?? page.content?.length ?? 0);
         })
         .catch(() => {});
     }
@@ -158,7 +166,7 @@ export default function DashboardOverviewPage() {
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Published Posts
               </span>
-              <div className="text-2xl font-extrabold text-medinex-text mt-1">0</div>
+              <div className="text-2xl font-extrabold text-medinex-text mt-1">{postsCount}</div>
               <span className="text-[10px] text-slate-500">Community Posts</span>
             </CardBody>
           </Card>

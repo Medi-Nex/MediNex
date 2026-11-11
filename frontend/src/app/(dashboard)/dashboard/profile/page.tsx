@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { AvatarUploadCard } from "@/components/settings/AvatarUploadCard";
+import { BannerUploadCard } from "@/components/settings/BannerUploadCard";
 import { useAuth } from "@/lib/auth-context";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
@@ -128,8 +129,9 @@ export default function DashboardProfileEditPage() {
           </CardHeader>
 
           <CardBody className="p-6">
-            <div className="mb-6">
+            <div className="mb-6 space-y-5">
               <AvatarUploadCard compact />
+              <BannerUploadCard compact />
             </div>
 
             {successMessage && (

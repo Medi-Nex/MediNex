@@ -46,10 +46,18 @@ public class AvatarImageService {
     private static final int MAX_DIMENSION_PX = 4096;
     private static final Set<String> ALLOWED_FORMATS = Set.of("jpeg", "jpg", "png", "gif", "bmp", "webp");
 
+    public static final int BANNER_WIDTH = 1600;
+    public static final int BANNER_HEIGHT = 400;
+    private static final int MIN_BANNER_WIDTH_PX = 100;
+    private static final int MIN_BANNER_HEIGHT_PX = 40;
+
     private final Path avatarsRootDir;
+    private final Path bannersRootDir;
 
     public AvatarImageService(@Value("${medinex.storage.upload-dir:./uploads}") String uploadDir) {
-        this.avatarsRootDir = Paths.get(uploadDir).toAbsolutePath().normalize().resolve("avatars").normalize();
+        Path root = Paths.get(uploadDir).toAbsolutePath().normalize();
+        this.avatarsRootDir = root.resolve("avatars").normalize();
+        this.bannersRootDir = root.resolve("banners").normalize();
     }
 
     public record AvatarVariants(String smUrl, String mdUrl, String lgUrl) {
@@ -161,31 +169,112 @@ public class AvatarImageService {
         return squareRgb;
     }
 
-    private BufferedImage scaleSquareProgressive(BufferedImage src, int targetSize) {
-        BufferedImage current = src;
-        int currentSize = src.getWidth();
-
-        // Step-down halving preserves crisp detail for small thumbnails like 64x64.
-        while (currentSize > targetSize && currentSize / 2 >= targetSize) {
-            int nextSize = Math.max(targetSize, currentSize / 2);
-            current = drawScaledRgb(current, nextSize);
-            currentSize = nextSize;
+    public String processAndStoreBanner(UUID userId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("Please select a banner image file to upload");
+        }
+        if (file.getSize() > MAX_UPLOAD_BYTES) {
+            throw new BadRequestException("Banner image exceeds the 5 MB upload limit");
         }
 
-        if (currentSize != targetSize) {
-            current = drawScaledRgb(current, targetSize);
+        byte[] rawBytes;
+        try {
+            rawBytes = file.getBytes();
+        } catch (IOException e) {
+            throw new BadRequestException("Could not read uploaded banner file");
+        }
+
+        BufferedImage decoded = decodeAndValidateImage(rawBytes);
+        if (decoded.getWidth() < MIN_BANNER_WIDTH_PX || decoded.getHeight() < MIN_BANNER_HEIGHT_PX) {
+            throw new BadRequestException("Banner image must be at least 100x40 pixels");
+        }
+
+        BufferedImage cropped = cropAspectToRgb(decoded, (double) BANNER_WIDTH / BANNER_HEIGHT);
+        BufferedImage resized = scaleProgressive(cropped, BANNER_WIDTH, BANNER_HEIGHT);
+
+        Path userDir = resolveUserBannerDir(userId);
+        try {
+            Files.createDirectories(userDir);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not prepare user banner storage directory", e);
+        }
+
+        String filename = UUID.randomUUID() + "-banner.jpg";
+        Path destination = safeChildPath(userDir, filename);
+        writeJpegImage(resized, 0.90f, destination);
+        cleanupOldAvatars(userDir, Set.of(filename));
+
+        log.info("[MEDIA] Stored profile banner (1600x400) for userId={}", userId);
+        return "/uploads/banners/" + userId + "/" + filename;
+    }
+
+    public void deleteBannerForUser(UUID userId) {
+        Path userDir = resolveUserBannerDir(userId);
+        cleanupOldAvatars(userDir, Set.of());
+    }
+
+    private BufferedImage cropAspectToRgb(BufferedImage source, double targetAspect) {
+        int srcW = source.getWidth();
+        int srcH = source.getHeight();
+        double srcAspect = (double) srcW / srcH;
+
+        int cropW = srcW;
+        int cropH = srcH;
+        if (srcAspect > targetAspect) {
+            cropW = Math.max(1, (int) Math.round(srcH * targetAspect));
+        } else if (srcAspect < targetAspect) {
+            cropH = Math.max(1, (int) Math.round(srcW / targetAspect));
+        }
+
+        int cropX = Math.max(0, (srcW - cropW) / 2);
+        int cropY = Math.max(0, (srcH - cropH) / 2);
+
+        BufferedImage rgb = new BufferedImage(cropW, cropH, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = rgb.createGraphics();
+        try {
+            g2d.setColor(java.awt.Color.WHITE);
+            g2d.fillRect(0, 0, cropW, cropH);
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2d.drawImage(source, 0, 0, cropW, cropH, cropX, cropY, cropX + cropW, cropY + cropH, null);
+        } finally {
+            g2d.dispose();
+        }
+        return rgb;
+    }
+
+    private BufferedImage scaleSquareProgressive(BufferedImage src, int targetSize) {
+        return scaleProgressive(src, targetSize, targetSize);
+    }
+
+    private BufferedImage scaleProgressive(BufferedImage src, int targetWidth, int targetHeight) {
+        BufferedImage current = src;
+        int currentWidth = src.getWidth();
+        int currentHeight = src.getHeight();
+
+        // Step-down halving preserves crisp detail for resized JPEG outputs.
+        while (currentWidth > targetWidth && currentHeight > targetHeight
+                && currentWidth / 2 >= targetWidth && currentHeight / 2 >= targetHeight) {
+            int nextWidth = Math.max(targetWidth, currentWidth / 2);
+            int nextHeight = Math.max(targetHeight, currentHeight / 2);
+            current = drawScaledRgb(current, nextWidth, nextHeight);
+            currentWidth = nextWidth;
+            currentHeight = nextHeight;
+        }
+
+        if (currentWidth != targetWidth || currentHeight != targetHeight) {
+            current = drawScaledRgb(current, targetWidth, targetHeight);
         }
         return current;
     }
 
-    private BufferedImage drawScaledRgb(BufferedImage src, int size) {
-        BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+    private BufferedImage drawScaledRgb(BufferedImage src, int width, int height) {
+        BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = scaled.createGraphics();
         try {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.drawImage(src, 0, 0, size, size, null);
+            g2d.drawImage(src, 0, 0, width, height, null);
         } finally {
             g2d.dispose();
         }
@@ -194,6 +283,10 @@ public class AvatarImageService {
 
     private void writeVariantJpeg(BufferedImage source, int size, float quality, Path destination) {
         BufferedImage resized = scaleSquareProgressive(source, size);
+        writeJpegImage(resized, quality, destination);
+    }
+
+    private void writeJpegImage(BufferedImage image, float quality, Path destination) {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
         if (!writers.hasNext()) {
             throw new IllegalStateException("No JPEG ImageWriter available in JVM runtime");
@@ -207,17 +300,25 @@ public class AvatarImageService {
                 param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 param.setCompressionQuality(quality);
             }
-            writer.write(null, new IIOImage(resized, null, null), param);
+            writer.write(null, new IIOImage(image, null, null), param);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to write avatar image variant to storage", e);
+            throw new IllegalStateException("Failed to write processed image to storage", e);
         } finally {
             writer.dispose();
         }
     }
 
     private Path resolveUserAvatarDir(UUID userId) {
-        Path resolved = avatarsRootDir.resolve(userId.toString()).normalize();
-        if (!resolved.startsWith(avatarsRootDir)) {
+        return resolveUserScopedDir(avatarsRootDir, userId);
+    }
+
+    private Path resolveUserBannerDir(UUID userId) {
+        return resolveUserScopedDir(bannersRootDir, userId);
+    }
+
+    private Path resolveUserScopedDir(Path rootDir, UUID userId) {
+        Path resolved = rootDir.resolve(userId.toString()).normalize();
+        if (!resolved.startsWith(rootDir)) {
             throw new BadRequestException("Invalid user path");
         }
         return resolved;

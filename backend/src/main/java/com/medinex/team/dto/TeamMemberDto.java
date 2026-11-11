@@ -29,6 +29,7 @@ public class TeamMemberDto {
     private String avatarUrl;
     private String avatarSmUrl;
     private String avatarLgUrl;
+    private String coverImageUrl;
 
     @JsonProperty("isLead")
     private boolean isLead;

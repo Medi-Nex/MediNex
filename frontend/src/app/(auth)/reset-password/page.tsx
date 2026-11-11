@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Activity, Lock, Key, CheckCircle2, AlertCircle } from "lucide-react";
+import { Activity, Key, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 
@@ -105,36 +106,28 @@ export default function ResetPasswordPage() {
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     New Password
                   </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                    />
-                  </div>
+                  <PasswordInput
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    autoComplete="new-password"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Confirm New Password
                   </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                    />
-                  </div>
+                  <PasswordInput
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    autoComplete="new-password"
+                  />
                 </div>
 
                 <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>

@@ -20,8 +20,10 @@ import {
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth-context";
 import { AvatarUploadCard } from "@/components/settings/AvatarUploadCard";
+import { BannerUploadCard } from "@/components/settings/BannerUploadCard";
 import { authApi } from "@/lib/api/auth";
 import { getBlockedUsers, unblockUser, BlockedUserDto } from "@/lib/api/follow";
 
@@ -195,6 +197,9 @@ export default function DashboardSettingsPage() {
         {/* Section 0: Profile Photo & Multi-Resolution Upload */}
         <AvatarUploadCard />
 
+        {/* Section 0b: Profile Cover Banner Studio */}
+        <BannerUploadCard />
+
         {/* Section 1: Relational Privacy & Follower Rules */}
         <Card className="border border-medinex-border">
           <CardHeader className="bg-slate-50/80 border-b border-medinex-border p-5">
@@ -350,13 +355,14 @@ export default function DashboardSettingsPage() {
                 <label className="block text-xs font-semibold text-medinex-text mb-1">
                   Current Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  showLockIcon={false}
+                  variant="settings"
                   required
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-medinex-border focus:outline-none focus:border-medinex-teal"
                   placeholder="••••••••••••"
+                  autoComplete="current-password"
                 />
               </div>
 
@@ -364,13 +370,14 @@ export default function DashboardSettingsPage() {
                 <label className="block text-xs font-semibold text-medinex-text mb-1">
                   New Password (Min. 8 characters)
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  showLockIcon={false}
+                  variant="settings"
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-medinex-border focus:outline-none focus:border-medinex-teal"
                   placeholder="••••••••••••"
+                  autoComplete="new-password"
                 />
               </div>
 
@@ -378,13 +385,14 @@ export default function DashboardSettingsPage() {
                 <label className="block text-xs font-semibold text-medinex-text mb-1">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  showLockIcon={false}
+                  variant="settings"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-medinex-border focus:outline-none focus:border-medinex-teal"
                   placeholder="••••••••••••"
+                  autoComplete="new-password"
                 />
               </div>
 

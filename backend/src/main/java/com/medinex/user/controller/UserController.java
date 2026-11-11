@@ -63,4 +63,24 @@ public class UserController {
         UserDto updated = userService.removeAvatar(principal.getId());
         return ApiResponse.ok(updated, "Profile photo removed successfully");
     }
+
+    @PostMapping(value = "/profile/banner", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Upload and process wide profile cover banner (1600x400 JPEG)")
+    public ApiResponse<UserDto> uploadBanner(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam("file") MultipartFile file) {
+        UserDto updated = userService.uploadBanner(principal.getId(), file);
+        return ApiResponse.ok(updated, "Profile banner uploaded successfully");
+    }
+
+    @DeleteMapping("/profile/banner")
+    @SecurityRequirement(name = "BearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Remove authenticated user's profile cover banner")
+    public ApiResponse<UserDto> removeBanner(@AuthenticationPrincipal UserPrincipal principal) {
+        UserDto updated = userService.removeBanner(principal.getId());
+        return ApiResponse.ok(updated, "Profile banner removed successfully");
+    }
 }

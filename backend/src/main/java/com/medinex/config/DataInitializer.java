@@ -73,8 +73,9 @@ public class DataInitializer implements CommandLineRunner {
         Role moderatorRole = initRole(RoleType.ROLE_MODERATOR.name(), "Content moderator");
         Role userRole = initRole(RoleType.ROLE_USER.name(), "Standard community user");
 
-        // 2. Initialize Seed Admin (if not exists and credentials are safe for current profile)
-        if (!userRepository.existsByEmailIgnoreCase(adminEmail)) {
+        // 2. Initialize Seed Admin (if not exists by email or username, and credentials are safe for current profile)
+        if (!userRepository.existsByEmailIgnoreCase(adminEmail)
+                && !userRepository.existsByUsernameIgnoreCase("medinex-admin")) {
             boolean hasPassword = adminPassword != null && !adminPassword.isBlank();
             boolean isInsecureProdDefault = isProd && DEFAULT_DEV_ADMIN_PASSWORD.equals(adminPassword);
             if (!hasPassword || isInsecureProdDefault) {
@@ -103,7 +104,7 @@ public class DataInitializer implements CommandLineRunner {
                     .slug("medinex-official")
                     .tagline("Connecting Technology, Research & Healthcare Innovation.")
                     .missionStatement("A collaborative healthcare technology platform uniting developers, researchers, and public health professionals to build digital health solutions.")
-                    .officialEmail("team@medinex.health")
+                    .officialEmail("medinexbd.noreply@gmail.com")
                     .githubOrgUrl("https://github.com/Medi-Nex")
                     .build();
             return teamRepository.save(newTeam);
@@ -113,52 +114,52 @@ public class DataInitializer implements CommandLineRunner {
         if (!demoUsersEnabled) {
             log.info("[DATA INITIALIZER] Skipping demo placeholder contributor credentials (demo-users-enabled=false).");
         } else {
-            initContributor(team, "contributor-01", "Contributor 01 [Placeholder]",
-                    "Team Lead & Systems Architect", "Computer Science & Engineering",
-                    "University Engineering Department [Pending Verification]",
-                    "Placeholder profile for Contributor 1. Responsible for system architecture, backend integration, and project coordination for E-Health Hackathon 2026.",
-                    List.of("Distributed Systems", "Java Spring Boot", "PostgreSQL", "System Architecture"),
-                    List.of("Platform architecture", "Data isolation oversight", "Hackathon coordination"),
+            initContributor(team, "hasnat", "hasnat.ph@diu.edu.bd", "Md Abu Hasnat Abdullah",
+                    "Lecturer", "Department of Public Health",
+                    "Daffodil International University",
+                    "Lecturer in Public Health with an interest in public health research, healthcare accessibility, and user-centered healthcare solutions.",
+                    List.of("Public Health", "User Research", "Clinical Workflow Mapping", "Healthcare Usability Evaluation"),
+                    List.of("Providing public health insights for ShasthoSetu", "Supporting healthcare worker interviews"),
                     true, 1);
 
-            initContributor(team, "contributor-02", "Contributor 02 [Placeholder]",
-                    "Full-Stack Web & Next.js Specialist", "Software Engineering",
-                    "Institute of Information Technology [Pending Verification]",
-                    "Placeholder profile for Contributor 2. Spearheading front-end interface development, responsive UI accessibility (WCAG 2.2), and community feed components.",
-                    List.of("Next.js App Router", "TypeScript", "Tailwind CSS", "React Hook Form"),
-                    List.of("Frontend views", "Hybrid design implementation", "Core Web Vitals"),
+            initContributor(team, "jihadjp", "jihad.cse@diu.edu.bd", "Jihad Khan",
+                    "Full-Stack Developer", "Department of Computer Science & Engineering",
+                    "Daffodil International University",
+                    "Full-Stack Developer focused on building modern web applications, Android applications, and practical digital solutions.",
+                    List.of("React.js", "JavaScript", "Java", "Spring Boot", "Android Development", "PostgreSQL"),
+                    List.of("Developing frontend interfaces", "Building Android application features", "REST API Integration"),
                     false, 2);
 
-            initContributor(team, "contributor-03", "Contributor 03 [Placeholder]",
-                    "Health Informatics & Data Architect", "Biomedical Engineering & Informatics",
-                    "Department of Biomedical Science [Pending Verification]",
-                    "Placeholder profile for Contributor 3. Specializing in healthcare data schemas, standards evaluation, and relational database migrations.",
-                    List.of("PostgreSQL", "Data Modeling", "Health Informatics Research", "Relational Indexing"),
-                    List.of("Schema migrations", "Data segregation enforcement", "Compliance research"),
+            initContributor(team, "tarek", "tarekparvez47@gmail.com", "M Tarek Rahman",
+                    "Core Software Developer", "Department of Computer Science & Engineering",
+                    "Daffodil International University",
+                    "Core Software Developer contributing to MediNex web interfaces, React.js frontend engineering, and database-backed features.",
+                    List.of("React.js", "HTML & CSS", "JavaScript", "Database Management"),
+                    List.of("Frontend development", "UI engineering"),
                     false, 3);
 
-            initContributor(team, "contributor-04", "Contributor 04 [Placeholder]",
-                    "Mobile & Interoperable Systems Lead", "Electrical & Electronic Engineering",
-                    "Engineering Faculty [Pending Verification]",
-                    "Placeholder profile for Contributor 4. Leading research and mobile/web interface prototyping for ShasthoSetu health data exchange workflows.",
-                    List.of("HL7 FHIR Research", "Interoperability Architecture", "Mobile Architecture"),
-                    List.of("Record exchange prototype", "Consent & RBAC flows", "ShasthoSetu specs"),
+            initContributor(team, "shopnil", "khairulanamshopnil@gmail.com", "Md. Khairul Anam Shopnil",
+                    "Backend Developer", "Department of Software Engineering",
+                    "Daffodil International University",
+                    "Backend Developer focused on server-side application development, API integration, and database management.",
+                    List.of("PostgreSQL", "Database Schema Design", "REST API Development", "Backend Architecture"),
+                    List.of("Developing backend APIs", "Designing relational database structures"),
                     false, 4);
 
-            initContributor(team, "contributor-05", "Contributor 05 [Placeholder]",
-                    "Health Workflow & UX Researcher", "Public Health & Human Factors",
-                    "School of Public Health [Pending Verification]",
-                    "Placeholder profile for Contributor 5. Conducting usability evaluations, health information workflow studies, and bilingual interface research.",
-                    List.of("User Research", "Workflow Mapping", "Accessibility Audits", "Figma"),
-                    List.of("Field usability research", "Bilingual UX testing", "Health workflow maps"),
+            initContributor(team, "nabil", "mdnabilsikderh@gmail.com", "Md. Nabil Shikdar",
+                    "Researcher", "Department of Public Health",
+                    "Daffodil International University",
+                    "Researcher in the field of Public Health with an interest in healthcare research and clinical data evaluation.",
+                    List.of("Public Health Research", "Clinical Data Evaluation", "Healthcare Systems", "Research Analytics"),
+                    List.of("Evaluating healthcare data schemas", "Ensuring evidence-backed health solutions"),
                     false, 5);
 
-            initContributor(team, "contributor-06", "Contributor 06 [Placeholder]",
-                    "DevSecOps & Compliance Specialist", "Information Security",
-                    "Faculty of Computer & Information Science [Pending Verification]",
-                    "Placeholder profile for Contributor 6. Responsible for container orchestration, secure token infrastructure, automated test pipelines, and vulnerability assessments.",
-                    List.of("Docker & Compose", "Spring Security", "Linux Hardening", "JWT Architecture"),
-                    List.of("Container configurations", "OWASP compliance checks", "DevOps orchestration"),
+            initContributor(team, "puja", "paromitakarmoker@gmail.com", "Paromita Karmoker Puja",
+                    "Researcher", "Department of Public Health",
+                    "Daffodil International University",
+                    "Researcher in the field of Public Health with an interest in healthcare research, clinical data evaluation, and evidence-based healthcare solutions. Contributes research-oriented perspectives to the ShasthoSetu project.",
+                    List.of("Public Health Research", "Clinical Data Evaluation", "Healthcare Systems", "Research Analytics"),
+                    List.of("Contributing public health research perspectives to ShasthoSetu", "Supporting healthcare data evaluation", "Analyzing healthcare needs", "Contributing evidence-based insights"),
                     false, 6);
         }
 
@@ -189,7 +190,7 @@ public class DataInitializer implements CommandLineRunner {
         );
     }
 
-    private void initContributor(Team team, String username, String fullName, String designation,
+    private void initContributor(Team team, String username, String email, String fullName, String designation,
                                  String department, String university, String bio,
                                  List<String> skills, List<String> responsibilities,
                                  boolean isLead, int order) {
@@ -199,8 +200,8 @@ public class DataInitializer implements CommandLineRunner {
             User newUser = User.builder()
                     .username(username)
                     .fullName(fullName)
-                    .email(username + "@medinex.health")
-                    .passwordHash(passwordEncoder.encode("Contributor@SecurePass2026!"))
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode("Contributor@2026"))
                     .status(UserStatus.ACTIVE)
                     .emailVerified(true)
                     .isTeamMember(true)

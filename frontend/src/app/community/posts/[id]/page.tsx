@@ -216,8 +216,15 @@ export default function SinglePostPage({ params }: PostPageProps) {
     }
   };
 
+  const redirectToLogin = () => {
+    router.push("/login?redirect=" + encodeURIComponent(`/community/posts/${postId}`));
+  };
+
   const handleToggleCommentLike = async (commentId: string) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     try {
       const res = await toggleCommentLike(commentId);
       setComments((prev) =>
@@ -386,13 +393,19 @@ export default function SinglePostPage({ params }: PostPageProps) {
                     </Button>
                   </>
                 )}
-                {isAuthenticated && !post.isOwner && (
+                {!post.isOwner && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowReportModal(true)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        redirectToLogin();
+                        return;
+                      }
+                      setShowReportModal(true);
+                    }}
                     className="h-8 w-8 p-0 text-slate-400 hover:text-amber-600"
-                    title="Report Post"
+                    title={isAuthenticated ? "Report Post" : "Sign in to report post"}
                   >
                     <Flag className="w-3.5 h-3.5" />
                   </Button>
@@ -530,32 +543,36 @@ export default function SinglePostPage({ params }: PostPageProps) {
                   </button>
                 </div>
               )}
-              <form onSubmit={handleAddComment} className="flex gap-2">
-                <input
-                  type="text"
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder={
-                    isAuthenticated
-                      ? replyToId
-                        ? "Write a reply..."
-                        : "Join the technical discussion..."
-                      : "Sign in to contribute to discussion..."
-                  }
-                  disabled={!isAuthenticated}
-                  className="flex-1 text-xs px-3 py-2 rounded-xl border border-medinex-border focus:outline-none focus:border-medinex-teal disabled:bg-slate-50"
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  disabled={!isAuthenticated || isSubmittingComment || !newCommentText.trim()}
-                  className="shrink-0 text-xs"
-                >
-                  <Send className="w-3.5 h-3.5 mr-1" />
-                  <span>Post</span>
-                </Button>
-              </form>
+              {isAuthenticated ? (
+                <form onSubmit={handleAddComment} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    placeholder={replyToId ? "Write a reply..." : "Join the technical discussion..."}
+                    className="flex-1 text-xs px-3 py-2 rounded-xl border border-medinex-border focus:outline-none focus:border-medinex-teal"
+                  />
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSubmittingComment || !newCommentText.trim()}
+                    className="shrink-0 text-xs"
+                  >
+                    <Send className="w-3.5 h-3.5 mr-1" />
+                    <span>Post</span>
+                  </Button>
+                </form>
+              ) : (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
+                  <span>Sign in to contribute to this technical discussion or reply to comments.</span>
+                  <Link href={`/login?redirect=${encodeURIComponent(`/community/posts/${postId}`)}`} className="shrink-0">
+                    <Button type="button" variant="primary" size="sm" className="text-xs">
+                      Sign In to Comment
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </CardBody>
           </Card>
 
@@ -633,7 +650,13 @@ export default function SinglePostPage({ params }: PostPageProps) {
 
                       <button
                         type="button"
-                        onClick={() => setReplyToId(comment.id)}
+                        onClick={() => {
+                          if (!isAuthenticated) {
+                            redirectToLogin();
+                            return;
+                          }
+                          setReplyToId(comment.id);
+                        }}
                         className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-medinex-teal"
                       >
                         <CornerDownRight className="w-3 h-3" />

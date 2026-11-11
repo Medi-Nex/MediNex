@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -18,22 +18,67 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { SHASTHOSETU_PROJECT, INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
 import { ProjectInfo, ProjectStage } from "@/types";
+import { apiClient } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth-context";
 
 export default function ShasthoSetuPage() {
+  const { user } = useAuth();
   const [project, setProject] = useState<ProjectInfo>(SHASTHOSETU_PROJECT);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<ProjectInfo>>(SHASTHOSETU_PROJECT);
 
-  const handleSave = (e: React.FormEvent) => {
+  const isAdmin = Boolean(user?.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN"));
+
+  useEffect(() => {
+    apiClient<ProjectInfo>("/projects/shasthosetu")
+      .then((live) => {
+        if (!live || !live.title) return;
+        const normalized: ProjectInfo = {
+          ...SHASTHOSETU_PROJECT,
+          ...live,
+          features: live.features && live.features.length > 0 ? live.features : SHASTHOSETU_PROJECT.features,
+          techStack: live.techStack && live.techStack.length > 0 ? live.techStack : SHASTHOSETU_PROJECT.techStack,
+        };
+        setProject(normalized);
+        setFormData(normalized);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updated = {
-      ...project,
-      ...formData,
-    } as ProjectInfo;
-    setProject(updated);
-    setIsEditing(false);
+    if (!isAdmin || isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const saved = await apiClient<ProjectInfo>("/projects/shasthosetu", {
+        method: "PUT",
+        body: JSON.stringify({
+          title: formData.title,
+          shortSummary: formData.shortSummary,
+          problemStatement: formData.problemStatement,
+          proposedSolution: formData.proposedSolution,
+          stage: formData.stage,
+          techStack: formData.techStack,
+        }),
+      });
+      const updated = {
+        ...project,
+        ...saved,
+      } as ProjectInfo;
+      setProject(updated);
+      setFormData(updated);
+      setIsEditing(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save project updates.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -49,15 +94,17 @@ export default function ShasthoSetuPage() {
             <span>Projects</span>
           </Link>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-            className="inline-flex items-center gap-1.5"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>{isEditing ? "Close Editor" : "Edit Specs"}</span>
-          </Button>
+          {isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+              className="inline-flex items-center gap-1.5"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{isEditing ? "Close Editor" : "Edit Specs"}</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -91,9 +138,17 @@ export default function ShasthoSetuPage() {
                     key={m.id}
                     href={`/team/${m.username}`}
                     title={m.fullName}
-                    className="w-8 h-8 rounded-full bg-slate-100 border-2 border-medinex-dark flex items-center justify-center text-[10px] font-bold text-medinex-deep hover:scale-110 transition-transform"
+                    className="rounded-full ring-2 ring-medinex-dark hover:scale-110 transition-transform"
                   >
-                    {m.username.replace("contributor-", "C")}
+                    <UserAvatar
+                      src={m.avatarUrl}
+                      smSrc={m.avatarSmUrl}
+                      lgSrc={m.avatarLgUrl}
+                      fullName={m.fullName}
+                      username={m.username}
+                      size="sm"
+                      className="border-0"
+                    />
                   </Link>
                 ))}
               </div>
@@ -129,8 +184,8 @@ export default function ShasthoSetuPage() {
           </div>
         </div>
 
-        {/* Project Edit Form */}
-        {isEditing && (
+        {/* Project Edit Form (Admin only, persisted via backend API) */}
+        {isAdmin && isEditing && (
           <Card className="border-2 border-medinex-teal shadow-elevated">
             <CardHeader className="bg-slate-50/80 flex items-center justify-between">
               <div>
@@ -143,6 +198,11 @@ export default function ShasthoSetuPage() {
             </CardHeader>
             <form onSubmit={handleSave}>
               <CardBody className="space-y-4">
+                {saveError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-xs">
+                    {saveError}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Title</label>
@@ -204,9 +264,15 @@ export default function ShasthoSetuPage() {
                   <Button type="button" variant="outline" size="sm" onClick={() => setIsEditing(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" size="sm" className="inline-flex items-center gap-1.5">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSaving}
+                    className="inline-flex items-center gap-1.5"
+                  >
                     <Save className="w-3.5 h-3.5" />
-                    <span>Save Project Updates</span>
+                    <span>{isSaving ? "Saving..." : "Save Project Updates"}</span>
                   </Button>
                 </div>
               </CardBody>

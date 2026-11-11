@@ -10,6 +10,7 @@ import { GithubIcon } from "@/components/ui/SocialIcons";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { apiClient } from "@/lib/api/client";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -19,20 +20,32 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMsg(null);
 
-    // Simulate submission for Phase 1
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await apiClient<{ delivered: boolean }>("/public/contact", {
+        method: "POST",
+        body: JSON.stringify({ name, email, category, subject, message }),
+      });
       setIsSubmitted(true);
       setName("");
       setEmail("");
       setSubject("");
       setMessage("");
-    }, 700);
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Unable to send message right now. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,6 +133,11 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {errorMsg && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-xs">
+                      {errorMsg}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">

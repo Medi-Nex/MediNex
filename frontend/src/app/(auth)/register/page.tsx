@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Activity, Lock, Mail, User, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { Activity, Mail, User, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api/client";
 
@@ -159,18 +160,14 @@ export default function RegisterPage() {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Password (Min 8 characters)
                     </label>
-                    <div className="relative">
-                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="password"
-                        required
-                        minLength={8}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                      />
-                    </div>
+                    <PasswordInput
+                      required
+                      minLength={8}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      autoComplete="new-password"
+                    />
                   </div>
 
                   <div className="flex items-start gap-2 pt-1">

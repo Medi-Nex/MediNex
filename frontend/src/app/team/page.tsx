@@ -2,25 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image"; // Added missing import
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import {
   ArrowRight,
-  UserCheck,
-  UserPlus,
   Globe,
   Mail,
   BookOpen,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/ui/SocialIcons";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { FollowButton } from "@/components/follow/FollowButton";
 import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
 import { TeamMember } from "@/types";
 import { apiClient } from "@/lib/api/client";
-import { resolveMediaUrl } from "@/lib/media";
+import { getTeamFollowStats } from "@/lib/api/follow";
+import { useAuth } from "@/lib/auth-context";
 
 export default function TeamPage() {
+  const { user } = useAuth();
   const [members, setMembers] = useState<TeamMember[]>(INITIAL_TEAM_MEMBERS);
   const [filterRole, setFilterRole] = useState<string>("ALL");
   const [isFollowingTeam, setIsFollowingTeam] = useState<boolean>(false);
@@ -53,10 +53,14 @@ export default function TeamPage() {
       .catch(() => {});
   }, []);
 
-  const handleFollowTeam = () => {
-    setIsFollowingTeam(!isFollowingTeam);
-    setTeamFollowersCount((prev) => (isFollowingTeam ? Math.max(0, prev - 1) : prev + 1));
-  };
+  useEffect(() => {
+    getTeamFollowStats()
+      .then((stats) => {
+        setIsFollowingTeam(stats.isFollowing);
+        setTeamFollowersCount(stats.followerCount);
+      })
+      .catch(() => {});
+  }, [user?.id]);
 
   const filteredMembers = members.filter((m) => {
     if (filterRole === "LEAD") return m.isLead;
@@ -108,25 +112,16 @@ export default function TeamPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button
-                variant={isFollowingTeam ? "outline" : "primary"}
+            <div className="flex items-center gap-3 shrink-0">
+              <FollowButton
+                targetType="team"
+                initialIsFollowing={isFollowingTeam}
                 size="md"
-                onClick={handleFollowTeam}
-                className="shrink-0"
-              >
-                {isFollowingTeam ? (
-                  <>
-                    <UserCheck className="w-4 h-4 mr-1.5 text-medinex-teal" />
-                    <span>Following Team</span>
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-1.5" />
-                    <span>Follow MediNex</span>
-                  </>
-                )}
-              </Button>
+                onFollowChange={(following, delta) => {
+                  setIsFollowingTeam(following);
+                  setTeamFollowersCount((prev) => Math.max(0, prev + delta));
+                }}
+              />
             </div>
           </div>
         </div>
@@ -139,7 +134,7 @@ export default function TeamPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-medinex-border">
             <div>
               <h2 className="text-xl font-bold text-medinex-text">Profiles</h2>
-              <p className="text-xs text-medinex-muted">Click any member to view full details or edit in-place</p>
+              <p className="text-xs text-medinex-muted">Explore verified contributor profiles, research backgrounds, and platform roles</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -177,38 +172,23 @@ export default function TeamPage() {
                   <div className="flex flex-col items-start gap-3.5">
                     <Link
                       href={`/team/${member.username}`}
-                      className="w-full aspect-[16/10] sm:aspect-[4/4.2] rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/50 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block group"
+                      className="w-full aspect-[4/4.2] rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/50 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block group"
                     >
-                      <span className="absolute inset-0 flex items-center justify-center font-bold text-5xl sm:text-6xl text-slate-300 z-0">
-                        {member.username.replace("contributor-", "C")}
-                      </span>
-                      {member.avatarLgUrl || member.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={resolveMediaUrl(member.avatarLgUrl || member.avatarUrl)!}
-                          alt={member.fullName}
-                          className="w-full h-full object-cover object-top relative z-10 group-hover:scale-[1.03] transition-transform duration-300"
-                        />
-                      ) : (
-                        <Image
-                          src={`/images/team/${member.username}.jpg`}
-                          alt={member.fullName}
-                          fill
-                          className="object-cover object-top relative z-10 group-hover:scale-[1.03] transition-transform duration-300"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      )}
+                      <UserAvatar
+                        src={member.avatarUrl}
+                        smSrc={member.avatarSmUrl}
+                        lgSrc={member.avatarLgUrl}
+                        fullName={member.fullName}
+                        username={member.username}
+                        size="fill"
+                        shape="rounded"
+                        className="border-0 shadow-none !from-slate-100 !to-emerald-50/70 !text-medinex-deep"
+                        imgClassName="group-hover:scale-[1.03] transition-transform duration-300"
+                      />
                       <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5">
                         {member.isLead && (
                           <Badge variant="teal" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
                             Team Lead
-                          </Badge>
-                        )}
-                        {member.isPlaceholder && (
-                          <Badge variant="placeholder" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
-                            Verified Placeholder
                           </Badge>
                         )}
                       </div>
@@ -324,7 +304,7 @@ export default function TeamPage() {
                     href={`/team/${member.username}`}
                     className="font-semibold text-medinex-teal hover:text-medinex-teal-hover inline-flex items-center gap-1"
                   >
-                    <span>View &amp; Edit Profile</span>
+                    <span>View Profile</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>

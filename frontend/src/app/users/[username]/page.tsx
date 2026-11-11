@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { ProfileHeroCover } from "@/components/profile/ProfileHeroCover";
 import { FollowButton } from "@/components/follow/FollowButton";
 import { ApiError } from "@/lib/api/client";
 import { authApi, PublicUserProfile } from "@/lib/api/auth";
@@ -219,10 +220,23 @@ export default function PublicUserProfilePage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 sm:mt-8 space-y-5 sm:space-y-6">
         {/* Profile Hero Card */}
-        <div className="bg-white rounded-2xl border border-medinex-border shadow-card overflow-hidden">
-          <div className="h-28 sm:h-44 bg-gradient-to-br from-medinex-dark via-medinex-deep to-medinex-teal bg-hero-mesh relative overflow-hidden">
-            <div className="absolute inset-0 bg-dot-matrix opacity-20 pointer-events-none" />
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-wrap justify-end gap-1.5 sm:gap-2">
+        <ProfileHeroCover
+          subject={profile}
+          onUpdated={(updatedUser) => {
+            setProfile((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    coverImageUrl: updatedUser.coverImageUrl ?? null,
+                    avatarUrl: updatedUser.avatarUrl ?? null,
+                    avatarSmUrl: updatedUser.avatarSmUrl ?? null,
+                    avatarLgUrl: updatedUser.avatarLgUrl ?? null,
+                  }
+                : prev
+            );
+          }}
+          badges={
+            <>
               {profile.isTeamMember && (
                 <Badge variant="mint" size="sm">
                   MediNex Squad Contributor
@@ -233,65 +247,48 @@ export default function PublicUserProfilePage() {
                   Private Account
                 </Badge>
               )}
-            </div>
-          </div>
-
-          <div className="px-4 sm:px-8 pb-6 sm:pb-8 relative">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-12 sm:-mt-16 gap-3.5 sm:gap-4 mb-5 sm:mb-6">
-              <div className="p-1.5 bg-white rounded-2xl shadow-lg border border-medinex-border inline-flex w-fit">
-                <UserAvatar
-                  src={profile.avatarUrl}
-                  smSrc={profile.avatarSmUrl}
-                  lgSrc={profile.avatarLgUrl}
-                  fullName={profile.fullName}
-                  username={profile.username}
-                  size="xl"
-                  shape="rounded"
-                  className="border-0 shadow-none"
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5 pt-2 sm:pt-0">
-                {isOwnProfile ? (
-                  <>
-                    <Link href="/dashboard/settings">
-                      <Button variant="outline" size="sm" className="text-xs inline-flex items-center gap-1.5">
-                        <Settings className="w-3.5 h-3.5 text-medinex-teal" />
-                        <span>Upload Photo &amp; Settings</span>
-                      </Button>
-                    </Link>
-                    <Link href="/dashboard/profile">
-                      <Button variant="primary" size="sm" className="text-xs inline-flex items-center gap-1.5">
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span>Edit Profile</span>
-                      </Button>
-                    </Link>
-                  </>
-                ) : (
-                  <FollowButton
-                    targetType="user"
-                    username={profile.username}
-                    initialIsFollowing={Boolean(followStats?.isFollowing)}
-                    initialHasPendingRequest={Boolean(followStats?.hasPendingRequest)}
-                    size="md"
-                    onFollowChange={(newIsFollowing, delta) => {
-                      setFollowStats((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              isFollowing: newIsFollowing,
-                              followerCount: Math.max(0, prev.followerCount + delta),
-                            }
-                          : prev
-                      );
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Identity & Bio Header */}
-            <div className="space-y-3">
+            </>
+          }
+          actions={
+            isOwnProfile ? (
+              <>
+                <Link href="/dashboard/settings">
+                  <Button variant="outline" size="sm" className="text-xs inline-flex items-center gap-1.5">
+                    <Settings className="w-3.5 h-3.5 text-medinex-teal" />
+                    <span>Upload Photo &amp; Settings</span>
+                  </Button>
+                </Link>
+                <Link href="/dashboard/profile">
+                  <Button variant="primary" size="sm" className="text-xs inline-flex items-center gap-1.5">
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edit Profile</span>
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <FollowButton
+                targetType="user"
+                username={profile.username}
+                initialIsFollowing={Boolean(followStats?.isFollowing)}
+                initialHasPendingRequest={Boolean(followStats?.hasPendingRequest)}
+                size="md"
+                onFollowChange={(newIsFollowing, delta) => {
+                  setFollowStats((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          isFollowing: newIsFollowing,
+                          followerCount: Math.max(0, prev.followerCount + delta),
+                        }
+                      : prev
+                  );
+                }}
+              />
+            )
+          }
+        >
+          {/* Identity & Bio Header */}
+          <div className="space-y-3">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-medinex-text">
@@ -387,9 +384,8 @@ export default function PublicUserProfilePage() {
                   )}
                 </div>
               )}
-            </div>
           </div>
-        </div>
+        </ProfileHeroCover>
 
         {isPrivateLocked ? (
           <Card className="border border-medinex-border">

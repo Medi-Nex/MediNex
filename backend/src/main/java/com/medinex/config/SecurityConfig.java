@@ -84,8 +84,9 @@ public class SecurityConfig {
                                 "/api/v1/auth/**",
                                 "/api/v1/public/**"
                         ).permitAll()
-                        // Public static media uploads (multi-resolution profile avatars)
+                        // Public static media uploads (multi-resolution profile avatars & banners)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/uploads/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.HEAD, "/uploads/**").permitAll()
                         // Public project read endpoints: GET is public, write is restricted to admins
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/projects/**").permitAll()
                         .requestMatchers("/api/v1/projects/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
@@ -130,7 +131,7 @@ public class SecurityConfig {
         }
 
         configuration.setAllowedOrigins(origins);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);

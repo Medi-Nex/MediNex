@@ -3,11 +3,21 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Activity, Lock, Mail, ShieldCheck, AlertCircle } from "lucide-react";
+import { Activity, Mail, ShieldCheck, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api/client";
+
+function getSafeRedirectTarget(): string {
+  if (typeof window === "undefined") return "/dashboard";
+  const raw = new URLSearchParams(window.location.search).get("redirect");
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/login")) {
+    return "/dashboard";
+  }
+  return raw;
+}
 
 export default function LoginPage() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -25,7 +35,7 @@ export default function LoginPage() {
 
     try {
       await login({ emailOrUsername, password });
-      router.push("/dashboard");
+      router.push(getSafeRedirectTarget());
     } catch (err) {
       if (err instanceof ApiError) {
         setErrorMessage(err.message);
@@ -97,17 +107,13 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
-                  />
-                </div>
+                <PasswordInput
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  autoComplete="current-password"
+                />
               </div>
 
               <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>

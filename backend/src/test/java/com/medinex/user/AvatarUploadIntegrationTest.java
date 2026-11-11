@@ -240,6 +240,10 @@ public class AvatarUploadIntegrationTest {
                 .andExpect(jsonPath("$.data.authorAvatarSmUrl").value(smUrl))
                 .andExpect(jsonPath("$.data.authorAvatarLgUrl").value(lgUrl));
 
+        // Verify HEAD also succeeds publicly alongside GET for media uploads (SecurityConfig permits GET + HEAD)
+        mockMvc.perform(head(mdUrl))
+                .andExpect(status().isOk());
+
         // Remove avatar deletes files & nulls URLs
         mockMvc.perform(delete("/api/v1/users/profile/avatar")
                         .header("Authorization", "Bearer " + token))
@@ -250,6 +254,83 @@ public class AvatarUploadIntegrationTest {
 
         Path userAvatarDir = tempUploadDir.resolve("avatars").resolve(userId);
         assertTrue(Files.list(userAvatarDir).findAny().isEmpty(), "Expected old avatar files to be cleaned up");
+    }
+
+    @Test
+    void testBannerUploadPublicServingAndDelete() throws Exception {
+        String suffix = System.currentTimeMillis() + "_banner";
+        String username = "banner_" + suffix;
+        String token = registerAndLogin(username, username + "@medinex.local", "Password123!");
+
+        // Reject unauthenticated banner upload
+        MockMultipartFile validBanner = new MockMultipartFile(
+                "file",
+                "cover.png",
+                MediaType.IMAGE_PNG_VALUE,
+                createSamplePng(1200, 400)
+        );
+        mockMvc.perform(multipart("/api/v1/users/profile/banner").file(validBanner))
+                .andExpect(status().isUnauthorized());
+
+        // Reject undersized image (< 100x40)
+        MockMultipartFile tinyBanner = new MockMultipartFile(
+                "file",
+                "tiny-banner.png",
+                MediaType.IMAGE_PNG_VALUE,
+                createSamplePng(64, 24)
+        );
+        mockMvc.perform(multipart("/api/v1/users/profile/banner")
+                        .file(tinyBanner)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+
+        // Upload valid wide photo -> resized to 1600x400 JPEG banner
+        MvcResult uploadRes = mockMvc.perform(multipart("/api/v1/users/profile/banner")
+                        .file(validBanner)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.coverImageUrl", startsWith("/uploads/banners/")))
+                .andExpect(jsonPath("$.data.coverImageUrl", endsWith("-banner.jpg")))
+                .andReturn();
+
+        JsonNode dataNode = objectMapper.readTree(uploadRes.getResponse().getContentAsString()).get("data");
+        String userId = dataNode.get("id").asText();
+        String bannerUrl = dataNode.get("coverImageUrl").asText();
+
+        assertImageVariantResolution(bannerUrl, 1600, 400);
+        mockMvc.perform(head(bannerUrl)).andExpect(status().isOk());
+
+        // Public profile endpoint returns persisted coverImageUrl
+        mockMvc.perform(get("/api/v1/users/" + username))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.coverImageUrl").value(bannerUrl));
+
+        // Uploading a replacement banner cleans up old banner file
+        MockMultipartFile secondBanner = new MockMultipartFile(
+                "file",
+                "cover-v2.png",
+                MediaType.IMAGE_PNG_VALUE,
+                createSamplePng(800, 600)
+        );
+        MvcResult replaceRes = mockMvc.perform(multipart("/api/v1/users/profile/banner")
+                        .file(secondBanner)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn();
+        String bannerUrlV2 = objectMapper.readTree(replaceRes.getResponse().getContentAsString())
+                .get("data").get("coverImageUrl").asText();
+        assertNotEquals(bannerUrl, bannerUrlV2);
+        mockMvc.perform(get(bannerUrl)).andExpect(status().isNotFound());
+        assertImageVariantResolution(bannerUrlV2, 1600, 400);
+
+        // Delete banner removes file and clears coverImageUrl
+        mockMvc.perform(delete("/api/v1/users/profile/banner")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.coverImageUrl").value(nullValue()));
+
+        Path userBannerDir = tempUploadDir.resolve("banners").resolve(userId);
+        assertTrue(Files.list(userBannerDir).findAny().isEmpty(), "Expected banner files to be cleaned up");
     }
 
     @Test

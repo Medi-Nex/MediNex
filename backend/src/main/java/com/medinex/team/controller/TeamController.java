@@ -118,6 +118,7 @@ public class TeamController {
                 .avatarUrl(avatarUrl)
                 .avatarSmUrl(AvatarUrlHelper.deriveVariant(avatarUrl, AvatarUrlHelper.VARIANT_SM))
                 .avatarLgUrl(AvatarUrlHelper.deriveVariant(avatarUrl, AvatarUrlHelper.VARIANT_LG))
+                .coverImageUrl(profile != null ? profile.getCoverImageUrl() : null)
                 .isLead(member.isLead())
                 .isPlaceholder(member.isPlaceholder())
                 .publicVisibility(profile == null || profile.isPublicVisible())

@@ -19,6 +19,7 @@ export interface TeamMember {
   avatarUrl?: string;
   avatarSmUrl?: string;
   avatarLgUrl?: string;
+  coverImageUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   portfolioUrl?: string;

@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   MessageSquare,
   Heart,
   Share2,
   Send,
-  Info,
   Lock,
   Trash2,
   CornerDownRight,
@@ -41,60 +41,18 @@ import {
 } from "@/lib/api/community";
 import { reportUser } from "@/lib/api/follow";
 
-// Demo seed posts for visual testing & transparent preview
-const DEMO_SEED_POSTS: PostDto[] = [
-  {
-    id: "demo-post-1",
-    authorId: "seed-1",
-    authorUsername: "contributor-01",
-    authorFullName: "Mridul Islam",
-    authorDesignation: "Team Lead & Systems Architect",
-    isAuthorVerified: true,
-    isOfficialAnnouncement: true,
-    isPinned: true,
-    isHidden: false,
-    content:
-      "[DEMO SEED CONTENT] Welcome to the MediNex Community feed! This is an interactive preview of our healthcare community feed. All community interactions adhere to strict data governance with zero PHI.",
-    likesCount: 5,
-    commentsCount: 2,
-    media: [],
-    isLiked: false,
-    isOwner: false,
-    visibility: "PUBLIC",
-    createdAt: "2026-02-10T12:00:00Z",
-    updatedAt: "2026-02-10T12:00:00Z",
-  },
-  {
-    id: "demo-post-2",
-    authorId: "seed-2",
-    authorUsername: "contributor-04",
-    authorFullName: "Jihad Khan",
-    authorDesignation: "Mobile & Interoperable Systems Lead",
-    isAuthorVerified: true,
-    isOfficialAnnouncement: false,
-    isPinned: false,
-    isHidden: false,
-    content:
-      "[DEMO SEED CONTENT] Exploring standardized HL7 FHIR resource schemas and conflict-free offline synchronization strategies for the ShasthoSetu digital health record exchange prototype.",
-    likesCount: 3,
-    commentsCount: 1,
-    media: [],
-    isLiked: false,
-    isOwner: false,
-    visibility: "PUBLIC",
-    createdAt: "2026-02-09T16:30:00Z",
-    updatedAt: "2026-02-09T16:30:00Z",
-  },
-];
-
 export default function CommunityFeedPage() {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const [posts, setPosts] = useState<PostDto[]>([]);
-  const [showDemoPosts, setShowDemoPosts] = useState<boolean>(true);
   const [filterType, setFilterType] = useState<"ALL" | "OFFICIAL">("ALL");
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
+
+  const redirectToLogin = () => {
+    router.push("/login?redirect=" + encodeURIComponent("/community"));
+  };
 
   // New post form state
   const [newContent, setNewContent] = useState("");
@@ -171,7 +129,10 @@ export default function CommunityFeedPage() {
   };
 
   const handleToggleLike = async (postId: string) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
 
     try {
       const res = await togglePostLike(postId);
@@ -272,7 +233,10 @@ export default function CommunityFeedPage() {
   };
 
   const handleToggleCommentLike = async (commentId: string, postId: string) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     try {
       const res = await toggleCommentLike(commentId);
       setCommentsMap((prev) => ({
@@ -317,6 +281,10 @@ export default function CommunityFeedPage() {
   };
 
   const handleOpenReport = (post: PostDto) => {
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     setReportingPost(post);
     setReportReason("INAPPROPRIATE_CONTENT");
     setReportDetails("");
@@ -353,13 +321,7 @@ export default function CommunityFeedPage() {
     }
   };
 
-  // Combine database posts with demo posts if toggled
-  const allPosts = [
-    ...posts,
-    ...(showDemoPosts ? DEMO_SEED_POSTS : []),
-  ];
-
-  const displayedPosts = allPosts.filter((p) => {
+  const displayedPosts = posts.filter((p) => {
     if (filterType === "OFFICIAL") return p.isOfficialAnnouncement;
     return true;
   });
@@ -380,29 +342,6 @@ export default function CommunityFeedPage() {
           </p>
         </div>
       </section>
-
-      {/* Demo Content Toggle Banner */}
-      <div className="bg-amber-50/95 border-b border-amber-200/80 px-4 py-2.5 sm:py-3">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 text-xs text-amber-900">
-          <div className="flex items-start sm:items-center gap-2">
-            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
-            <span>
-              <strong>Transparency Disclosure:</strong> Live database posts and verified seed updates are clearly distinguished.
-            </span>
-          </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-            <label className="flex items-center gap-2 cursor-pointer font-semibold text-amber-900 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-200/80">
-              <input
-                type="checkbox"
-                checked={showDemoPosts}
-                onChange={(e) => setShowDemoPosts(e.target.checked)}
-                className="rounded border-amber-400 text-[#0D9488] focus:ring-[#0D9488]"
-              />
-              <span>Show Seed / Demo Content</span>
-            </label>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 mt-5 sm:mt-8 space-y-5 sm:space-y-6 w-full">
         {/* Post Creation Box */}
@@ -560,7 +499,7 @@ export default function CommunityFeedPage() {
                 <p className="text-xs text-slate-500">Sign in to publish posts, share technical feedback, and engage with researchers.</p>
               </div>
             </div>
-            <Link href="/login" className="shrink-0">
+            <Link href="/login?redirect=%2Fcommunity" className="shrink-0">
               <Button variant="primary" size="sm">
                 Sign In to Post
               </Button>
@@ -612,7 +551,7 @@ export default function CommunityFeedPage() {
               </div>
               <h3 className="text-lg font-bold text-slate-900">No Community Posts Yet</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Be the first health innovator or researcher to publish an insight! Or toggle &quot;Show Seed / Demo Content&quot; above to preview sample posts.
+                No published community discussions yet. Sign in to share technical insights, research notes, or feedback on ShasthoSetu.
               </p>
             </CardBody>
           </Card>
@@ -651,11 +590,6 @@ export default function CommunityFeedPage() {
                             Official Announcement
                           </Badge>
                         )}
-                        {post.id.startsWith("demo-") && (
-                          <Badge variant="placeholder" size="sm">
-                            Demo Seed
-                          </Badge>
-                        )}
                       </div>
                       <p className="text-xs text-slate-500">
                         <Link
@@ -692,11 +626,11 @@ export default function CommunityFeedPage() {
                         </button>
                       </>
                     )}
-                    {isAuthenticated && !post.isOwner && !post.id.startsWith("demo-") && (
+                    {!post.isOwner && (
                       <button
                         onClick={() => handleOpenReport(post)}
                         className="text-slate-400 hover:text-amber-600 transition-colors p-1"
-                        title="Report post"
+                        title={isAuthenticated ? "Report post" : "Sign in to report post"}
                       >
                         <Flag className="w-4 h-4" />
                       </button>
@@ -729,12 +663,11 @@ export default function CommunityFeedPage() {
                   <div className="flex items-center gap-1 sm:gap-2">
                     <button
                       onClick={() => handleToggleLike(post.id)}
-                      disabled={!isAuthenticated}
                       className={`inline-flex items-center gap-1.5 min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl transition-colors ${
                         post.isLiked
                           ? "text-rose-600 bg-rose-50 font-semibold"
                           : "text-slate-600 hover:bg-slate-100"
-                      } ${!isAuthenticated ? "opacity-75 cursor-not-allowed" : ""}`}
+                      }`}
                       title={!isAuthenticated ? "Sign in to like" : ""}
                     >
                       <Heart className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`} />
@@ -826,7 +759,7 @@ export default function CommunityFeedPage() {
                       </div>
                     ) : (
                       <div className="p-3 bg-slate-50 rounded-xl text-center text-xs text-slate-500">
-                        <Link href="/login" className="text-[#0D9488] font-semibold hover:underline">
+                        <Link href="/login?redirect=%2Fcommunity" className="text-[#0D9488] font-semibold hover:underline">
                           Sign in
                         </Link>{" "}
                         to participate in this discussion thread.
@@ -900,23 +833,27 @@ export default function CommunityFeedPage() {
                             <div className="flex items-center gap-4 pl-9 text-[11px] text-slate-500">
                               <button
                                 onClick={() => handleToggleCommentLike(c.id, post.id)}
-                                disabled={!isAuthenticated}
                                 className={`inline-flex items-center gap-1 ${
                                   c.isLiked ? "text-rose-600 font-semibold" : "hover:text-slate-800"
                                 }`}
+                                title={!isAuthenticated ? "Sign in to like comment" : ""}
                               >
                                 <Heart className={`w-3 h-3 ${c.isLiked ? "fill-current" : ""}`} />
                                 <span>{c.likesCount}</span>
                               </button>
 
-                              {isAuthenticated && (
-                                <button
-                                  onClick={() => setReplyToMap((prev) => ({ ...prev, [post.id]: c.id }))}
-                                  className="hover:text-[#0D9488] font-medium"
-                                >
-                                  Reply
-                                </button>
-                              )}
+                              <button
+                                onClick={() => {
+                                  if (!isAuthenticated) {
+                                    redirectToLogin();
+                                    return;
+                                  }
+                                  setReplyToMap((prev) => ({ ...prev, [post.id]: c.id }));
+                                }}
+                                className="hover:text-[#0D9488] font-medium"
+                              >
+                                Reply
+                              </button>
                             </div>
 
                             {/* Nested Replies */}
