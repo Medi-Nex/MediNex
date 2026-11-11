@@ -1,21 +1,74 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Activity, MailCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import { Activity, MailCheck, CheckCircle2, AlertCircle, RotateCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 
+const RESEND_COOLDOWN_SECONDS = 120;
+
+function formatCountdown(totalSeconds: number): string {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
-  const targetEmail = searchParams.get("email");
+  const initialEmail = searchParams.get("email") || "";
+  const justSent = searchParams.get("sent") === "1";
+
+  const [emailInput, setEmailInput] = useState(initialEmail);
   const [tokenInput, setTokenInput] = useState("");
   const [verified, setVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [resendTrigger, setResendTrigger] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resendSuccessMessage, setResendSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const emailKey = emailInput.trim().toLowerCase();
+    if (!emailKey) return;
+
+    const storageKey = `medinex_resend_until_${emailKey}`;
+    let untilMs = Number(window.sessionStorage.getItem(storageKey) || "0");
+
+    if ((!untilMs || Number.isNaN(untilMs)) && justSent && emailKey === initialEmail.trim().toLowerCase()) {
+      untilMs = Date.now() + RESEND_COOLDOWN_SECONDS * 1000;
+      window.sessionStorage.setItem(storageKey, String(untilMs));
+    }
+
+    const syncRemaining = () => {
+      const storedUntil = Number(window.sessionStorage.getItem(storageKey) || String(untilMs) || "0");
+      const remaining = storedUntil > 0 ? Math.max(0, Math.ceil((storedUntil - Date.now()) / 1000)) : 0;
+      setCooldownSeconds(remaining);
+      if (remaining <= 0) {
+        window.sessionStorage.removeItem(storageKey);
+      }
+    };
+
+    const immediateTimer = window.setTimeout(syncRemaining, 0);
+    const interval = window.setInterval(syncRemaining, 1000);
+    return () => {
+      window.clearTimeout(immediateTimer);
+      window.clearInterval(interval);
+    };
+  }, [emailInput, initialEmail, justSent, resendTrigger]);
+
+  const startCooldownForEmail = (targetEmail: string, seconds: number) => {
+    const emailKey = targetEmail.trim().toLowerCase();
+    if (!emailKey) return;
+    const storageKey = `medinex_resend_until_${emailKey}`;
+    window.sessionStorage.setItem(storageKey, String(Date.now() + seconds * 1000));
+    setCooldownSeconds(seconds);
+    setResendTrigger((prev) => prev + 1);
+  };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +90,37 @@ function VerifyEmailContent() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    const cleanEmail = emailInput.trim();
+    if (!cleanEmail || isResending || cooldownSeconds > 0) return;
+
+    setIsResending(true);
+    setErrorMessage(null);
+    setResendSuccessMessage(null);
+
+    try {
+      await authApi.resendVerification(cleanEmail);
+      startCooldownForEmail(cleanEmail, RESEND_COOLDOWN_SECONDS);
+      setResendSuccessMessage(
+        `A new verification code has been dispatched from medinexbd.noreply@gmail.com to ${cleanEmail}.`
+      );
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrorMessage(err.message);
+        const match = err.message.match(/wait\s+(\d+)\s+second/i);
+        if (err.status === 429 && match) {
+          startCooldownForEmail(cleanEmail, Number(match[1]));
+        }
+      } else if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("Failed to resend verification email. Please try again shortly.");
+      }
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -84,11 +168,18 @@ function VerifyEmailContent() {
                   </div>
                 )}
 
+                {resendSuccessMessage && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
+                    <span>{resendSuccessMessage}</span>
+                  </div>
+                )}
+
                 <div className="p-3 bg-emerald-50 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
                   <MailCheck className="w-4 h-4 text-medinex-teal shrink-0 mt-0.5" />
                   <span>
                     A verification code was sent from <strong>medinexbd.noreply@gmail.com</strong> to{" "}
-                    <strong>{targetEmail || "your registered address"}</strong>. Please check your inbox (and spam folder) and enter it below.
+                    <strong>{emailInput.trim() || "your registered address"}</strong>. Please check your inbox (and spam folder) and enter it below.
                   </span>
                 </div>
 
@@ -111,7 +202,41 @@ function VerifyEmailContent() {
                   Verify Email &amp; Activate Account
                 </Button>
 
-                <div className="text-center pt-2">
+                <div className="pt-4 border-t border-slate-100 space-y-2.5">
+                  <p className="text-[11px] font-semibold text-slate-600">
+                    Didn&apos;t receive the code? Resend verification email (2-minute cooldown):
+                  </p>
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="Enter your registered email address"
+                    className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full inline-flex items-center justify-center gap-1.5"
+                    disabled={!emailInput.trim() || cooldownSeconds > 0 || isResending}
+                    isLoading={isResending}
+                    onClick={handleResend}
+                  >
+                    {cooldownSeconds > 0 ? (
+                      <>
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Resend Code in {formatCountdown(cooldownSeconds)}</span>
+                      </>
+                    ) : (
+                      <>
+                        <RotateCw className="w-3.5 h-3.5" />
+                        <span>Resend Verification Code</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="text-center pt-1">
                   <Link href="/login" className="text-xs text-medinex-teal hover:underline font-semibold">
                     Skip for now and go to Login
                   </Link>

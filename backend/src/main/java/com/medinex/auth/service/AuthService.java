@@ -30,8 +30,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,6 +42,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final long RESEND_VERIFICATION_COOLDOWN_SECONDS = 120L;
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -87,18 +92,7 @@ public class AuthService {
                 .build();
         userProfileRepository.save(profile);
 
-        // Generate email verification token (6-character hex or secure random)
-        String rawToken = tokenProvider.generateRawRefreshToken().substring(0, 16);
-        String tokenHash = tokenProvider.hashToken(rawToken);
-
-        EmailVerificationToken verificationToken = EmailVerificationToken.builder()
-                .user(savedUser)
-                .tokenHash(tokenHash)
-                .expiresAt(Instant.now().plus(24, ChronoUnit.HOURS))
-                .build();
-        emailVerificationTokenRepository.save(verificationToken);
-
-        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getFullName(), rawToken);
+        issueAndDispatchVerificationToken(savedUser);
 
         recordAuditLog(savedUser.getId(), savedUser.getEmail(), "USER_REGISTERED", "User", savedUser.getId().toString());
 
@@ -198,7 +192,7 @@ public class AuthService {
 
     @Transactional
     public void verifyEmail(VerifyEmailRequest request) {
-        String tokenHash = tokenProvider.hashToken(request.getToken());
+        String tokenHash = tokenProvider.hashToken(request.getToken().trim());
         EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new AppException("Invalid or expired verification token", HttpStatus.BAD_REQUEST));
 
@@ -215,6 +209,56 @@ public class AuthService {
 
         emailVerificationTokenRepository.delete(verificationToken);
         recordAuditLog(user.getId(), user.getEmail(), "EMAIL_VERIFIED", "User", user.getId().toString());
+    }
+
+    @Transactional
+    public void resendVerificationEmail(ResendVerificationRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(email);
+        if (userOpt.isEmpty()) {
+            return;
+        }
+
+        User user = userOpt.get();
+        if (user.isEmailVerified() || user.getStatus() != UserStatus.PENDING_VERIFICATION) {
+            return;
+        }
+
+        List<EmailVerificationToken> existingTokens = emailVerificationTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId());
+
+        if (!existingTokens.isEmpty()) {
+            Instant cooldownUntil = existingTokens.get(0).getCreatedAt()
+                    .plusSeconds(RESEND_VERIFICATION_COOLDOWN_SECONDS);
+            Instant now = Instant.now();
+            if (cooldownUntil.isAfter(now)) {
+                long remainingMillis = Duration.between(now, cooldownUntil).toMillis();
+                long remainingSeconds = Math.max(1L, (remainingMillis + 999L) / 1000L);
+                throw new AppException(
+                        "Please wait " + remainingSeconds + " seconds before requesting another verification code.",
+                        HttpStatus.TOO_MANY_REQUESTS
+                );
+            }
+            emailVerificationTokenRepository.deleteAll(existingTokens);
+            emailVerificationTokenRepository.flush();
+        }
+
+        issueAndDispatchVerificationToken(user);
+        recordAuditLog(user.getId(), user.getEmail(), "VERIFICATION_EMAIL_RESENT", "User", user.getId().toString());
+    }
+
+    private void issueAndDispatchVerificationToken(User user) {
+        String rawToken = tokenProvider.generateRawRefreshToken().substring(0, 16);
+        String tokenHash = tokenProvider.hashToken(rawToken);
+
+        EmailVerificationToken verificationToken = EmailVerificationToken.builder()
+                .user(user)
+                .tokenHash(tokenHash)
+                .expiresAt(Instant.now().plus(24, ChronoUnit.HOURS))
+                .build();
+        emailVerificationTokenRepository.save(verificationToken);
+
+        emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), rawToken);
     }
 
     @Transactional

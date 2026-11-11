@@ -38,7 +38,7 @@ export default function RegisterPage() {
         agreeTerms,
       });
       setRegisteredSuccess(true);
-      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim())}&sent=1`);
     } catch (err) {
       if (err instanceof ApiError) {
         setErrorMessage(err.message);

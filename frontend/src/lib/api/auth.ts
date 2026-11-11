@@ -87,6 +87,12 @@ export const authApi = {
       body: JSON.stringify({ token }),
     }),
 
+  resendVerification: (email: string) =>
+    apiClient<void>("/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
   forgotPassword: (email: string) =>
     apiClient<void>("/auth/forgot-password", {
       method: "POST",

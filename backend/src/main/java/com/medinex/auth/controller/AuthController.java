@@ -61,6 +61,13 @@ public class AuthController {
         return ApiResponse.ok(null, "Email verified successfully. You may now participate fully.");
     }
 
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Resend email verification code with 2-minute cooldown")
+    public ApiResponse<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        authService.resendVerificationEmail(request);
+        return ApiResponse.ok(null, "If an unverified account exists for this email, a verification code has been dispatched.");
+    }
+
     @PostMapping("/forgot-password")
     @Operation(summary = "Request a one-time password reset token")
     public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {

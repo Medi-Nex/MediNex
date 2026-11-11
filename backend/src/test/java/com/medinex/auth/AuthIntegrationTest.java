@@ -15,9 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +48,9 @@ public class AuthIntegrationTest {
 
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void shouldRegisterNewUserSuccessfully() throws Exception {
@@ -243,5 +250,57 @@ public class AuthIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newLogin)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldEnforceTwoMinuteCooldownAndAllowResendVerificationAfterExpiry() throws Exception {
+        String suffix = System.currentTimeMillis() + "_resend";
+        String email = "resend_" + suffix + "@medinex.health";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("resend_" + suffix)
+                .email(email)
+                .fullName("Resend Test User")
+                .password("SecurePass2026!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isCreated());
+
+        ResendVerificationRequest resendReq = ResendVerificationRequest.builder()
+                .email(email)
+                .build();
+
+        // Immediate resend within 2-minute window must be rate-limited with 429
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resendReq)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", containsString("Please wait")));
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        EmailVerificationToken initialToken = emailVerificationTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId())
+                .get(0);
+
+        // Age token beyond 120 seconds and retry resend
+        jdbcTemplate.update(
+                "UPDATE email_verification_tokens SET created_at = ? WHERE id = ?",
+                Timestamp.from(Instant.now().minusSeconds(130)),
+                initialToken.getId()
+        );
+
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resendReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+
+        var updatedTokens = emailVerificationTokenRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
+        assertEquals(1, updatedTokens.size());
+        assertNotEquals(initialToken.getTokenHash(), updatedTokens.get(0).getTokenHash());
     }
 }

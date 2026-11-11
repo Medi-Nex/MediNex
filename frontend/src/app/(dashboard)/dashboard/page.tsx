@@ -99,7 +99,7 @@ export default function DashboardOverviewPage() {
                 unlock full community publishing privileges.
               </div>
             </div>
-            <Link href="/verify-email">
+            <Link href={`/verify-email?email=${encodeURIComponent(user.email)}`}>
               <Button variant="outline" size="sm" className="border-amber-400 text-amber-900 shrink-0">
                 Verify Now
               </Button>
