@@ -8,8 +8,10 @@ import com.medinex.team.repository.TeamMemberRepository;
 import com.medinex.user.entity.UserProfile;
 import com.medinex.user.repository.UserProfileRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,8 +46,10 @@ public class TeamController {
     }
 
     @PutMapping("/members/{username}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
     @Transactional
-    @Operation(summary = "Update verified contributor profile information")
+    @Operation(summary = "Update verified contributor profile information (Admin only)")
     public ApiResponse<TeamMemberDto> updateMember(@PathVariable String username, @RequestBody TeamMemberDto updated) {
         TeamMember member = teamMemberRepository.findByUserUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Contributor", "username", username));

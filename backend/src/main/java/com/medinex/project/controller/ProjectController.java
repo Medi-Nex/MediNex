@@ -6,8 +6,10 @@ import com.medinex.project.dto.ProjectDto;
 import com.medinex.project.entity.Project;
 import com.medinex.project.repository.ProjectRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +43,10 @@ public class ProjectController {
     }
 
     @PutMapping("/{slug}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
     @Transactional
-    @Operation(summary = "Update project information")
+    @Operation(summary = "Update project information (Admin only)")
     public ApiResponse<ProjectDto> updateProject(@PathVariable String slug, @RequestBody ProjectDto updated) {
         Project project = projectRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "slug", slug));
