@@ -15,7 +15,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/medinex_db}
     username: ${SPRING_DATASOURCE_USERNAME:medinex_user}
     password: ${SPRING_DATASOURCE_PASSWORD:medinex_secure_password_dev_only}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 15
       minimum-idle: 5
