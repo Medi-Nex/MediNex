@@ -71,10 +71,10 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
 
     skills: [
       "React.js",
-      "JavaScript",
       "HTML & CSS",
       "Java",
       "Java Spring Boot",
+      "JavaScript",
       "Android Development",
       "REST API Integration",
       "MySQL",
@@ -116,7 +116,12 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
 
     bio: "Team contributor at MediNex. Additional professional information, technical skills, and project responsibilities are awaiting confirmation.",
 
-    skills: [],
+    skills: [
+      "React.js",
+      "HTML & CSS",
+      "JavaScript",
+      "Database Management",
+      ],
 
     responsibilities: [],
 
