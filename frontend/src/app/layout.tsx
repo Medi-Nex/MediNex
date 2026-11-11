@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { AuthProvider } from "@/lib/auth-context";
 
 const inter = Inter({
@@ -19,6 +20,13 @@ const hindSiliguri = Hind_Siliguri({
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://medinex-bd.vercel.app";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#071A18",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -149,6 +157,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <MobileBottomNav />
         </AuthProvider>
       </body>
     </html>

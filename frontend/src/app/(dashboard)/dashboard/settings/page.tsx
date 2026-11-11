@@ -153,14 +153,14 @@ export default function DashboardSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-medinex-light pb-20">
+    <div className="min-h-screen bg-medinex-light pb-24 md:pb-20">
       {/* Top Header */}
-      <div className="bg-white border-b border-medinex-border py-6">
+      <div className="bg-white border-b border-medinex-border py-5 sm:py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 mb-2">
             <Link
               href="/dashboard"
-              className="text-xs font-semibold text-medinex-teal hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-medinex-teal hover:underline flex items-center gap-1 min-h-[32px]"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Dashboard</span>
@@ -168,14 +168,14 @@ export default function DashboardSettingsPage() {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-medinex-text tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-medinex-text tracking-tight">
                 Account & Privacy Settings
               </h1>
               <p className="text-xs text-medinex-muted mt-1">
                 Manage relational follower policies, blocklists, password security, and notifications
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Link href="/dashboard/following">
                 <Button variant="outline" size="sm" className="text-xs">
                   Following Network
@@ -191,7 +191,7 @@ export default function DashboardSettingsPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Section 0: Profile Photo & Multi-Resolution Upload */}
         <AvatarUploadCard />
 

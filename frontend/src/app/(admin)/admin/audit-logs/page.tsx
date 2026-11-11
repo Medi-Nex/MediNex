@@ -68,15 +68,15 @@ export default function AdminAuditLogsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Filter by action, actor, or target..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-1.5 text-xs rounded-xl border border-medinex-border bg-white text-medinex-text focus:outline-none focus:border-medinex-teal w-64"
+              className="pl-9 pr-3 py-2 sm:py-1.5 text-xs rounded-xl border border-medinex-border bg-white text-medinex-text focus:outline-none focus:border-medinex-teal w-full sm:w-64"
             />
           </div>
           <Button

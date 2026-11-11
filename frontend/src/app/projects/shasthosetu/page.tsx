@@ -39,14 +39,14 @@ export default function ShasthoSetuPage() {
   return (
     <div className="flex flex-col min-h-screen bg-medinex-light pb-20">
       {/* Top Breadcrumb Header */}
-      <div className="bg-white border-b border-medinex-border py-4">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="sticky top-16 z-30 bg-white/92 backdrop-blur-md border-b border-medinex-border py-3 sm:py-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <Link
             href="/projects"
             className="inline-flex items-center text-xs font-semibold text-slate-600 hover:text-medinex-teal transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 mr-1.5" />
-            <span>Back to Projects Directory</span>
+            <ArrowLeft className="w-4 h-4 mr-1.5 shrink-0" />
+            <span>Projects</span>
           </Link>
 
           <Button
@@ -56,14 +56,14 @@ export default function ShasthoSetuPage() {
             className="inline-flex items-center gap-1.5"
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span>{isEditing ? "Close Editor" : "Edit Project Specs"}</span>
+            <span>{isEditing ? "Close Editor" : "Edit Specs"}</span>
           </Button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-6 sm:space-y-8 w-full">
         {/* Project Header Banner */}
-        <div className="bg-gradient-to-br from-medinex-dark via-medinex-deep to-medinex-dark text-white rounded-2xl p-8 sm:p-12 shadow-elevated border border-emerald-950 space-y-6">
+        <div className="bg-medinex-dark bg-hero-mesh text-white rounded-2xl sm:rounded-3xl p-6 sm:p-12 shadow-premium ring-1 ring-white/10 border border-emerald-950 space-y-5 sm:space-y-6 relative overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Badge variant="mint">Digital Health Interoperability</Badge>

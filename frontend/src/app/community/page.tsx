@@ -367,10 +367,11 @@ export default function CommunityFeedPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F7FAF9] pb-24">
       {/* Dark Hero Header */}
-      <section className="bg-[#071A18] text-white py-14 border-b border-[#063D38]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
+      <section className="relative bg-[#071A18] bg-hero-mesh text-white py-10 sm:py-14 border-b border-[#063D38] overflow-hidden">
+        <div className="absolute inset-0 bg-dot-matrix opacity-30 pointer-events-none" aria-hidden="true" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2.5 sm:space-y-3 relative z-10">
           <Badge variant="mint">Public Community Feed</Badge>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
             MediNex Community Discourse
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
@@ -381,16 +382,16 @@ export default function CommunityFeedPage() {
       </section>
 
       {/* Demo Content Toggle Banner */}
-      <div className="bg-amber-50 border-b border-amber-200/80 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
-          <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-amber-600 shrink-0" />
+      <div className="bg-amber-50/95 border-b border-amber-200/80 px-4 py-2.5 sm:py-3">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 text-xs text-amber-900">
+          <div className="flex items-start sm:items-center gap-2">
+            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
             <span>
               <strong>Transparency Disclosure:</strong> Live database posts and verified seed updates are clearly distinguished.
             </span>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-amber-800">
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+            <label className="flex items-center gap-2 cursor-pointer font-semibold text-amber-900 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-200/80">
               <input
                 type="checkbox"
                 checked={showDemoPosts}
@@ -403,7 +404,7 @@ export default function CommunityFeedPage() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 mt-8 space-y-6 w-full">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 mt-5 sm:mt-8 space-y-5 sm:space-y-6 w-full">
         {/* Post Creation Box */}
         {isAuthenticated && user ? (
           <Card className="shadow-sm border-slate-200/80">
@@ -458,7 +459,8 @@ export default function CommunityFeedPage() {
                             <button
                               type="button"
                               onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== idx))}
-                              className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label="Remove attached image"
+                              className="absolute top-1 right-1 bg-black/75 text-white rounded-full p-1 shadow-sm transition-opacity"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -489,28 +491,28 @@ export default function CommunityFeedPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2.5 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setShowImageInput(!showImageInput)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                      className="inline-flex items-center gap-1.5 min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200/70 transition-colors"
                     >
                       <ImageIcon className="w-3.5 h-3.5 text-[#0D9488]" />
-                      <span>Attach Image ({mediaUrls.length}/4)</span>
+                      <span>Image ({mediaUrls.length}/4)</span>
                     </button>
 
                     <select
                       value={newVisibility}
                       onChange={(e) => setNewVisibility(e.target.value as "PUBLIC" | "MEMBERS_ONLY")}
-                      className="text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 focus:outline-none"
+                      className="min-h-[36px] text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
                     >
                       <option value="PUBLIC">Public</option>
                       <option value="MEMBERS_ONLY">Members Only</option>
                     </select>
 
                     {(user.isTeamMember || user.roles.some((r) => r.includes("ADMIN"))) && (
-                      <label className="flex items-center gap-1 text-xs text-[#0D9488] font-semibold cursor-pointer">
+                      <label className="flex items-center gap-1.5 min-h-[36px] px-2 text-xs text-[#0D9488] font-semibold cursor-pointer">
                         <input
                           type="checkbox"
                           checked={isAnnouncement}
@@ -522,10 +524,10 @@ export default function CommunityFeedPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-teal-800 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200/80">
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    <div className="flex items-center gap-1.5 text-[11px] text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/80">
                       <ShieldCheck className="w-3.5 h-3.5 text-[#0D9488]" />
-                      <span>Strict Zero-PHI Active</span>
+                      <span>Zero-PHI Active</span>
                     </div>
 
                     <Button
@@ -533,6 +535,7 @@ export default function CommunityFeedPage() {
                       variant="primary"
                       size="sm"
                       disabled={!newContent.trim() || publishing}
+                      className="shrink-0"
                     >
                       {publishing ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
@@ -722,12 +725,12 @@ export default function CommunityFeedPage() {
                 )}
 
                 {/* Interaction Footer */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
                   <div className="flex items-center gap-1 sm:gap-2">
                     <button
                       onClick={() => handleToggleLike(post.id)}
                       disabled={!isAuthenticated}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                      className={`inline-flex items-center gap-1.5 min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl transition-colors ${
                         post.isLiked
                           ? "text-rose-600 bg-rose-50 font-semibold"
                           : "text-slate-600 hover:bg-slate-100"
@@ -735,31 +738,33 @@ export default function CommunityFeedPage() {
                       title={!isAuthenticated ? "Sign in to like" : ""}
                     >
                       <Heart className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`} />
-                      <span>{post.likesCount} {post.likesCount === 1 ? "Like" : "Likes"}</span>
+                      <span>{post.likesCount}</span>
+                      <span className="hidden sm:inline">{post.likesCount === 1 ? "Like" : "Likes"}</span>
                     </button>
 
                     <button
                       onClick={() => handleToggleComments(post.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                      className="inline-flex items-center gap-1.5 min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
                     >
                       <MessageSquare className="w-4 h-4 text-[#0D9488]" />
-                      <span>{post.commentsCount} Comments</span>
+                      <span>{post.commentsCount}</span>
+                      <span className="hidden sm:inline">Comments</span>
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Link
                       href={`/community/posts/${post.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:text-[#0D9488] hover:bg-slate-100 transition-colors"
+                      className="inline-flex items-center gap-1.5 min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl text-slate-600 hover:text-[#0D9488] hover:bg-slate-100 transition-colors"
                       title="Open full discussion thread"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Thread</span>
+                      <span>Thread</span>
                     </Link>
 
                     <button
                       onClick={() => handleCopyLink(post.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                      className="inline-flex items-center gap-1.5 min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
                     >
                       {copiedId === post.id ? (
                         <>
@@ -769,7 +774,7 @@ export default function CommunityFeedPage() {
                       ) : (
                         <>
                           <Share2 className="w-4 h-4" />
-                          <span>Share</span>
+                          <span className="hidden sm:inline">Share</span>
                         </>
                       )}
                     </button>
@@ -968,8 +973,8 @@ export default function CommunityFeedPage() {
 
       {/* Edit Post Modal */}
       {editingPost && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full p-5 sm:p-6 pb-safe shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <h3 className="font-bold text-sm text-slate-900">Edit Community Post</h3>
               <button
@@ -1029,8 +1034,8 @@ export default function CommunityFeedPage() {
 
       {/* Report Post Modal */}
       {reportingPost && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 sm:p-6 pb-safe shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <h3 className="font-bold text-sm text-slate-900">Report Community Post</h3>
               <button

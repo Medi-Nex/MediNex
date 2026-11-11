@@ -284,15 +284,15 @@ export default function SinglePostPage({ params }: PostPageProps) {
     user && (user.id === post.authorId || user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN"));
 
   return (
-    <div className="min-h-screen bg-medinex-light pb-20">
+    <div className="min-h-screen bg-medinex-light pb-24 md:pb-20">
       {/* Top Header */}
-      <div className="bg-white border-b border-medinex-border py-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="sticky top-16 z-30 bg-white/90 backdrop-blur-md border-b border-medinex-border py-3 sm:py-3.5">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <Link
             href="/community"
-            className="text-xs font-semibold text-medinex-teal hover:underline flex items-center gap-1.5"
+            className="text-xs font-semibold text-medinex-teal hover:underline flex items-center gap-1.5 min-h-[36px] py-1"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 shrink-0" />
             <span>Community Feed</span>
           </Link>
           <div className="flex items-center gap-2">
@@ -309,10 +309,10 @@ export default function SinglePostPage({ params }: PostPageProps) {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
         {/* Post Card */}
-        <Card className="border border-medinex-border overflow-hidden shadow-xs">
-          <CardBody className="p-6 space-y-5">
+        <Card className="border border-medinex-border overflow-hidden shadow-card">
+          <CardBody className="p-4 sm:p-6 space-y-4 sm:space-y-5">
             {/* Author Header */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -689,8 +689,8 @@ export default function SinglePostPage({ params }: PostPageProps) {
 
       {/* Report Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-medinex-border space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 sm:p-6 pb-safe shadow-2xl border border-medinex-border space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-medinex-border">
               <h3 className="font-bold text-sm text-medinex-text">Report Community Post</h3>
               <button

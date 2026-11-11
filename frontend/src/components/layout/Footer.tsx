@@ -5,11 +5,14 @@ import { GithubIcon } from "@/components/ui/SocialIcons";
 
 export default function Footer() {
   return (
-    <footer role="contentinfo" className="bg-medinex-dark text-slate-300 border-t border-emerald-950/80 pt-16 pb-12">
+    <footer
+      role="contentinfo"
+      className="bg-medinex-dark text-slate-300 border-t border-emerald-950/80 pt-14 sm:pt-16 pb-24 md:pb-12"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-emerald-950">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10 pb-10 sm:pb-12 border-b border-emerald-950">
           {/* Brand Info */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="col-span-2 lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-medinex-teal to-medinex-deep flex items-center justify-center text-white shadow-md">
                 <Activity className="w-5 h-5 text-medinex-mint" />

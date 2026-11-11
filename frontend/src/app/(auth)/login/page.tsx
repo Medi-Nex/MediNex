@@ -40,8 +40,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-medinex-light px-4 py-16">
-      <div className="max-w-md w-full space-y-6">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-medinex-light px-4 py-10 sm:py-16 pb-24 md:pb-16 relative overflow-hidden">
+      <div className="absolute inset-0 bg-dot-matrix opacity-[0.18] pointer-events-none" />
+      <div className="max-w-md w-full space-y-6 relative z-10">
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2 p-1">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-medinex-teal to-medinex-deep flex items-center justify-center text-white shadow-md">
@@ -57,8 +58,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <Card className="shadow-subtle">
-          <CardBody className="p-6 sm:p-8 space-y-5">
+        <Card className="shadow-card border-medinex-border">
+          <CardBody className="p-5 sm:p-8 space-y-5">
             {errorMessage && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />

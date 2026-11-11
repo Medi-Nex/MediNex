@@ -192,23 +192,23 @@ export default function PublicUserProfilePage() {
   const followingCount = followStats?.followingCount ?? 0;
 
   return (
-    <div className="min-h-screen bg-medinex-light pb-20">
+    <div className="min-h-screen bg-medinex-light pb-24 md:pb-20">
       {/* Top Breadcrumb Bar */}
-      <div className="bg-white border-b border-medinex-border py-4">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      <div className="sticky top-16 z-30 bg-white/90 backdrop-blur-md border-b border-medinex-border py-3 sm:py-3.5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <Link
             href="/community"
-            className="text-xs font-semibold text-medinex-teal hover:underline inline-flex items-center gap-1.5"
+            className="text-xs font-semibold text-medinex-teal hover:underline inline-flex items-center gap-1.5 min-h-[36px] py-1"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 shrink-0" />
             <span>Back to Community</span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {profile.isTeamMember && (
               <Link
                 href={`/team/${encodeURIComponent(profile.username)}`}
-                className="text-xs font-medium text-slate-500 hover:text-medinex-teal"
+                className="text-xs font-medium text-slate-600 hover:text-medinex-teal min-h-[36px] inline-flex items-center px-2"
               >
                 Team Spotlight
               </Link>
@@ -217,11 +217,12 @@ export default function PublicUserProfilePage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 sm:mt-8 space-y-5 sm:space-y-6">
         {/* Profile Hero Card */}
         <div className="bg-white rounded-2xl border border-medinex-border shadow-card overflow-hidden">
-          <div className="h-32 sm:h-44 bg-gradient-to-r from-medinex-dark via-medinex-deep to-medinex-teal relative">
-            <div className="absolute top-4 right-4 flex flex-wrap gap-2">
+          <div className="h-28 sm:h-44 bg-gradient-to-br from-medinex-dark via-medinex-deep to-medinex-teal bg-hero-mesh relative overflow-hidden">
+            <div className="absolute inset-0 bg-dot-matrix opacity-20 pointer-events-none" />
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-wrap justify-end gap-1.5 sm:gap-2">
               {profile.isTeamMember && (
                 <Badge variant="mint" size="sm">
                   MediNex Squad Contributor
@@ -235,8 +236,8 @@ export default function PublicUserProfilePage() {
             </div>
           </div>
 
-          <div className="px-6 sm:px-8 pb-8 relative">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-14 sm:-mt-16 gap-4 mb-6">
+          <div className="px-4 sm:px-8 pb-6 sm:pb-8 relative">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-12 sm:-mt-16 gap-3.5 sm:gap-4 mb-5 sm:mb-6">
               <div className="p-1.5 bg-white rounded-2xl shadow-lg border border-medinex-border inline-flex w-fit">
                 <UserAvatar
                   src={profile.avatarUrl}

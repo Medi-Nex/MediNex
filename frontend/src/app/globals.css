@@ -7,12 +7,50 @@
   --foreground: #12201E;
 }
 
+html,
 body {
   color: var(--foreground);
   background-color: var(--background);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+
+/* Prevent iOS Safari automatic zoom-on-focus for inputs under 16px on phones */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+@layer utilities {
+  .bg-hero-mesh {
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(13, 148, 136, 0.22) 0%, transparent 45%),
+      radial-gradient(circle at 85% 22%, rgba(94, 234, 212, 0.14) 0%, transparent 40%),
+      radial-gradient(circle at 50% 95%, rgba(6, 61, 56, 0.45) 0%, transparent 50%);
+  }
+
+  .bg-dot-matrix {
+    background-image: radial-gradient(rgba(94, 234, 212, 0.14) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Accessible focus outlines */

@@ -55,7 +55,7 @@ test.describe("MediNex Live Stack Read-Only Verification", () => {
     // Team page clickable navigation
     await page.goto("/team");
     await expect(
-      page.getByRole("heading", { name: "The Six Profiles" })
+      page.getByRole("heading", { name: "Profiles" })
     ).toBeVisible();
     const firstTeamCardLink = page.locator('a[href^="/team/"]').first();
     await expect(firstTeamCardLink).toBeVisible();

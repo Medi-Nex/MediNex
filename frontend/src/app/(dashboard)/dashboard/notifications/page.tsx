@@ -103,14 +103,15 @@ export default function DashboardNotificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-medinex-light pb-24 md:pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#12201E] tracking-tight">
             Notifications
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-sm sm:text-base text-slate-500 mt-1">
             Stay informed on follower activity, project interactions, and official announcements.
           </p>
         </div>
@@ -119,7 +120,7 @@ export default function DashboardNotificationsPage() {
           <button
             onClick={handleMarkAllRead}
             disabled={markingAll}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all self-start sm:self-auto disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[38px] text-xs font-semibold rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition-all self-start sm:self-auto disabled:opacity-50 shadow-xs"
           >
             {markingAll ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -202,6 +203,7 @@ export default function DashboardNotificationsPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -64,14 +64,15 @@ export default function ProjectsDirectoryPage() {
   return (
     <div className="flex flex-col min-h-screen bg-medinex-light pb-20">
       {/* Dark Hero */}
-      <section className="bg-medinex-dark text-white py-16 border-b border-emerald-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl space-y-4">
+      <section className="relative bg-medinex-dark bg-hero-mesh text-white py-12 sm:py-16 border-b border-emerald-950 overflow-hidden">
+        <div className="absolute inset-0 bg-dot-matrix opacity-30 pointer-events-none" aria-hidden="true" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-3xl space-y-3 sm:space-y-4">
             <Badge variant="mint">R&amp;D Directory</Badge>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
               MediNex Innovation Projects
             </h1>
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
+            <p className="text-slate-300 text-sm sm:text-lg leading-relaxed">
               Explore healthcare technology initiatives, interoperable health-record prototypes, and research
               explorations built by the MediNex team. Every project is transparently mapped to its actual
               implementation maturity stage.
@@ -81,16 +82,16 @@ export default function ProjectsDirectoryPage() {
       </section>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10 space-y-6 sm:space-y-8 w-full">
         {/* Filters and Search Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white border border-medinex-border rounded-xl shadow-subtle">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-4 bg-white border border-medinex-border rounded-2xl shadow-subtle">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5 md:pb-0">
             {STAGES.map((s) => (
               <button
                 key={s.value}
                 type="button"
                 onClick={() => setSelectedStage(s.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                   selectedStage === s.value
                     ? "bg-medinex-teal text-white shadow-sm"
                     : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -101,14 +102,14 @@ export default function ProjectsDirectoryPage() {
             ))}
           </div>
 
-          <div className="relative md:w-64">
+          <div className="relative w-full md:w-64">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal"
+              className="w-full text-sm sm:text-xs pl-9 pr-3 py-2.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-medinex-teal"
             />
           </div>
         </div>

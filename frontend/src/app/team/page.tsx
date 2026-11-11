@@ -7,7 +7,6 @@ import {
   ArrowRight,
   UserCheck,
   UserPlus,
-  Info,
   Globe,
   Mail,
   BookOpen,
@@ -67,26 +66,17 @@ export default function TeamPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Dark Hero Banner */}
-      <section className="bg-medinex-dark text-white py-16 border-b border-emerald-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-medinex-dark bg-hero-mesh text-white py-12 sm:py-16 border-b border-emerald-950 overflow-hidden">
+        <div className="absolute inset-0 bg-dot-matrix opacity-30 pointer-events-none" aria-hidden="true" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl space-y-4">
-            <Badge variant="mint">Six-Contributor Squad</Badge>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
               MediNex Innovation Contributors
             </h1>
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
-              Meet the six interdisciplinary engineers and researchers building the MediNex platform
+            <p className="text-slate-300 text-sm sm:text-lg leading-relaxed">
+              Meet the interdisciplinary engineers and researchers building the MediNex platform
               and ShasthoSetu for E-Health Hackathon 2026.
             </p>
-
-            <div className="flex items-center gap-2 p-3 bg-emerald-950/70 border border-emerald-900 rounded-lg text-xs text-slate-300">
-              <Info className="w-4 h-4 text-medinex-mint shrink-0" />
-              <span>
-                <strong>Verified Placeholder Notice:</strong> Contributor names, universities, and
-                credentials are preserved as structured placeholders until each team member submits
-                their verified profile info. No fake credentials or awards are invented.
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -148,7 +138,7 @@ export default function TeamPage() {
           {/* Controls Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-medinex-border">
             <div>
-              <h2 className="text-xl font-bold text-medinex-text">The Six Profiles</h2>
+              <h2 className="text-xl font-bold text-medinex-text">Profiles</h2>
               <p className="text-xs text-medinex-muted">Click any member to view full details or edit in-place</p>
             </div>
 
@@ -184,12 +174,12 @@ export default function TeamPage() {
               <Card key={member.id} hoverEffect className="flex flex-col justify-between">
                 <CardBody className="space-y-4">
                   {/* Top Bar with Avatar and Badge */}
-                  <div className="flex flex-col items-start gap-4">
+                  <div className="flex flex-col items-start gap-3.5">
                     <Link
                       href={`/team/${member.username}`}
-                      className="w-full aspect-[4/4] md:aspect-[4/4.5] rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block group"
+                      className="w-full aspect-[16/10] sm:aspect-[4/4.2] rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/50 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block group"
                     >
-                      <span className="absolute inset-0 flex items-center justify-center font-bold text-6xl text-slate-300 z-0">
+                      <span className="absolute inset-0 flex items-center justify-center font-bold text-5xl sm:text-6xl text-slate-300 z-0">
                         {member.username.replace("contributor-", "C")}
                       </span>
                       {member.avatarLgUrl || member.avatarUrl ? (
@@ -197,20 +187,31 @@ export default function TeamPage() {
                         <img
                           src={resolveMediaUrl(member.avatarLgUrl || member.avatarUrl)!}
                           alt={member.fullName}
-                          className="w-full h-full object-cover object-top relative z-10 group-hover:scale-[1.02] transition-transform"
+                          className="w-full h-full object-cover object-top relative z-10 group-hover:scale-[1.03] transition-transform duration-300"
                         />
                       ) : (
                         <Image
-                          src={`/images/team/${member.username}.jpg`} // আপনার ছবিগুলো .jpg নাকি .png তা খেয়াল করে এক্সটেনশন পাল্টাবেন
+                          src={`/images/team/${member.username}.jpg`}
                           alt={member.fullName}
                           fill
-                          className="object-cover object-top relative z-10 group-hover:scale-[1.02] transition-transform"
+                          className="object-cover object-top relative z-10 group-hover:scale-[1.03] transition-transform duration-300"
                           onError={(e) => {
-                            // যদি ছবি না পাওয়া যায়, তবে এই বক্সে ইনিশিয়াল (C01) দেখাবে
-                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.style.display = "none";
                           }}
                         />
                       )}
+                      <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5">
+                        {member.isLead && (
+                          <Badge variant="teal" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
+                            Team Lead
+                          </Badge>
+                        )}
+                        {member.isPlaceholder && (
+                          <Badge variant="placeholder" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
+                            Verified Placeholder
+                          </Badge>
+                        )}
+                      </div>
                     </Link>
 
                     <div className="flex items-start justify-between w-full">
@@ -223,26 +224,12 @@ export default function TeamPage() {
                         </Link>
                         <Link
                           href={`/team/${member.username}`}
-                          className="text-xs text-medinex-teal font-medium mt-0.5 hover:underline block"
+                          className="text-xs text-medinex-teal font-medium mt-0.5 hover:underline block font-mono"
                         >
                           @{member.username}
                         </Link>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {member.isLead && (
-                      <Badge variant="teal" size="sm">
-                        Team Lead
-                      </Badge>
-                    )}
-                    {member.isPlaceholder && (
-                      <Badge variant="placeholder" size="sm">
-                        Verified Placeholder
-                      </Badge>
-                    )}
                   </div>
 
                   {/* Role & Org */}

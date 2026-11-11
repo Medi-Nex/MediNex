@@ -28,82 +28,85 @@ export default function HomePage() {
       {/* ---------------------------------------------------------------------- */}
       {/* 1. DARK HERO SECTION (Hybrid Design: #071A18 + #063D38) */}
       {/* ---------------------------------------------------------------------- */}
-      <section className="relative bg-medinex-dark text-white overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32 border-b border-emerald-950">
-        {/* Subtle background glow effect (no excessive glassmorphism) */}
+      <section className="relative bg-medinex-dark bg-hero-mesh text-white overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 md:pt-24 md:pb-28 border-b border-emerald-950">
+        {/* Atmospheric engineering dot matrix & subtle glow */}
+        <div className="absolute inset-0 bg-dot-matrix opacity-40 pointer-events-none" aria-hidden="true" />
         <div
-          className="absolute -top-40 -right-40 w-96 h-96 bg-medinex-teal/15 rounded-full blur-3xl pointer-events-none"
+          className="absolute -top-40 -right-40 w-96 h-96 bg-medinex-teal/20 rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
         <div
-          className="absolute top-1/2 -left-40 w-96 h-96 bg-medinex-deep/30 rounded-full blur-3xl pointer-events-none"
+          className="absolute top-1/2 -left-40 w-96 h-96 bg-medinex-deep/40 rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/80 border border-medinex-teal/30 text-xs font-medium text-medinex-mint mb-6">
-              <span className="w-2 h-2 rounded-full bg-medinex-mint" />
-              <span>MediNex &mdash; Healthcare Innovation &amp; Technology Platform</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-medinex-mint/25 text-[11px] sm:text-xs font-medium text-medinex-mint mb-5 sm:mb-6 shadow-glow">
+              <span className="w-2 h-2 rounded-full bg-medinex-mint animate-pulse shrink-0" />
+              <span className="truncate">MediNex &mdash; Healthcare Innovation Platform</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white">
+            <h1 className="text-[2rem] leading-[1.12] sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
               Building the Future of Healthcare Through{" "}
-              <span className="bg-gradient-to-r from-medinex-mint to-medinex-teal bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-medinex-mint via-teal-200 to-medinex-teal bg-clip-text text-transparent">
                 Technology.
               </span>
             </h1>
 
             {/* Tagline / Subtitle */}
-            <p className="mt-6 text-lg sm:text-xl text-slate-300 leading-relaxed font-normal">
+            <p className="mt-4 sm:mt-6 text-base sm:text-xl text-slate-300 leading-relaxed font-normal max-w-2xl">
               A collaborative space for developers, researchers, and innovators working to solve
               real-world healthcare challenges through technology.
             </p>
 
             {/* Action Buttons */}
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/projects">
-                <Button variant="primary" size="lg" className="group">
+            <div className="mt-7 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
+              <Link href="/projects" className="w-full sm:w-auto">
+                <Button variant="primary" size="lg" className="w-full sm:w-auto group shadow-glow">
                   <span>Explore Projects</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
 
-              <Link href="/community">
-                <Button variant="dark" size="lg" className="border-emerald-800 text-slate-200">
-                  <span>Join Our Community</span>
-                </Button>
-              </Link>
+              <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-4 w-full sm:w-auto">
+                <Link href="/community" className="w-full sm:w-auto">
+                  <Button variant="dark" size="lg" className="w-full sm:w-auto border-emerald-800/90 text-slate-100 text-sm sm:text-base px-4 sm:px-6">
+                    <span>Community Feed</span>
+                  </Button>
+                </Link>
 
-              <Link href="/team">
-                <Button variant="ghost" size="lg" className="text-slate-300 hover:text-white hover:bg-white/10">
-                  Meet the Contributors
-                </Button>
-              </Link>
+                <Link href="/team" className="w-full sm:w-auto">
+                  <Button variant="ghost" size="lg" className="w-full sm:w-auto text-slate-200 border border-white/15 bg-white/5 hover:text-white hover:bg-white/10 text-sm sm:text-base px-4 sm:px-6">
+                    Contributors
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
 
-          {/* Honest Platform Overview Bar (Zero Fabricated Vanity Stats) */}
-          <div className="mt-16 pt-8 border-t border-emerald-950/80 grid grid-cols-2 sm:grid-cols-4 gap-6 text-left">
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">07</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Focus Areas</div>
-              <div className="text-[11px] text-medinex-mint">Health Tech &amp; Research</div>
+          {/* Honest Platform Overview Bar (Bento Glass Tiles on Phone + Desktop) */}
+          <div className="mt-10 sm:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-left">
+            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">07</div>
+              <div className="text-[11px] sm:text-xs text-slate-300 uppercase tracking-wider mt-1 font-semibold">Focus Areas</div>
+              <div className="text-[11px] text-medinex-mint mt-0.5">Health Tech &amp; Research</div>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-medinex-mint tracking-tight">01</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Featured Initiative</div>
-              <div className="text-[11px] text-slate-400">ShasthoSetu (Prototype Stage)</div>
+            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
+              <div className="text-2xl sm:text-3xl font-extrabold text-medinex-mint tracking-tight">01</div>
+              <div className="text-[11px] sm:text-xs text-slate-300 uppercase tracking-wider mt-1 font-semibold">Featured Initiative</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">ShasthoSetu (Prototype)</div>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">6</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Core Contributors</div>
-              <div className="text-[11px] text-medinex-mint">Engineers &amp; Researchers</div>
+            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">06</div>
+              <div className="text-[11px] sm:text-xs text-slate-300 uppercase tracking-wider mt-1 font-semibold">Core Contributors</div>
+              <div className="text-[11px] text-medinex-mint mt-0.5">Engineers &amp; Researchers</div>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">100%</div>
-              <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Data Segregation</div>
-              <div className="text-[11px] text-slate-400">Zero PHI in Social DB</div>
+            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">100%</div>
+              <div className="text-[11px] sm:text-xs text-slate-300 uppercase tracking-wider mt-1 font-semibold">Data Segregation</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Zero PHI in Social DB</div>
             </div>
           </div>
         </div>
@@ -247,10 +250,11 @@ export default function HomePage() {
       {/* ---------------------------------------------------------------------- */}
       {/* 3. FEATURED PROJECT: SHASTHOSETU SPOTLIGHT */}
       {/* ---------------------------------------------------------------------- */}
-      <section className="py-20 bg-white border-b border-medinex-border">
+      <section className="py-14 sm:py-20 bg-white border-b border-medinex-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-medinex-dark to-medinex-deep rounded-2xl text-white p-8 sm:p-12 shadow-elevated relative overflow-hidden">
-            <div className="max-w-3xl relative z-10 space-y-6">
+          <div className="bg-medinex-dark bg-hero-mesh rounded-3xl text-white p-6 sm:p-10 lg:p-12 shadow-premium ring-1 ring-white/10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-dot-matrix opacity-25 pointer-events-none" aria-hidden="true" />
+            <div className="max-w-3xl relative z-10 space-y-5 sm:space-y-6">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="mint" className="bg-emerald-950/90 text-medinex-mint border-medinex-mint/40 font-semibold">
                   Featured Project &bull; Health Record Interoperability
@@ -260,26 +264,26 @@ export default function HomePage() {
                 </Badge>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
                 ShasthoSetu (স্বাস্থ্যসেতু)
               </h2>
 
-              <p className="text-slate-200 text-base sm:text-lg leading-relaxed">
+              <p className="text-slate-200 text-sm sm:text-lg leading-relaxed">
                 An Interoperable Digital Health Record &amp; Exchange Platform initiative exploring how
                 standardized health data schemas, HL7 FHIR alignment, patient consent management, and
                 secure API access can bridge fragmented health records.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="flex items-start gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
+                <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
                   <Network className="w-5 h-5 text-medinex-mint shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">
+                  <span className="text-xs sm:text-sm text-slate-200">
                     HL7 FHIR compatibility research &amp; standardized health data exchange workflows.
                   </span>
                 </div>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
                   <ShieldCheck className="w-5 h-5 text-medinex-mint shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">
+                  <span className="text-xs sm:text-sm text-slate-200">
                     Patient identity mapping, consent controls, RBAC &amp; access audit log concepts.
                   </span>
                 </div>
@@ -290,7 +294,7 @@ export default function HomePage() {
                   (tech) => (
                     <span
                       key={tech}
-                      className="px-2.5 py-1 rounded-md bg-white/10 border border-white/15 text-xs text-slate-200"
+                      className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs text-slate-200 font-medium"
                     >
                       {tech}
                     </span>
@@ -298,14 +302,14 @@ export default function HomePage() {
                 )}
               </div>
 
-              <div className="pt-3 flex flex-wrap gap-4">
-                <Link href="/projects/shasthosetu">
-                  <Button variant="primary" size="md">
+              <div className="pt-2 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+                <Link href="/projects/shasthosetu" className="w-full sm:w-auto">
+                  <Button variant="primary" size="md" className="w-full sm:w-auto">
                     Explore ShasthoSetu Architecture
                   </Button>
                 </Link>
-                <Link href="/projects">
-                  <Button variant="dark" size="md" className="border-emerald-800">
+                <Link href="/projects" className="w-full sm:w-auto">
+                  <Button variant="dark" size="md" className="w-full sm:w-auto border-emerald-800">
                     Browse All Projects
                   </Button>
                 </Link>
@@ -357,14 +361,16 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {INITIAL_TEAM_MEMBERS.map((member) => (
-              <Card key={member.id} hoverEffect className="flex flex-col justify-between">
+              <Card key={member.id} hoverEffect className="flex flex-col justify-between group">
                 <CardBody className="space-y-4">
-                  <div className="flex flex-col items-start gap-4">
-                    {/* বড় ছবির জায়গা */}
-                    <div className="w-full aspect-[4/4] md:aspect-[4/4.5] rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative">
-                      <span className="absolute inset-0 flex items-center justify-center font-bold text-6xl text-slate-300 z-0">
+                  <div className="flex flex-col items-start gap-3.5">
+                    <Link
+                      href={`/team/${member.username}`}
+                      className="w-full aspect-[16/10] sm:aspect-[4/4.2] rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/60 border border-slate-200/90 flex items-center justify-center font-bold text-4xl text-slate-300 shadow-inner overflow-hidden relative block"
+                    >
+                      <span className="absolute inset-0 flex items-center justify-center font-bold text-5xl sm:text-6xl text-slate-300/90 z-0">
                         {member.username.replace("contributor-", "C")}
                       </span>
 
@@ -372,37 +378,42 @@ export default function HomePage() {
                         src={`/images/team/${member.username}.jpg`}
                         alt={member.fullName}
                         fill
-                        className="object-cover object-top relative z-10"
+                        className="object-cover object-top relative z-10 group-hover:scale-[1.03] transition-transform duration-300"
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.style.display = "none";
                         }}
                       />
-                    </div>
+
+                      <div className="absolute top-2.5 left-2.5 z-20 flex flex-wrap gap-1.5">
+                        {member.isLead && (
+                          <Badge variant="teal" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
+                            Team Lead
+                          </Badge>
+                        )}
+                        {member.isPlaceholder && (
+                          <Badge variant="placeholder" size="sm" className="bg-white/95 backdrop-blur-sm shadow-sm">
+                            Verified Placeholder
+                          </Badge>
+                        )}
+                      </div>
+                    </Link>
 
                     <div className="flex items-start justify-between w-full">
                       <div>
-                        <h3 className="font-bold text-base text-medinex-text leading-tight">
+                        <Link
+                          href={`/team/${member.username}`}
+                          className="font-bold text-base text-medinex-text leading-tight hover:text-medinex-teal transition-colors block"
+                        >
                           {member.fullName}
-                        </h3>
-                        <p className="text-xs text-medinex-teal font-medium mt-0.5">
+                        </Link>
+                        <Link
+                          href={`/team/${member.username}`}
+                          className="text-xs text-medinex-teal font-medium mt-0.5 hover:underline block font-mono"
+                        >
                           @{member.username}
-                        </p>
+                        </Link>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {member.isLead && (
-                      <Badge variant="teal" size="sm">
-                        Team Lead
-                      </Badge>
-                    )}
-                    {member.isPlaceholder && (
-                      <Badge variant="placeholder" size="sm">
-                        Verified Placeholder
-                      </Badge>
-                    )}
                   </div>
 
                   {/* Role & Org */}

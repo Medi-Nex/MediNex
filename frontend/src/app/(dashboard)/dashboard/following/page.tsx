@@ -108,22 +108,23 @@ export default function DashboardFollowingPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-screen bg-medinex-light pb-24 md:pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#12201E] tracking-tight">
           Following & Network
         </h1>
-        <p className="text-slate-500 mt-1">
+        <p className="text-sm sm:text-base text-slate-500 mt-1">
           Manage your connections with the official MediNex team and health innovators.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-2 sm:gap-6">
+      <div className="flex border-b border-slate-200 gap-4 sm:gap-6 overflow-x-auto no-scrollbar whitespace-nowrap">
         <button
           onClick={() => setActiveTab("team")}
-          className={`pb-3 text-sm font-semibold transition-all flex items-center gap-2 border-b-2 ${
+          className={`shrink-0 pb-3 px-0.5 text-sm font-semibold transition-all flex items-center gap-2 border-b-2 ${
             activeTab === "team"
               ? "border-[#0D9488] text-[#0D9488]"
               : "border-transparent text-slate-500 hover:text-slate-900"
@@ -140,7 +141,7 @@ export default function DashboardFollowingPage() {
 
         <button
           onClick={() => setActiveTab("users")}
-          className={`pb-3 text-sm font-semibold transition-all flex items-center gap-2 border-b-2 ${
+          className={`shrink-0 pb-3 px-0.5 text-sm font-semibold transition-all flex items-center gap-2 border-b-2 ${
             activeTab === "users"
               ? "border-[#0D9488] text-[#0D9488]"
               : "border-transparent text-slate-500 hover:text-slate-900"
@@ -155,7 +156,7 @@ export default function DashboardFollowingPage() {
 
         <button
           onClick={() => setActiveTab("requests")}
-          className={`pb-3 text-sm font-semibold transition-all flex items-center gap-2 border-b-2 ${
+          className={`shrink-0 pb-3 px-0.5 text-sm font-semibold transition-all flex items-center gap-2 border-b-2 ${
             activeTab === "requests"
               ? "border-[#0D9488] text-[#0D9488]"
               : "border-transparent text-slate-500 hover:text-slate-900"
@@ -173,17 +174,17 @@ export default function DashboardFollowingPage() {
 
       {/* Tab: Official Team */}
       {activeTab === "team" && (
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-8 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
           
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="flex items-start gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#063D38] to-[#0D9488] text-white flex items-center justify-center font-bold text-2xl shadow-md shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
+            <div className="flex items-start gap-4 sm:gap-5">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-[#063D38] to-[#0D9488] text-white flex items-center justify-center font-bold text-xl sm:text-2xl shadow-md shrink-0">
                 M
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-[#12201E]">MediNex Official Squad</h2>
+              <div className="space-y-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-[#12201E]">MediNex Official Squad</h2>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200/60">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#0D9488]" />
                     Official Account
@@ -192,8 +193,8 @@ export default function DashboardFollowingPage() {
                 <p className="text-sm text-slate-600 max-w-xl">
                   &ldquo;Connecting Technology, Research &amp; Healthcare Innovation.&rdquo; Multidisciplinary team collaborating on healthcare technology and ShasthoSetu.
                 </p>
-                <div className="flex items-center gap-4 pt-2 text-xs text-slate-500">
-                  <span className="font-semibold text-slate-900">{teamStats.followerCount}</span> Followers
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-2 text-xs text-slate-500">
+                  <span><span className="font-semibold text-slate-900">{teamStats.followerCount}</span> Followers</span>
                   <span>&bull;</span>
                   <span>6 Core Contributors</span>
                   <span>&bull;</span>
@@ -247,9 +248,9 @@ export default function DashboardFollowingPage() {
               {followedUsers.map((u) => (
                 <div
                   key={u.id}
-                  className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-start justify-between gap-4"
+                  className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-start justify-between gap-3.5 sm:gap-4"
                 >
-                  <div className="flex items-start gap-3.5">
+                  <div className="flex items-start gap-3.5 min-w-0">
                     <UserAvatar
                       src={u.avatarUrl}
                       smSrc={u.avatarSmUrl}
@@ -321,8 +322,8 @@ export default function DashboardFollowingPage() {
           ) : (
             <div className="bg-white border border-slate-200/80 rounded-2xl divide-y divide-slate-100 shadow-sm overflow-hidden">
               {followRequests.map((req) => (
-                <div key={req.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
+                <div key={req.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+                  <div className="flex items-center gap-3.5 min-w-0">
                     <UserAvatar
                       src={req.requester.avatarUrl}
                       smSrc={req.requester.avatarSmUrl}
@@ -384,6 +385,7 @@ export default function DashboardFollowingPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

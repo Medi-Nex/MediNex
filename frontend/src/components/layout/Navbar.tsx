@@ -49,6 +49,21 @@ export default function Navbar() {
     setIsOpen(false);
   }, [pathname]);
 
+  // Lock body scroll and close drawer on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+
   const isDarkHero = pathname === "/" || pathname === "/about";
 
   return (
@@ -57,10 +72,10 @@ export default function Navbar() {
         className={clsx(
           "sticky top-0 z-40 transition-all duration-200 border-b",
           scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-sm border-medinex-border text-medinex-text"
+            ? "bg-white/92 backdrop-blur-lg shadow-sm border-medinex-border text-medinex-text"
             : isDarkHero
-            ? "bg-medinex-dark/95 backdrop-blur-md border-emerald-950 text-white"
-            : "bg-white border-medinex-border text-medinex-text"
+            ? "bg-medinex-dark/92 backdrop-blur-lg border-emerald-950/90 text-white"
+            : "bg-white/95 backdrop-blur-md border-medinex-border text-medinex-text"
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,23 +83,23 @@ export default function Navbar() {
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-medinex-teal rounded-lg p-1"
+              className="flex items-center gap-2 shrink-0 focus:outline-none focus:ring-2 focus:ring-medinex-teal rounded-lg p-1"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-medinex-teal to-medinex-deep flex items-center justify-center text-white shadow-md">
-                <Activity className="w-6 h-6 text-medinex-mint" />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-medinex-teal to-medinex-deep flex items-center justify-center text-white shadow-md">
+                <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-medinex-mint" />
               </div>
               <div>
-                <span className={clsx("font-bold text-xl tracking-tight", isDarkHero && !scrolled ? "text-white" : "text-medinex-text")}>
+                <span className={clsx("font-bold text-lg sm:text-xl tracking-tight", isDarkHero && !scrolled ? "text-white" : "text-medinex-text")}>
                   Medi<span className="text-medinex-teal">Nex</span>
                 </span>
-                <span className="block text-[10px] tracking-wider uppercase text-medinex-muted -mt-1 font-semibold">
+                <span className="hidden xl:block text-[10px] tracking-wider uppercase text-medinex-muted -mt-1 font-semibold whitespace-nowrap">
                   Health Tech Platform
                 </span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1" aria-label="Main Navigation">
+            <nav className="hidden lg:flex items-center space-x-0.5 shrink-0" aria-label="Main Navigation">
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
                 return (
@@ -92,7 +107,7 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     className={clsx(
-                      "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                      "px-1.5 xl:px-2 py-1.5 rounded-lg text-[13px] font-medium transition-colors whitespace-nowrap",
                       isActive
                         ? "text-medinex-teal bg-medinex-teal/10 font-semibold"
                         : isDarkHero && !scrolled
@@ -107,13 +122,13 @@ export default function Navbar() {
             </nav>
 
             {/* Desktop Action Buttons / Auth State */}
-            <div className="hidden md:flex items-center space-x-2">
+            <div className="hidden md:flex items-center gap-1 xl:gap-1.5 shrink-0">
               {isAuthenticated && user ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-1 xl:gap-1.5">
                   <Link
                     href="/dashboard/notifications"
                     className={clsx(
-                      "relative p-2 rounded-lg transition-colors",
+                      "relative p-1.5 rounded-lg transition-colors",
                       isDarkHero && !scrolled
                         ? "text-slate-300 hover:text-white hover:bg-white/10"
                         : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
@@ -130,7 +145,7 @@ export default function Navbar() {
                   <Link
                     href="/dashboard/following"
                     className={clsx(
-                      "p-2 rounded-lg transition-colors",
+                      "p-1.5 rounded-lg transition-colors",
                       isDarkHero && !scrolled
                         ? "text-slate-300 hover:text-white hover:bg-white/10"
                         : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
@@ -144,7 +159,7 @@ export default function Navbar() {
                   <Link
                     href="/dashboard/settings"
                     className={clsx(
-                      "p-2 rounded-lg transition-colors",
+                      "p-1.5 rounded-lg transition-colors",
                       isDarkHero && !scrolled
                         ? "text-slate-300 hover:text-white hover:bg-white/10"
                         : "text-slate-600 hover:text-[#0D9488] hover:bg-slate-100"
@@ -157,7 +172,7 @@ export default function Navbar() {
 
                   {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN" || r === "ROLE_MODERATOR") && (
                     <Link href="/admin">
-                      <Button variant="primary" size="sm" className="inline-flex items-center gap-1.5 text-xs">
+                      <Button variant="primary" size="sm" className="inline-flex items-center gap-1 text-xs !px-2.5 !min-h-[34px] whitespace-nowrap">
                         <ShieldAlert className="w-3.5 h-3.5" />
                         <span>
                           {user.roles.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") ? "Admin" : "Moderation"}
@@ -169,12 +184,13 @@ export default function Navbar() {
                   <Link
                     href={`/users/${encodeURIComponent(user.username)}`}
                     className={clsx(
-                      "inline-flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full border transition-colors",
+                      "inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-full border transition-colors shrink-0",
                       isDarkHero && !scrolled
                         ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
                         : "border-medinex-border bg-slate-50 text-medinex-text hover:border-medinex-teal/60"
                     )}
                     title={`View @${user.username} public profile`}
+                    aria-label={`View @${user.username} public profile`}
                   >
                     <UserAvatar
                       src={user.avatarUrl}
@@ -184,13 +200,13 @@ export default function Navbar() {
                       size="sm"
                       className="border-0 shadow-none"
                     />
-                    <span className="text-xs font-semibold max-w-[110px] truncate">
+                    <span className="text-xs font-semibold max-w-[78px] truncate">
                       {user.username}
                     </span>
                   </Link>
 
                   <Link href="/dashboard">
-                    <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5">
+                    <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5 !px-2.5 !min-h-[34px] whitespace-nowrap">
                       <LayoutDashboard className="w-3.5 h-3.5 text-medinex-teal" />
                       <span>Dashboard</span>
                     </Button>
@@ -200,7 +216,7 @@ export default function Navbar() {
                     size="sm"
                     onClick={() => logout()}
                     className={clsx(
-                      "inline-flex items-center gap-1.5",
+                      "inline-flex items-center gap-1.5 !px-2.5 !min-h-[34px] whitespace-nowrap",
                       isDarkHero && !scrolled && "text-slate-300 hover:text-white hover:bg-white/10"
                     )}
                   >
@@ -228,126 +244,242 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="flex md:hidden">
+            {/* Mobile Quick Controls & Menu Button */}
+            <div className="flex md:hidden items-center gap-1.5">
+              {isAuthenticated && user ? (
+                <>
+                  <Link
+                    href="/dashboard/notifications"
+                    className={clsx(
+                      "relative min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl transition-colors",
+                      isDarkHero && !scrolled
+                        ? "text-slate-200 hover:text-white hover:bg-white/10"
+                        : "text-slate-600 hover:text-medinex-teal hover:bg-slate-100"
+                    )}
+                    aria-label="Notifications"
+                  >
+                    <Bell className="w-4 h-4" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-medinex-teal ring-2 ring-white" />
+                    )}
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className={clsx(
+                      "inline-flex items-center justify-center rounded-full p-0.5 border transition-colors",
+                      isDarkHero && !scrolled
+                        ? "border-white/25 bg-white/10"
+                        : "border-medinex-border bg-slate-50"
+                    )}
+                    aria-label="Open Dashboard"
+                  >
+                    <UserAvatar
+                      src={user.avatarUrl}
+                      smSrc={user.avatarSmUrl}
+                      fullName={user.fullName}
+                      username={user.username}
+                      size="sm"
+                      className="border-0 shadow-none"
+                    />
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href="/register"
+                  className={clsx(
+                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors",
+                    isDarkHero && !scrolled
+                      ? "bg-medinex-teal text-white hover:bg-medinex-teal-hover"
+                      : "bg-medinex-teal text-white hover:bg-medinex-teal-hover"
+                  )}
+                >
+                  Join
+                </Link>
+              )}
+
               <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className={clsx(
-                  "p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-medinex-teal",
+                  "min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl focus:outline-none focus:ring-2 focus:ring-medinex-teal transition-colors",
                   isDarkHero && !scrolled
-                    ? "text-slate-300 hover:text-white hover:bg-white/10"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "text-slate-200 hover:text-white hover:bg-white/10 bg-white/5 border border-white/10"
+                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 bg-slate-50 border border-slate-200/80"
                 )}
                 aria-label={isOpen ? "Close main menu" : "Open main menu"}
                 aria-expanded={isOpen}
               >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Navigation Drawer */}
-        {isOpen && (
-          <div className="md:hidden border-t border-medinex-border/40 bg-white text-medinex-text shadow-xl">
-            <div className="px-4 pt-3 pb-6 space-y-2">
-              <div className="flex items-center gap-2 px-3 py-2 text-xs text-medinex-muted bg-slate-50 rounded-md">
-                <ShieldCheck className="w-4 h-4 text-medinex-teal" />
-                <span>Strict Healthcare Data Separation</span>
-              </div>
-              <div className="space-y-1 pt-2">
-                {NAV_LINKS.map((link) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={clsx(
-                        "flex items-center justify-between px-3 py-2.5 rounded-lg text-base font-medium",
-                        isActive
-                          ? "bg-medinex-teal/10 text-medinex-teal font-semibold"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-medinex-teal"
-                      )}
-                    >
-                      <span>{link.label}</span>
-                      <ChevronRight className="w-4 h-4 opacity-50" />
-                    </Link>
-                  );
-                })}
+      {/* Slide-Over Mobile Drawer */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="fixed inset-0 bg-medinex-dark/65 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+
+          <aside
+            aria-label="Mobile Navigation Drawer"
+            className="fixed inset-y-0 right-0 w-[86vw] max-w-sm bg-white text-medinex-text shadow-2xl border-l border-medinex-border flex flex-col justify-between overflow-y-auto pb-safe"
+          >
+            <div>
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between px-4 h-16 border-b border-medinex-border/80 bg-medinex-light/60">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-medinex-teal to-medinex-deep flex items-center justify-center text-white shadow-sm">
+                    <Activity className="w-4 h-4 text-medinex-mint" />
+                  </div>
+                  <span className="font-bold text-lg tracking-tight text-medinex-text">
+                    Medi<span className="text-medinex-teal">Nex</span>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  aria-label="Close main menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
-                {isAuthenticated && user ? (
-                  <div className="space-y-2">
+              <div className="p-4 space-y-4">
+                <div className="flex items-center gap-2 px-3 py-2 text-xs text-teal-900 bg-teal-50/80 border border-teal-200/70 rounded-xl">
+                  <ShieldCheck className="w-4 h-4 text-medinex-teal shrink-0" />
+                  <span className="font-medium">Zero-PHI Community Infrastructure</span>
+                </div>
+
+                {isAuthenticated && user && (
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
                     <Link
                       href={`/users/${encodeURIComponent(user.username)}`}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200"
+                      className="flex items-center gap-3"
                     >
                       <UserAvatar
                         src={user.avatarUrl}
                         smSrc={user.avatarSmUrl}
                         fullName={user.fullName}
                         username={user.username}
-                        size="sm"
+                        size="md"
                       />
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-900 truncate">{user.fullName}</p>
-                        <p className="text-[11px] font-mono text-medinex-teal truncate">@{user.username}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-slate-900 truncate">{user.fullName}</p>
+                        <p className="text-xs font-mono text-medinex-teal truncate">@{user.username}</p>
                       </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                     </Link>
-                    <div className="grid grid-cols-2 gap-2 pb-2">
+
+                    <div className="grid grid-cols-3 gap-2">
                       <Link
                         href="/dashboard/notifications"
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700"
+                        className="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-medinex-teal/50"
                       >
-                        <Bell className="w-3.5 h-3.5 text-teal-600" />
-                        <span>Alerts ({unreadNotifications})</span>
+                        <Bell className="w-4 h-4 text-teal-600" />
+                        <span>Alerts{unreadNotifications > 0 ? ` (${unreadNotifications})` : ""}</span>
                       </Link>
                       <Link
                         href="/dashboard/following"
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700"
+                        className="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-medinex-teal/50"
                       >
-                        <Users className="w-3.5 h-3.5 text-teal-600" />
-                        <span>Following</span>
+                        <Users className="w-4 h-4 text-teal-600" />
+                        <span>Network</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/settings"
+                        className="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-medinex-teal/50"
+                      >
+                        <Settings className="w-4 h-4 text-teal-600" />
+                        <span>Settings</span>
                       </Link>
                     </div>
-                    {user.roles?.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN" || r === "ROLE_MODERATOR") && (
-                      <Link href="/admin" className="w-full block">
-                        <Button variant="primary" className="w-full">
-                          <ShieldAlert className="w-4 h-4 mr-1.5" />
-                          {user.roles.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN") ? "Admin Console" : "Moderation Console"}
-                        </Button>
-                      </Link>
-                    )}
-                    <Link href="/dashboard" className="w-full block">
-                      <Button variant="primary" className="w-full">
-                        Dashboard ({user.username})
-                      </Button>
-                    </Link>
-                    <Button variant="outline" className="w-full" onClick={() => logout()}>
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link href="/login" className="w-full">
-                      <Button variant="outline" className="w-full">
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link href="/register" className="w-full">
-                      <Button variant="primary" className="w-full">
-                        Join Community
-                      </Button>
-                    </Link>
                   </div>
                 )}
+
+                {/* Navigation List */}
+                <div className="space-y-1">
+                  {NAV_LINKS.map((link) => {
+                    const isActive =
+                      pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={clsx(
+                          "flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-medinex-teal/10 text-medinex-teal font-semibold"
+                            : "text-slate-700 hover:bg-slate-50 hover:text-medinex-teal"
+                        )}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span
+                            className={clsx(
+                              "w-1.5 h-1.5 rounded-full",
+                              isActive ? "bg-medinex-teal" : "bg-slate-300"
+                            )}
+                          />
+                          {link.label}
+                        </span>
+                        <ChevronRight className="w-4 h-4 opacity-50" />
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </header>
+
+            {/* Pinned Drawer Bottom Actions */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50/70 space-y-2.5">
+              {isAuthenticated && user ? (
+                <>
+                  {user.roles?.some(
+                    (r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN" || r === "ROLE_MODERATOR"
+                  ) && (
+                    <Link href="/admin" className="w-full block">
+                      <Button variant="dark" className="w-full justify-center">
+                        <ShieldAlert className="w-4 h-4 mr-1.5 text-medinex-mint" />
+                        {user.roles.some((r) => r === "ROLE_ADMIN" || r === "ROLE_SUPER_ADMIN")
+                          ? "Admin Console"
+                          : "Moderation Console"}
+                      </Button>
+                    </Link>
+                  )}
+                  <Link href="/dashboard" className="w-full block">
+                    <Button variant="primary" className="w-full">
+                      <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="w-full" onClick={() => logout()}>
+                    <LogOut className="w-4 h-4 mr-1.5" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Link href="/login" className="w-full">
+                    <Button variant="outline" className="w-full">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/register" className="w-full">
+                    <Button variant="primary" className="w-full">
+                      Join Community
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
     </>
   );
 }

@@ -183,16 +183,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-medinex-light flex flex-col">
       {/* Top Banner */}
-      <header className="bg-medinex-dark text-white border-b border-emerald-950 px-4 sm:px-8 py-3.5 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-medinex-mint">
-              <ShieldAlert className="w-5 h-5" />
+      <header className="bg-medinex-dark text-white border-b border-emerald-950 px-4 sm:px-8 py-3 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-medinex-mint shrink-0">
+              <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm tracking-tight">MediNex Admin Console</span>
-                <Badge variant="mint" className="text-[10px] py-0 px-1.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-bold text-xs sm:text-sm tracking-tight truncate">MediNex Admin Console</span>
+                <Badge variant="mint" className="text-[10px] py-0 px-1.5 shrink-0">
                   Privileged
                 </Badge>
               </div>
@@ -202,7 +202,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="hidden md:flex flex-col text-right">
               <span className="text-xs font-semibold text-slate-200">{user.fullName || user.username}</span>
               <span className="text-[10px] text-emerald-400">
@@ -214,9 +214,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </span>
             </div>
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm" className="text-xs text-slate-300 hover:text-white">
-                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Exit to User App
+              <Button variant="ghost" size="sm" className="text-xs text-slate-300 hover:text-white px-2.5 sm:px-3">
+                <ArrowLeft className="w-3.5 h-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">Exit to User App</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </Link>
           </div>
@@ -224,11 +225,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Admin Content with Sidebar */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col lg:flex-row gap-8">
-        {/* Navigation Sidebar */}
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8 flex-1 flex flex-col lg:flex-row gap-5 lg:gap-8">
+        {/* Navigation Sidebar (Horizontal rail on mobile/tablet, vertical sidebar on lg+) */}
         <aside className="w-full lg:w-64 shrink-0">
-          <nav className="bg-white rounded-2xl border border-medinex-border p-3 space-y-1 shadow-sm">
-            <div className="px-3 py-2 text-[11px] font-bold text-medinex-muted uppercase tracking-wider">
+          <nav className="bg-white rounded-2xl border border-medinex-border p-2 sm:p-3 shadow-sm flex lg:flex-col items-center lg:items-stretch gap-1.5 lg:gap-1 overflow-x-auto no-scrollbar lg:overflow-visible">
+            <div className="hidden lg:block px-3 py-2 text-[11px] font-bold text-medinex-muted uppercase tracking-wider">
               Console Modules
             </div>
             {navLinks.map((item) => {
@@ -240,20 +241,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`shrink-0 whitespace-nowrap lg:whitespace-normal flex items-center gap-2 lg:gap-3 px-3.5 py-2.5 min-h-[40px] rounded-xl text-xs font-semibold transition-all ${
                     isActive
                       ? "bg-medinex-teal text-white shadow-sm shadow-teal-700/20"
                       : "text-slate-600 hover:bg-emerald-50 hover:text-medinex-teal"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
                   <span>{item.name}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-4 p-4 rounded-2xl bg-emerald-950/5 border border-emerald-900/10 text-[11px] text-slate-600">
+          <div className="hidden lg:block mt-4 p-4 rounded-2xl bg-emerald-950/5 border border-emerald-900/10 text-[11px] text-slate-600">
             <div className="font-semibold text-medinex-text mb-1">Audit Guarantee</div>
             All actions executed in this console (role updates, status shifts, content moderation) are recorded to the immutable database audit trail.
           </div>

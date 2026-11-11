@@ -111,15 +111,15 @@ export default function AdminUsersPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search by name, handle, or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-1.5 text-xs rounded-xl border border-medinex-border bg-white text-medinex-text focus:outline-none focus:border-medinex-teal w-64"
+              className="pl-9 pr-3 py-2 sm:py-1.5 text-xs rounded-xl border border-medinex-border bg-white text-medinex-text focus:outline-none focus:border-medinex-teal w-full sm:w-64"
             />
           </div>
           <Button
@@ -269,8 +269,8 @@ export default function AdminUsersPage() {
 
       {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-medinex-border space-y-5 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full p-5 sm:p-6 pb-safe shadow-2xl border border-medinex-border space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-medinex-border">
               <div>
                 <h3 className="font-bold text-sm text-medinex-text">Modify User Account</h3>

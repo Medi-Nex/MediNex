@@ -13,10 +13,10 @@ export function Badge({
   children,
   ...props
 }: BadgeProps) {
-  const baseStyles = "inline-flex items-center font-medium rounded-full tracking-wide";
+  const baseStyles = "inline-flex items-center font-semibold rounded-full tracking-wide";
   const sizeStyles = {
-    sm: "px-2 py-0.5 text-xs",
-    md: "px-2.5 py-1 text-xs",
+    sm: "px-2.5 py-0.5 text-[11px]",
+    md: "px-3 py-1 text-xs",
   };
   const variantStyles = {
     teal: "bg-medinex-teal/10 text-medinex-teal border border-medinex-teal/20",

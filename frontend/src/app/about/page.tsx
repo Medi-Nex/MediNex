@@ -87,11 +87,11 @@ export default function AboutPage() {
           </div>
 
           <p className="text-sm text-slate-700 leading-relaxed">
-            The MediNex platform originated as the official collaborative workspace for our six-member
-            MediNex is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, design interoperable digital health solutions, and collaborate openly. Originating during E-Health Hackathon 2026, our platform bridges software engineering and public health research without operating as a hospital or clinical provider.
-            that technical innovation requires both deep engineering discipline (our flagship project,{" "}
-            <strong>ShasthoSetu</strong>) and an open community platform to gather feedback from
-            fellow students, doctors, and tech advocates.
+            MediNex originated during <strong className="text-medinex-text">E-Health Hackathon 2026</strong> as the
+            collaborative workspace for a six-member interdisciplinary team. We bridge software
+            engineering and public health research without operating as a hospital or clinical provider,
+            pairing deep engineering execution (including our flagship initiative,{" "}
+            <strong>ShasthoSetu</strong>) with open peer review from developers, researchers, and students.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
