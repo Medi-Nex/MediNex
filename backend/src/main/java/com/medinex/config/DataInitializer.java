@@ -203,7 +203,7 @@ public class DataInitializer implements CommandLineRunner {
                             .username(username)
                             .fullName(fullName)
                             .email(email)
-                            .passwordHash(passwordEncoder.encode("Contributor@SecurePass2026!"))
+                            .passwordHash(passwordEncoder.encode("Contributor@2026"))
                             .status(UserStatus.ACTIVE)
                             .emailVerified(true)
                             .isTeamMember(true)
