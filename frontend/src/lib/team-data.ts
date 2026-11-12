@@ -57,17 +57,17 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
   },
 
   // ----------------------------------------------------------
-  // 02. JIHAD KHAN
+  // 02. KAIUM AHMED
   // ----------------------------------------------------------
   {
     id: "mem-02",
     username: "jihadjp",
-    fullName: "Jihad Khan",
+    fullName: "Kaium Ahmed",
     designation: "Full-Stack Developer",
     department: "Department of Computer Science & Engineering",
     university: "Daffodil International University",
 
-    bio: "Full-Stack Developer and technology enthusiast focused on building modern web applications, Android applications, and practical digital solutions. Works with React and JavaScript for frontend development, Java for Android applications, and backend API integration and database technologies. Interested in software architecture, application development, and building technology that solves real-world problems. Contributes to the planning and technical development of MediNex and ShasthoSetu.",
+    bio: "Full-Stack Developer and technology enthusiast focused on building modern web applications, Android applications, and practical digital solutions. Works with React and JavaScript for frontend development, Java for Android applications, and backend API integration and database technologies.",
 
     skills: [
       "React.js",
@@ -95,7 +95,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
     portfolioUrl: "https://jihadjp.com/",
     githubUrl: "https://github.com/jihadjp",
     linkedinUrl: "https://linkedin.com/in/jihadjp",
-    email: "jihad.cse@diu.edu.bd",
+    email: "programmerjihad@gmail.com",
 
     isLead: false,
     isPlaceholder: false,
@@ -110,28 +110,35 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
     id: "mem-03",
     username: "tarek",
     fullName: "M Tarek Rahman",
-    designation: "Core Software Developer",
+    designation: "DevOps & Software Engineer",
     department: "Department of Computer Science & Engineering",
     university: "Daffodil International University",
 
-    bio: "Core Software Developer contributing to MediNex web interfaces, React.js frontend engineering, and database-backed healthcare technology features.",
+    bio: "DevOps & Software Engineer contributing to MediNex infrastructure, CI/CD pipelines, distributed architecture, and software development.",
 
     skills: [
+      "DevOps",
+      "CI/CD",
+      "Docker",
       "React.js",
       "HTML & CSS",
       "JavaScript",
       "Database Management",
-      ],
+    ],
 
-    responsibilities: [],
+    responsibilities: [
+      "Managing DevOps pipelines and deployment architecture",
+      "Developing software features and database integrations",
+    ],
 
+    portfolioUrl: "https://tarekparvez.me/",
     githubUrl: "https://github.com/mtarek47",
-    linkedinUrl: "https://www.linkedin.com/in/m-tarek-rahman-06068a349",
+    linkedinUrl: "https://www.linkedin.com/in/m-tarek-rahman-06068a349?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     email: "tarekparvez47@gmail.com",
 
     isLead: false,
     isPlaceholder: false,
-    publicVisibility: false,
+    publicVisibility: true,
     displayOrder: 3,
   },
 

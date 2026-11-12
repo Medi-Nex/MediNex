@@ -122,7 +122,7 @@ public class DataInitializer implements CommandLineRunner {
                     List.of("Providing public health insights for ShasthoSetu", "Supporting healthcare worker interviews"),
                     true, 1);
 
-            initContributor(team, "jihadjp", "jihad.cse@diu.edu.bd", "Jihad Khan",
+            initContributor(team, "jihadjp", "programmerjihad@gmail.com", "Kaium Ahmed",
                     "Full-Stack Developer", "Department of Computer Science & Engineering",
                     "Daffodil International University",
                     "Full-Stack Developer focused on building modern web applications, Android applications, and practical digital solutions.",
@@ -131,11 +131,11 @@ public class DataInitializer implements CommandLineRunner {
                     false, 2);
 
             initContributor(team, "tarek", "tarekparvez47@gmail.com", "M Tarek Rahman",
-                    "Core Software Developer", "Department of Computer Science & Engineering",
+                    "DevOps & Software Engineer", "Department of Computer Science & Engineering",
                     "Daffodil International University",
-                    "Core Software Developer contributing to MediNex web interfaces, React.js frontend engineering, and database-backed features.",
-                    List.of("React.js", "HTML & CSS", "JavaScript", "Database Management"),
-                    List.of("Frontend development", "UI engineering"),
+                    "DevOps & Software Engineer contributing to MediNex infrastructure, CI/CD pipelines, and software development.",
+                    List.of("DevOps", "CI/CD", "Docker", "React.js", "JavaScript", "Database Management"),
+                    List.of("Managing DevOps pipelines", "Developing software features"),
                     false, 3);
 
             initContributor(team, "shopnil", "khairulanamshopnil@gmail.com", "Md. Khairul Anam Shopnil",
