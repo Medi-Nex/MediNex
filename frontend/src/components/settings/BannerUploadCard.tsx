@@ -148,8 +148,8 @@ export function BannerUploadCard({ compact = false }: { compact?: boolean }) {
               )}
             </div>
 
-            <div className="px-4 pb-3 flex items-end gap-3 -mt-6 sm:-mt-8 relative pointer-events-none">
-              <div className="p-1 bg-white rounded-xl border border-medinex-border shadow-md inline-flex">
+            <div className="px-4 pb-3 flex items-start gap-3 relative pointer-events-none">
+              <div className="-mt-6 sm:-mt-7 p-1 bg-white rounded-xl border border-medinex-border shadow-md inline-flex shrink-0">
                 <UserAvatar
                   src={user.avatarUrl}
                   smSrc={user.avatarSmUrl}
@@ -161,7 +161,7 @@ export function BannerUploadCard({ compact = false }: { compact?: boolean }) {
                   className="border-0 shadow-none"
                 />
               </div>
-              <div className="pb-0.5 min-w-0">
+              <div className="pt-1.5 min-w-0">
                 <div className="text-xs font-bold text-medinex-text truncate">{user.fullName}</div>
                 <div className="text-[11px] text-medinex-teal truncate">@{user.username}</div>
               </div>

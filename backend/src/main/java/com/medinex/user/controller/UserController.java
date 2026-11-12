@@ -30,9 +30,10 @@ public class UserController {
     @Operation(summary = "Check whether a candidate username handle is valid and available")
     public ApiResponse<UsernameAvailabilityDto> checkUsernameAvailability(
             @AuthenticationPrincipal UserPrincipal principal,
-            @RequestParam(value = "username", defaultValue = "") String username) {
+            @RequestParam(value = "username", defaultValue = "") String username,
+            @RequestParam(value = "email", required = false) String email) {
         java.util.UUID viewerId = principal != null ? principal.getId() : null;
-        UsernameAvailabilityDto result = userService.checkUsernameAvailability(username, viewerId);
+        UsernameAvailabilityDto result = userService.checkUsernameAvailability(username, viewerId, email);
         return ApiResponse.ok(result, "Username availability checked");
     }
 

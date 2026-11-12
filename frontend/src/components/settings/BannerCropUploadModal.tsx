@@ -794,8 +794,8 @@ export function BannerCropUploadModal({
                     </div>
                   </div>
                   <div className="px-4 sm:px-6 pb-3.5 relative">
-                    <div className="-mt-8 sm:-mt-10 flex items-end gap-3">
-                      <div className="p-1 bg-white rounded-xl border border-medinex-border shadow-md inline-flex">
+                    <div className="flex items-start gap-3">
+                      <div className="-mt-8 sm:-mt-10 p-1 bg-white rounded-xl border border-medinex-border shadow-md inline-flex shrink-0">
                         <UserAvatar
                           src={user.avatarUrl}
                           smSrc={user.avatarSmUrl}

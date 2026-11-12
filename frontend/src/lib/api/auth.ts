@@ -139,10 +139,15 @@ export const authApi = {
   getPublicProfile: (username: string) =>
     apiClient<PublicUserProfile>(`/users/${encodeURIComponent(username)}`),
 
-  checkUsernameAvailability: (username: string) =>
-    apiClient<UsernameAvailabilityResult>(
-      `/users/username-availability?username=${encodeURIComponent(username)}`
-    ),
+  checkUsernameAvailability: (username: string, email?: string) => {
+    const params = new URLSearchParams({ username });
+    if (email && email.trim()) {
+      params.set("email", email.trim());
+    }
+    return apiClient<UsernameAvailabilityResult>(
+      `/users/username-availability?${params.toString()}`
+    );
+  },
 
   updateProfile: (payload: UpdateProfilePayload) =>
     apiClient<AuthUser>("/users/profile", {

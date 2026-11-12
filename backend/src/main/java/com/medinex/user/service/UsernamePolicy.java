@@ -3,6 +3,7 @@ package com.medinex.user.service;
 import com.medinex.common.exception.BadRequestException;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -19,6 +20,8 @@ public final class UsernamePolicy {
 
     private static final Set<String> RESERVED_USERNAMES = Set.of(
             "admin", "administrator", "superadmin", "super-admin", "moderator",
+            "medinex-admin", "contributor-01", "contributor-02", "contributor-03",
+            "contributor-04", "contributor-05", "contributor-06",
             "system", "root", "support", "help", "security", "info", "contact",
             "about", "privacy", "terms", "api", "auth", "login", "register",
             "signup", "signin", "logout", "verify-email", "forgot-password",
@@ -28,6 +31,19 @@ public final class UsernamePolicy {
             "medinex", "medinex-official", "shasthosetu", "community", "projects",
             "updates", "events", "uploads", "null", "undefined", "me", "www",
             "mail", "noreply", "postmaster"
+    );
+
+    /**
+     * Maps each official MediNex contributor handle to the contributor's verified email address
+     * so unseeded handles in production cannot be claimed or swapped by another account.
+     */
+    private static final Map<String, String> OFFICIAL_CONTRIBUTOR_EMAILS = Map.of(
+            "hasnat", "hasnat.ph@diu.edu.bd",
+            "jihadjp", "programmerjihad@gmail.com",
+            "tarek", "tarekparvez47@gmail.com",
+            "shopnil", "khairulanamshopnil@gmail.com",
+            "nabil", "mdnabilsikderh@gmail.com",
+            "puja", "paromitakarmoker@gmail.com"
     );
 
     private UsernamePolicy() {
@@ -46,6 +62,29 @@ public final class UsernamePolicy {
 
     public static boolean isReserved(String normalized) {
         return normalized != null && RESERVED_USERNAMES.contains(normalized);
+    }
+
+    public static boolean isOfficialContributorUsername(String normalized) {
+        return normalized != null && OFFICIAL_CONTRIBUTOR_EMAILS.containsKey(normalized);
+    }
+
+    public static boolean isOfficialContributorOwner(String normalized, String email) {
+        if (normalized == null || email == null) {
+            return false;
+        }
+        String expectedEmail = OFFICIAL_CONTRIBUTOR_EMAILS.get(normalized);
+        return expectedEmail != null && expectedEmail.equalsIgnoreCase(email.trim());
+    }
+
+    public static boolean isBlockedContributorHandleForRegistration(String normalized, String applicantEmail) {
+        return isOfficialContributorUsername(normalized) && !isOfficialContributorOwner(normalized, applicantEmail);
+    }
+
+    public static boolean isBlockedContributorHandleForUser(String normalized, String userEmail, boolean emailVerified) {
+        if (!isOfficialContributorUsername(normalized)) {
+            return false;
+        }
+        return !emailVerified || !isOfficialContributorOwner(normalized, userEmail);
     }
 
     public static void validateOrThrow(String normalized) {

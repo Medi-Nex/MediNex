@@ -194,4 +194,58 @@ public class UsernameUpdateIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value(oldHandle));
     }
+
+    @Test
+    public void testOfficialContributorHandlesAreProtectedFromThirdPartyClaimingAndSwapping() throws Exception {
+        String suffix = String.valueOf(System.nanoTime());
+        String thirdPartyHandle = "community_user_" + suffix;
+        String thirdPartyToken = registerAndLogin(thirdPartyHandle, thirdPartyHandle + "@medinex.local", "Password123!");
+
+        // Availability endpoint must report official unseeded handle as TAKEN for non-owner and guest
+        mockMvc.perform(get("/api/v1/users/username-availability")
+                        .param("username", "shopnil"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.available").value(false))
+                .andExpect(jsonPath("$.data.reason").value("TAKEN"));
+
+        mockMvc.perform(get("/api/v1/users/username-availability")
+                        .header("Authorization", "Bearer " + thirdPartyToken)
+                        .param("username", "SHOPNIL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.available").value(false))
+                .andExpect(jsonPath("$.data.reason").value("TAKEN"));
+
+        // Non-contributor user cannot register or rename to an official contributor handle
+        RegisterRequest spoofRegister = RegisterRequest.builder()
+                .username("tarek")
+                .email("impostor_" + suffix + "@medinex.local")
+                .fullName("Impostor User")
+                .password("Password123!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(spoofRegister)))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(put("/api/v1/users/profile/username")
+                        .header("Authorization", "Bearer " + thirdPartyToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new UpdateUsernameRequest("shopnil"))))
+                .andExpect(status().isConflict());
+
+        // Verify original handle was never modified or exchanged
+        mockMvc.perform(get("/api/v1/auth/me")
+                        .header("Authorization", "Bearer " + thirdPartyToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.username").value(thirdPartyHandle));
+
+        // Reserved platform / admin aliases must also be rejected
+        mockMvc.perform(get("/api/v1/users/username-availability")
+                        .param("username", "medinex-admin"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.available").value(false))
+                .andExpect(jsonPath("$.data.reason").value("RESERVED"));
+    }
 }

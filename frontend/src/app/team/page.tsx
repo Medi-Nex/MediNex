@@ -180,6 +180,7 @@ export default function TeamPage() {
                         lgSrc={member.avatarLgUrl}
                         fullName={member.fullName}
                         username={member.username}
+                        isTeamMember
                         size="fill"
                         shape="rounded"
                         className="border-0 shadow-none !from-slate-100 !to-emerald-50/70 !text-medinex-deep"

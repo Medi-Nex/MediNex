@@ -9,6 +9,13 @@ export const RESERVED_USERNAMES = new Set<string>([
   "superadmin",
   "super-admin",
   "moderator",
+  "medinex-admin",
+  "contributor-01",
+  "contributor-02",
+  "contributor-03",
+  "contributor-04",
+  "contributor-05",
+  "contributor-06",
   "system",
   "root",
   "support",
@@ -62,12 +69,36 @@ export const RESERVED_USERNAMES = new Set<string>([
   "postmaster",
 ]);
 
+export const OFFICIAL_CONTRIBUTOR_EMAIL_BY_USERNAME: Record<string, string> = {
+  hasnat: "hasnat.ph@diu.edu.bd",
+  jihadjp: "programmerjihad@gmail.com",
+  tarek: "tarekparvez47@gmail.com",
+  shopnil: "khairulanamshopnil@gmail.com",
+  nabil: "mdnabilsikderh@gmail.com",
+  puja: "paromitakarmoker@gmail.com",
+};
+
 export function sanitizeUsernameInput(raw: string): string {
   return raw
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, "")
     .slice(0, USERNAME_MAX_LENGTH);
+}
+
+export function getContributorUsernameConflict(
+  normalized: string,
+  userEmail?: string | null
+): string | null {
+  const expectedEmail = OFFICIAL_CONTRIBUTOR_EMAIL_BY_USERNAME[normalized];
+  if (!expectedEmail) {
+    return null;
+  }
+  const normalizedEmail = userEmail?.trim().toLowerCase();
+  if (normalizedEmail && normalizedEmail === expectedEmail) {
+    return null;
+  }
+  return `@${normalized} belongs to an official MediNex contributor and cannot be claimed.`;
 }
 
 export function validateUsernameLocally(normalized: string): string | null {

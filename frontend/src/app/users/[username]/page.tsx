@@ -32,6 +32,7 @@ import { authApi, PublicUserProfile } from "@/lib/api/auth";
 import { getUserFollowStats, FollowStatsDto } from "@/lib/api/follow";
 import { getUserPosts, PostDto } from "@/lib/api/community";
 import { INITIAL_TEAM_MEMBERS } from "@/lib/team-data";
+import { OFFICIAL_CONTRIBUTOR_EMAIL_BY_USERNAME } from "@/lib/username";
 import { useAuth } from "@/lib/auth-context";
 
 export default function PublicUserProfilePage() {
@@ -65,9 +66,15 @@ export default function PublicUserProfilePage() {
         if (cancelled) return;
 
         if (apiUser.status === "fulfilled") {
-          const teamFallback = INITIAL_TEAM_MEMBERS.find(
-            (m) => m.username.toLowerCase() === username.toLowerCase()
+          const isOfficialHandle = Boolean(
+            OFFICIAL_CONTRIBUTOR_EMAIL_BY_USERNAME[apiUser.value.username.toLowerCase()]
           );
+          const teamFallback =
+            apiUser.value.isTeamMember || isOfficialHandle
+              ? INITIAL_TEAM_MEMBERS.find(
+                  (m) => m.username.toLowerCase() === apiUser.value.username.toLowerCase()
+                )
+              : undefined;
           const merged: PublicUserProfile = {
             ...apiUser.value,
             designation: apiUser.value.designation || teamFallback?.designation,

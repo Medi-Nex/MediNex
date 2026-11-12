@@ -77,6 +77,13 @@ public class AuthService {
             throw new AppException("Username is already taken", HttpStatus.CONFLICT);
         }
 
+        if (UsernamePolicy.isBlockedContributorHandleForRegistration(normalizedUsername, request.getEmail())) {
+            throw new AppException(
+                    "This username belongs to an official MediNex contributor and cannot be claimed",
+                    HttpStatus.CONFLICT
+            );
+        }
+
         Role userRole = roleRepository.findById(RoleType.ROLE_USER.name())
                 .orElseGet(() -> roleRepository.save(Role.builder()
                         .id(RoleType.ROLE_USER.name())

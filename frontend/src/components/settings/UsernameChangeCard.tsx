@@ -20,6 +20,7 @@ import { getUserProfileHref } from "@/lib/media";
 import {
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
+  getContributorUsernameConflict,
   sanitizeUsernameInput,
   validateUsernameLocally,
 } from "@/lib/username";
@@ -47,7 +48,9 @@ export function UsernameChangeCard({ compact = false }: UsernameChangeCardProps)
   const currentUsername = user?.username || "";
   const isUnchanged = candidate.toLowerCase() === currentUsername.toLowerCase();
   const localValidationError =
-    candidate.length === 0 || isUnchanged ? null : validateUsernameLocally(candidate);
+    candidate.length === 0 || isUnchanged
+      ? null
+      : validateUsernameLocally(candidate) || getContributorUsernameConflict(candidate, user?.email);
 
   useEffect(() => {
     if (!user || !candidate || isUnchanged || localValidationError) {
@@ -97,7 +100,8 @@ export function UsernameChangeCard({ compact = false }: UsernameChangeCardProps)
     setSuccessMsg(null);
     setErrorMsg(null);
 
-    const localErr = validateUsernameLocally(candidate);
+    const localErr =
+      validateUsernameLocally(candidate) || getContributorUsernameConflict(candidate, user?.email);
     if (localErr) {
       setErrorMsg(localErr);
       return;

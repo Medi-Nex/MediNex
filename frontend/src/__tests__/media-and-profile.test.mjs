@@ -110,4 +110,42 @@ test("Username Change Card, Validation Helper & API Client Are Wired", () => {
   assert.ok(profileEditSrc.includes("<UsernameChangeCard"), "Profile edit page must render UsernameChangeCard");
   assert.ok(settingsSrc.includes("<UsernameChangeCard"), "Settings page must render UsernameChangeCard");
   assert.ok(registerSrc.includes("checkUsernameAvailability"), "Register page must check live username availability");
+
+  const usernameHelperSrc = fs.readFileSync(usernameHelperPath, "utf-8");
+  assert.ok(
+    usernameHelperSrc.includes("getContributorUsernameConflict"),
+    "username.ts must enforce official contributor handle ownership rules"
+  );
+  assert.ok(
+    /shopnil\s*:/.test(usernameHelperSrc) && usernameHelperSrc.includes('"medinex-admin"'),
+    "username.ts must protect official contributor and admin handles"
+  );
+});
+
+test("Dashboard Hero Buttons & Cover Preview Card Avoid Text Contrast Conflicts", () => {
+  const dashboardSrc = fs.readFileSync(
+    path.resolve("./src/app/(dashboard)/dashboard/page.tsx"),
+    "utf-8"
+  );
+  const bannerCardSrc = fs.readFileSync(
+    path.resolve("./src/components/settings/BannerUploadCard.tsx"),
+    "utf-8"
+  );
+  const bannerModalSrc = fs.readFileSync(
+    path.resolve("./src/components/settings/BannerCropUploadModal.tsx"),
+    "utf-8"
+  );
+
+  assert.ok(
+    !/variant="outline"[^>]*text-slate-[123]00/.test(dashboardSrc),
+    "Dashboard dark hero buttons must not use light text on white outline variant"
+  );
+  assert.ok(
+    !bannerCardSrc.includes("flex items-end gap-3 -mt-6"),
+    "BannerUploadCard name row must not pull dark text upward over dark cover banner"
+  );
+  assert.ok(
+    !bannerModalSrc.includes("-mt-8 sm:-mt-10 flex items-end"),
+    "BannerCropUploadModal name row must keep negative offset scoped to avatar only"
+  );
 });

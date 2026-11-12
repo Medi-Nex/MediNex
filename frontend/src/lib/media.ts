@@ -94,10 +94,12 @@ const KNOWN_TEAM_PORTRAITS_BY_NAME: Record<string, string> = {
  */
 export function getTeamPortraitFallback(
   username?: string | null,
-  fullName?: string | null
+  fullName?: string | null,
+  allowNameFallback = false
 ): string | null {
   const byUsername = username ? KNOWN_TEAM_PORTRAITS[username.trim().toLowerCase()] : null;
   if (byUsername) return byUsername;
+  if (!allowNameFallback) return null;
   const byName = fullName ? KNOWN_TEAM_PORTRAITS_BY_NAME[fullName.trim().toLowerCase()] : null;
   return byName || null;
 }

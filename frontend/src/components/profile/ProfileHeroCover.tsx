@@ -14,6 +14,7 @@ export interface ProfileHeroSubject {
   id?: string;
   username: string;
   fullName: string;
+  isTeamMember?: boolean;
   headline?: string | null;
   designation?: string | null;
   avatarUrl?: string | null;
@@ -70,7 +71,11 @@ export function ProfileHeroCover({
       "xl"
     ) || resolveMediaUrl(rawAvatarUrl);
 
-  const teamPortraitFallback = getTeamPortraitFallback(subject.username, subject.fullName);
+  const teamPortraitFallback = getTeamPortraitFallback(
+    subject.username,
+    subject.fullName,
+    Boolean(subject.isTeamMember)
+  );
 
   const avatarPreviewSrc = highResAvatar || teamPortraitFallback;
 
@@ -176,6 +181,7 @@ export function ProfileHeroCover({
                 lgSrc={rawAvatarLgUrl}
                 fullName={subject.fullName}
                 username={subject.username}
+                isTeamMember={subject.isTeamMember}
                 size="xl"
                 shape="rounded"
                 className="border-0 shadow-none"

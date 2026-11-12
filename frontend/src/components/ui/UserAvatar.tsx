@@ -27,6 +27,7 @@ export interface UserAvatarProps {
   lgSrc?: string | null;
   fullName?: string | null;
   username?: string | null;
+  isTeamMember?: boolean;
   size?: AvatarSize;
   shape?: "circle" | "rounded" | "square";
   clickable?: boolean;
@@ -41,6 +42,7 @@ export function UserAvatar({
   lgSrc,
   fullName,
   username,
+  isTeamMember = false,
   size = "md",
   shape = "circle",
   clickable = false,
@@ -48,7 +50,7 @@ export function UserAvatar({
   className = "",
   imgClassName = "",
 }: UserAvatarProps) {
-  const teamImageCandidate = getTeamPortraitFallback(username, fullName);
+  const teamImageCandidate = getTeamPortraitFallback(username, fullName, isTeamMember);
 
   const isDefaultAvatar = (url?: string | null) =>
     Boolean(url && (url.includes("default.png") || url.includes("default-avatar") || url.includes("placeholder")));

@@ -95,13 +95,13 @@ export default function DashboardOverviewPage() {
 
           <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0">
             <Link href={getUserProfileHref(user.username)}>
-              <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5 border-emerald-800 text-slate-200 hover:text-white">
+              <Button variant="dark" size="sm" className="inline-flex items-center gap-1.5 border-emerald-700/80 text-white hover:text-white hover:border-medinex-mint/50">
                 <ExternalLink className="w-3.5 h-3.5 text-medinex-mint" />
                 <span>Public Profile</span>
               </Button>
             </Link>
             <Link href="/dashboard/settings">
-              <Button variant="outline" size="sm" className="inline-flex items-center gap-1.5 border-emerald-800 text-slate-200 hover:text-white">
+              <Button variant="dark" size="sm" className="inline-flex items-center gap-1.5 border-emerald-700/80 text-white hover:text-white hover:border-medinex-mint/50">
                 <Settings className="w-3.5 h-3.5 text-medinex-mint" />
                 <span>Settings</span>
               </Button>

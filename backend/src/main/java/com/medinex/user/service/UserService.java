@@ -113,20 +113,23 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UsernameAvailabilityDto checkUsernameAvailability(String rawUsername, UUID currentUserId) {
-        String normalized = UsernamePolicy.normalize(rawUsername);
+        return checkUsernameAvailability(rawUsername, currentUserId, null);
+    }
 
-        if (currentUserId != null) {
-            User currentUser = userRepository.findById(currentUserId).orElse(null);
-            if (currentUser != null && normalized.equalsIgnoreCase(currentUser.getUsername())) {
-                return buildAvailability(
-                        normalized,
-                        true,
-                        true,
-                        true,
-                        "CURRENT_USERNAME",
-                        "This is already your current username."
-                );
-            }
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityDto checkUsernameAvailability(String rawUsername, UUID currentUserId, String applicantEmail) {
+        String normalized = UsernamePolicy.normalize(rawUsername);
+        User currentUser = currentUserId != null ? userRepository.findById(currentUserId).orElse(null) : null;
+
+        if (currentUser != null && normalized.equalsIgnoreCase(currentUser.getUsername())) {
+            return buildAvailability(
+                    normalized,
+                    true,
+                    true,
+                    true,
+                    "CURRENT_USERNAME",
+                    "This is already your current username."
+            );
         }
 
         if (!UsernamePolicy.isValidSyntax(normalized)) {
@@ -162,6 +165,32 @@ public class UserService {
             );
         }
 
+        if (UsernamePolicy.isOfficialContributorUsername(normalized)) {
+            boolean allowedForCurrent = currentUser != null
+                    && !UsernamePolicy.isBlockedContributorHandleForUser(
+                            normalized, currentUser.getEmail(), currentUser.isEmailVerified());
+            boolean allowedForGuest = currentUser == null
+                    && applicantEmail != null
+                    && !applicantEmail.isBlank()
+                    && !UsernamePolicy.isBlockedContributorHandleForRegistration(normalized, applicantEmail);
+
+            if (!allowedForCurrent && !allowedForGuest) {
+                String reasonMessage = currentUser != null
+                        && UsernamePolicy.isOfficialContributorOwner(normalized, currentUser.getEmail())
+                        && !currentUser.isEmailVerified()
+                        ? "@" + normalized + " belongs to an official MediNex contributor. Verify your email first to claim it."
+                        : "@" + normalized + " belongs to an official MediNex contributor and is already taken.";
+                return buildAvailability(
+                        normalized,
+                        true,
+                        false,
+                        false,
+                        "TAKEN",
+                        reasonMessage
+                );
+            }
+        }
+
         return buildAvailability(
                 normalized,
                 true,
@@ -185,6 +214,14 @@ public class UserService {
 
         if (userRepository.existsByUsernameIgnoreCase(normalized)) {
             throw new AppException("This username is already taken", HttpStatus.CONFLICT);
+        }
+
+        if (UsernamePolicy.isBlockedContributorHandleForUser(normalized, user.getEmail(), user.isEmailVerified())) {
+            String message = UsernamePolicy.isOfficialContributorOwner(normalized, user.getEmail())
+                    && !user.isEmailVerified()
+                    ? "Verify your contributor email before claiming this official handle"
+                    : "This username belongs to an official MediNex contributor and cannot be claimed";
+            throw new AppException(message, HttpStatus.CONFLICT);
         }
 
         String previousUsername = user.getUsername();

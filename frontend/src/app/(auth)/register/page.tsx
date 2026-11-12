@@ -12,6 +12,7 @@ import { authApi, UsernameAvailabilityResult } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import {
   USERNAME_MAX_LENGTH,
+  getContributorUsernameConflict,
   sanitizeUsernameInput,
   validateUsernameLocally,
 } from "@/lib/username";
@@ -31,7 +32,10 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
 
-  const localUsernameError = username.length > 0 ? validateUsernameLocally(username) : null;
+  const localUsernameError =
+    username.length > 0
+      ? validateUsernameLocally(username) || getContributorUsernameConflict(username, email)
+      : null;
 
   useEffect(() => {
     if (!username || localUsernameError) {
@@ -44,7 +48,7 @@ export default function RegisterPage() {
     setIsCheckingUsername(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await authApi.checkUsernameAvailability(username);
+        const res = await authApi.checkUsernameAvailability(username, email);
         if (!cancelled) {
           setUsernameStatus(res);
         }
@@ -63,11 +67,16 @@ export default function RegisterPage() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [username, localUsernameError]);
+  }, [username, email, localUsernameError]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreeTerms) return;
+
+    if (localUsernameError) {
+      setErrorMessage(localUsernameError);
+      return;
+    }
 
     setIsLoading(true);
     setErrorMessage(null);

@@ -68,7 +68,7 @@ export default function MemberProfilePage() {
         const apiUser = await authApi.getPublicProfile(username);
         if (cancelled) return;
 
-        if (!baseMember && apiUser.fullName) {
+        if (!baseMember && apiUser.isTeamMember && apiUser.fullName) {
           baseMember =
             INITIAL_TEAM_MEMBERS.find(
               (m) => m.fullName.toLowerCase() === apiUser.fullName.trim().toLowerCase()
@@ -77,6 +77,11 @@ export default function MemberProfilePage() {
 
         if (!baseMember && !apiUser.isTeamMember) {
           router.replace(getUserProfileHref(username));
+          return;
+        }
+
+        if (baseMember && apiUser.username.toLowerCase() !== baseMember.username.toLowerCase() && !apiUser.isTeamMember) {
+          setMember(baseMember);
           return;
         }
 
@@ -206,7 +211,7 @@ export default function MemberProfilePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         {/* Profile Card Banner */}
         <ProfileHeroCover
-          subject={member}
+          subject={{ ...member, isTeamMember: true }}
           onUpdated={(updatedUser) => {
             setMember((prev) =>
               prev
