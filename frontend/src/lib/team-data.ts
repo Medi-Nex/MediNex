@@ -94,7 +94,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
 
     portfolioUrl: "https://jihadjp.com/",
     githubUrl: "https://github.com/jihadjp",
-    linkedinUrl: "https://linkedin.com/in/jihadjp",
+    linkedinUrl: "https://linkedin.com/in/jihadjpbd",
     email: "programmerjihad@gmail.com",
 
     isLead: false,
