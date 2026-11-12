@@ -88,6 +88,12 @@ medinex:
   mail:
     from-address: ${MAIL_FROM_ADDRESS:medinexbd.noreply@gmail.com}
     from-name: ${MAIL_FROM_NAME:MediNex Platform}
+    webhook:
+      url: ${MAIL_WEBHOOK_URL:}
+      secret: ${MAIL_WEBHOOK_SECRET:}
+    brevo:
+      api-key: ${BREVO_API_KEY:}
+      api-url: ${BREVO_API_URL:https://api.brevo.com/v3/smtp/email}
   jwt:
     secret-key: ${JWT_SECRET_KEY:4c56e297893a778c187e1451b5c2a13b4f59837651a2d48698ecb819f3900cb93ad9871f92e071e6d1f054817a1936c5}
     access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}
