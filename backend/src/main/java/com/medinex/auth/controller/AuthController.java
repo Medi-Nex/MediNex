@@ -69,14 +69,14 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    @Operation(summary = "Request a one-time password reset token")
+    @Operation(summary = "Request a 6-digit password reset OTP")
     public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
-        return ApiResponse.ok(null, "If an account exists with this email, a password reset token has been dispatched.");
+        return ApiResponse.ok(null, "If an account exists with this email, a 6-digit password reset OTP has been dispatched.");
     }
 
     @PostMapping("/reset-password")
-    @Operation(summary = "Reset account password with valid token")
+    @Operation(summary = "Reset account password with email and 6-digit reset OTP")
     public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ApiResponse.ok(null, "Password reset successfully. You may now log in with your new password.");

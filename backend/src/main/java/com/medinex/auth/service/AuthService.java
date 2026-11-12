@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.IntConsumer;
 
 @Slf4j
 @Service
@@ -239,25 +240,16 @@ public class AuthService {
         }
 
         String expectedHash = hashVerificationOtp(user.getId(), otp);
-        if (!MessageDigest.isEqual(
-                expectedHash.getBytes(StandardCharsets.UTF_8),
-                latestToken.getTokenHash().getBytes(StandardCharsets.UTF_8))) {
-            int updatedAttempts = latestToken.getFailedAttempts() + 1;
-            latestToken.setFailedAttempts(updatedAttempts);
-            emailVerificationTokenRepository.save(latestToken);
-
-            if (updatedAttempts >= MAX_OTP_FAILED_ATTEMPTS) {
-                throw new AppException(
-                        "Too many failed attempts for this OTP. Please wait and request a new verification code.",
-                        HttpStatus.TOO_MANY_REQUESTS
-                );
-            }
-            int remainingAttempts = MAX_OTP_FAILED_ATTEMPTS - updatedAttempts;
-            throw new AppException(
-                    "Invalid verification OTP. " + remainingAttempts + " attempt(s) remaining.",
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+        verifyScopedOtpHash(
+                expectedHash,
+                latestToken.getTokenHash(),
+                latestToken.getFailedAttempts(),
+                attempts -> {
+                    latestToken.setFailedAttempts(attempts);
+                    emailVerificationTokenRepository.save(latestToken);
+                },
+                "verification"
+        );
 
         user.setEmailVerified(true);
         if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
@@ -286,17 +278,7 @@ public class AuthService {
                 .findAllByUserIdOrderByCreatedAtDesc(user.getId());
 
         if (!existingTokens.isEmpty()) {
-            Instant cooldownUntil = existingTokens.get(0).getCreatedAt()
-                    .plusSeconds(RESEND_VERIFICATION_COOLDOWN_SECONDS);
-            Instant now = Instant.now();
-            if (cooldownUntil.isAfter(now)) {
-                long remainingMillis = Duration.between(now, cooldownUntil).toMillis();
-                long remainingSeconds = Math.max(1L, (remainingMillis + 999L) / 1000L);
-                throw new AppException(
-                        "Please wait " + remainingSeconds + " seconds before requesting another verification code.",
-                        HttpStatus.TOO_MANY_REQUESTS
-                );
-            }
+            enforceResendCooldown(existingTokens.get(0).getCreatedAt(), "verification code");
             emailVerificationTokenRepository.deleteAll(existingTokens);
             emailVerificationTokenRepository.flush();
         }
@@ -312,7 +294,7 @@ public class AuthService {
     }
 
     private boolean issueAndDispatchVerificationToken(User user) {
-        String rawOtp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
+        String rawOtp = generateSixDigitOtp();
         String tokenHash = hashVerificationOtp(user.getId(), rawOtp);
 
         EmailVerificationToken verificationToken = EmailVerificationToken.builder()
@@ -326,51 +308,152 @@ public class AuthService {
         return emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), rawOtp);
     }
 
+    private String generateSixDigitOtp() {
+        return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
+    }
+
     private String hashVerificationOtp(UUID userId, String otp) {
         return tokenProvider.hashToken(userId.toString() + ":" + otp.trim());
     }
 
-    @Transactional
-    public void forgotPassword(ForgotPasswordRequest request) {
-        userRepository.findByEmailIgnoreCase(request.getEmail().trim()).ifPresent(user -> {
-            String rawToken = tokenProvider.generateRawRefreshToken().substring(0, 24);
-            String tokenHash = tokenProvider.hashToken(rawToken);
+    private String hashPasswordResetOtp(UUID userId, String otp) {
+        return tokenProvider.hashToken("reset:" + userId.toString() + ":" + otp.trim());
+    }
 
-            PasswordResetToken resetToken = PasswordResetToken.builder()
-                    .user(user)
-                    .tokenHash(tokenHash)
-                    .expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
-                    .used(false)
-                    .build();
-            passwordResetTokenRepository.save(resetToken);
+    private void enforceResendCooldown(Instant latestCreatedAt, String codeLabel) {
+        Instant cooldownUntil = latestCreatedAt.plusSeconds(RESEND_VERIFICATION_COOLDOWN_SECONDS);
+        Instant now = Instant.now();
+        if (cooldownUntil.isAfter(now)) {
+            long remainingMillis = Duration.between(now, cooldownUntil).toMillis();
+            long remainingSeconds = Math.max(1L, (remainingMillis + 999L) / 1000L);
+            throw new AppException(
+                    "Please wait " + remainingSeconds + " seconds before requesting another " + codeLabel + ".",
+                    HttpStatus.TOO_MANY_REQUESTS
+            );
+        }
+    }
 
-            boolean dispatched = emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), rawToken);
-            if (!dispatched) {
-                throw new AppException(
-                        "Unable to dispatch password reset instructions right now. Please try again later.",
-                        HttpStatus.SERVICE_UNAVAILABLE
-                );
-            }
-            recordAuditLog(user.getId(), user.getEmail(), "PASSWORD_RESET_REQUESTED", "User", user.getId().toString());
-        });
+    private void verifyScopedOtpHash(
+            String expectedHash,
+            String storedHash,
+            int currentFailedAttempts,
+            IntConsumer persistFailedAttempts,
+            String otpKind
+    ) {
+        if (MessageDigest.isEqual(
+                expectedHash.getBytes(StandardCharsets.UTF_8),
+                storedHash.getBytes(StandardCharsets.UTF_8))) {
+            return;
+        }
+
+        int updatedAttempts = currentFailedAttempts + 1;
+        persistFailedAttempts.accept(updatedAttempts);
+
+        if (updatedAttempts >= MAX_OTP_FAILED_ATTEMPTS) {
+            throw new AppException(
+                    "Too many failed attempts for this OTP. Please wait and request a new " + otpKind + " code.",
+                    HttpStatus.TOO_MANY_REQUESTS
+            );
+        }
+
+        int remainingAttempts = MAX_OTP_FAILED_ATTEMPTS - updatedAttempts;
+        throw new AppException(
+                "Invalid " + otpKind + " OTP. " + remainingAttempts + " attempt(s) remaining.",
+                HttpStatus.BAD_REQUEST
+        );
     }
 
     @Transactional
-    public void resetPassword(ResetPasswordRequest request) {
-        String tokenHash = tokenProvider.hashToken(request.getToken());
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new AppException("Invalid or expired password reset token", HttpStatus.BAD_REQUEST));
-
-        if (resetToken.isUsed() || resetToken.isExpired()) {
-            throw new AppException("Password reset token is invalid or has already been used", HttpStatus.BAD_REQUEST);
+    public void forgotPassword(ForgotPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(email);
+        if (userOpt.isEmpty()) {
+            return;
         }
 
-        User user = resetToken.getUser();
+        User user = userOpt.get();
+        List<PasswordResetToken> existingTokens = passwordResetTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId());
+
+        if (!existingTokens.isEmpty()) {
+            if (!existingTokens.get(0).isUsed()) {
+                enforceResendCooldown(existingTokens.get(0).getCreatedAt(), "password reset code");
+            }
+            passwordResetTokenRepository.deleteAll(existingTokens);
+            passwordResetTokenRepository.flush();
+        }
+
+        String rawOtp = generateSixDigitOtp();
+        String tokenHash = hashPasswordResetOtp(user.getId(), rawOtp);
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .user(user)
+                .tokenHash(tokenHash)
+                .expiresAt(Instant.now().plus(OTP_EXPIRATION_MINUTES, ChronoUnit.MINUTES))
+                .used(false)
+                .failedAttempts(0)
+                .build();
+        passwordResetTokenRepository.save(resetToken);
+
+        boolean dispatched = emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), rawOtp);
+        if (!dispatched) {
+            throw new AppException(
+                    "Unable to dispatch password reset OTP right now. Please try again later.",
+                    HttpStatus.SERVICE_UNAVAILABLE
+            );
+        }
+        recordAuditLog(user.getId(), user.getEmail(), "PASSWORD_RESET_REQUESTED", "User", user.getId().toString());
+    }
+
+    @Transactional(noRollbackFor = AppException.class)
+    public void resetPassword(ResetPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        String otp = request.getOtp().trim();
+
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new AppException("Invalid or expired password reset OTP", HttpStatus.BAD_REQUEST));
+
+        List<PasswordResetToken> tokens = passwordResetTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId());
+
+        if (tokens.isEmpty()) {
+            throw new AppException("Invalid or expired password reset OTP", HttpStatus.BAD_REQUEST);
+        }
+
+        PasswordResetToken latestToken = tokens.get(0);
+
+        if (latestToken.isUsed()) {
+            throw new AppException("Password reset OTP has already been used. Please request a new code.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (latestToken.isExpired()) {
+            throw new AppException("Password reset OTP has expired. Please request a new code.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (latestToken.getFailedAttempts() >= MAX_OTP_FAILED_ATTEMPTS) {
+            throw new AppException(
+                    "Too many failed attempts for this OTP. Please wait and request a new password reset code.",
+                    HttpStatus.TOO_MANY_REQUESTS
+            );
+        }
+
+        String expectedHash = hashPasswordResetOtp(user.getId(), otp);
+        verifyScopedOtpHash(
+                expectedHash,
+                latestToken.getTokenHash(),
+                latestToken.getFailedAttempts(),
+                attempts -> {
+                    latestToken.setFailedAttempts(attempts);
+                    passwordResetTokenRepository.save(latestToken);
+                },
+                "password reset"
+        );
+
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        resetToken.setUsed(true);
-        passwordResetTokenRepository.save(resetToken);
+        latestToken.setUsed(true);
+        passwordResetTokenRepository.save(latestToken);
 
         // Revoke all existing sessions for security
         refreshTokenRepository.revokeAllByUserId(user.getId());

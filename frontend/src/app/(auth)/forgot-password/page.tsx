@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Activity, Mail, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -9,6 +10,7 @@ import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [isSent, setIsSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,14 +18,20 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail) return;
+
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      await authApi.forgotPassword(email.trim());
+      await authApi.forgotPassword(cleanEmail);
       setIsSent(true);
+      router.push(`/reset-password?email=${encodeURIComponent(cleanEmail)}&sent=1`);
     } catch (err) {
       if (err instanceof ApiError) {
+        setErrorMessage(err.message);
+      } else if (err instanceof Error) {
         setErrorMessage(err.message);
       } else {
         setErrorMessage("Failed to submit password reset request.");
@@ -47,7 +55,7 @@ export default function ForgotPasswordPage() {
           </Link>
           <h1 className="text-2xl font-bold text-medinex-text">Reset your password</h1>
           <p className="text-xs text-medinex-muted">
-            Enter your registered email to receive a secure password reset token.
+            Enter your registered email to receive a 6-digit password reset OTP.
           </p>
         </div>
 
@@ -65,14 +73,14 @@ export default function ForgotPasswordPage() {
                 <div className="w-12 h-12 rounded-full bg-emerald-100 text-medinex-teal flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
-                <h2 className="text-base font-bold text-medinex-text">Reset Token Dispatched</h2>
+                <h2 className="text-base font-bold text-medinex-text">6-Digit Reset OTP Dispatched</h2>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  If an account exists for <strong>{email}</strong>, a secure reset token has been dispatched from <span className="font-mono text-medinex-teal">medinexbd.noreply@gmail.com</span>. Please check your inbox (and spam folder).
+                  If an account exists for <strong>{email}</strong>, a 6-digit password reset OTP has been sent from <span className="font-mono text-medinex-teal">medinexbd.noreply@gmail.com</span>. Please check your inbox (and spam folder).
                 </p>
                 <div className="pt-2 flex flex-col gap-2">
-                  <Link href="/reset-password">
+                  <Link href={`/reset-password?email=${encodeURIComponent(email.trim())}&sent=1`}>
                     <Button variant="primary" size="sm" className="w-full">
-                      Proceed to Reset Password
+                      Enter 6-Digit OTP &amp; Reset Password
                     </Button>
                   </Link>
                   <Link href="/login">
@@ -102,10 +110,16 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-                  Send Reset Link
+                  Send 6-Digit Reset OTP
                 </Button>
 
-                <div className="pt-2 text-center">
+                <div className="pt-2 space-y-2 text-center">
+                  <Link
+                    href="/reset-password"
+                    className="block text-xs font-semibold text-medinex-teal hover:underline"
+                  >
+                    Already have a reset OTP? Reset password
+                  </Link>
                   <Link
                     href="/login"
                     className="inline-flex items-center text-xs font-semibold text-slate-600 hover:text-medinex-teal"

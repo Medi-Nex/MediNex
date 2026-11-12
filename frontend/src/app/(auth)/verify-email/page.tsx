@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Activity, MailCheck, CheckCircle2, AlertCircle, RotateCw, Clock, Mail } from "lucide-react";
@@ -8,14 +8,11 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
-
-const RESEND_COOLDOWN_SECONDS = 120;
-
-function formatCountdown(totalSeconds: number): string {
-  const mins = Math.floor(totalSeconds / 60);
-  const secs = totalSeconds % 60;
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-}
+import {
+  OTP_RESEND_COOLDOWN_SECONDS,
+  formatOtpCountdown,
+  useOtpCooldown,
+} from "@/lib/use-otp-cooldown";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -27,48 +24,15 @@ function VerifyEmailContent() {
   const [verified, setVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [cooldownSeconds, setCooldownSeconds] = useState(0);
-  const [resendTrigger, setResendTrigger] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resendSuccessMessage, setResendSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const emailKey = emailInput.trim().toLowerCase();
-    if (!emailKey) return;
-
-    const storageKey = `medinex_resend_until_${emailKey}`;
-    let untilMs = Number(window.sessionStorage.getItem(storageKey) || "0");
-
-    if ((!untilMs || Number.isNaN(untilMs)) && justSent && emailKey === initialEmail.trim().toLowerCase()) {
-      untilMs = Date.now() + RESEND_COOLDOWN_SECONDS * 1000;
-      window.sessionStorage.setItem(storageKey, String(untilMs));
-    }
-
-    const syncRemaining = () => {
-      const storedUntil = Number(window.sessionStorage.getItem(storageKey) || String(untilMs) || "0");
-      const remaining = storedUntil > 0 ? Math.max(0, Math.ceil((storedUntil - Date.now()) / 1000)) : 0;
-      setCooldownSeconds(remaining);
-      if (remaining <= 0) {
-        window.sessionStorage.removeItem(storageKey);
-      }
-    };
-
-    const immediateTimer = window.setTimeout(syncRemaining, 0);
-    const interval = window.setInterval(syncRemaining, 1000);
-    return () => {
-      window.clearTimeout(immediateTimer);
-      window.clearInterval(interval);
-    };
-  }, [emailInput, initialEmail, justSent, resendTrigger]);
-
-  const startCooldownForEmail = (targetEmail: string, seconds: number) => {
-    const emailKey = targetEmail.trim().toLowerCase();
-    if (!emailKey) return;
-    const storageKey = `medinex_resend_until_${emailKey}`;
-    window.sessionStorage.setItem(storageKey, String(Date.now() + seconds * 1000));
-    setCooldownSeconds(seconds);
-    setResendTrigger((prev) => prev + 1);
-  };
+  const { cooldownSeconds, startCooldown: startCooldownForEmail } = useOtpCooldown(
+    "medinex_resend_until_",
+    emailInput,
+    initialEmail,
+    justSent
+  );
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +71,7 @@ function VerifyEmailContent() {
     try {
       await authApi.resendVerification(cleanEmail);
       setOtpInput("");
-      startCooldownForEmail(cleanEmail, RESEND_COOLDOWN_SECONDS);
+      startCooldownForEmail(cleanEmail, OTP_RESEND_COOLDOWN_SECONDS);
       setResendSuccessMessage(
         `A new 6-digit verification OTP has been dispatched from medinexbd.noreply@gmail.com to ${cleanEmail}.`
       );
@@ -249,7 +213,7 @@ function VerifyEmailContent() {
                     {cooldownSeconds > 0 ? (
                       <>
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Resend OTP in {formatCountdown(cooldownSeconds)}</span>
+                        <span>Resend OTP in {formatOtpCountdown(cooldownSeconds)}</span>
                       </>
                     ) : (
                       <>

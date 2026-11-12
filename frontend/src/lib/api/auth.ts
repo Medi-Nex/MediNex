@@ -128,10 +128,10 @@ export const authApi = {
       body: JSON.stringify({ email }),
     }),
 
-  resetPassword: (token: string, newPassword: string) =>
+  resetPassword: (email: string, otp: string, newPassword: string) =>
     apiClient<void>("/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify({ token, newPassword }),
+      body: JSON.stringify({ email, otp, newPassword }),
     }),
 
   getMe: () => apiClient<AuthUser>("/auth/me"),

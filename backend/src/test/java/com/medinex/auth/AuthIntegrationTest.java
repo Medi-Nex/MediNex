@@ -442,11 +442,12 @@ public class AuthIntegrationTest {
                                 .build())))
                 .andExpect(status().isOk());
 
-        String rawResetToken = captureResetTokenForEmail(email);
+        String rawResetOtp = captureResetTokenForEmail(email);
+        assertTrue(rawResetOtp.matches("^\\d{6}$"), "Password reset OTP must be a 6-digit numeric code");
 
         String logs = output.getAll();
         assertFalse(logs.contains(rawOtp), "Verification OTP must never appear in application logs");
-        assertFalse(logs.contains(rawResetToken), "Password reset token must never appear in application logs");
+        assertFalse(logs.contains(rawResetOtp), "Password reset OTP must never appear in application logs");
         assertFalse(logs.contains("(OTP:"), "Logs must not include plaintext OTP markers");
         assertFalse(logs.contains("(Token:"), "Logs must not include plaintext Token markers");
 
@@ -462,8 +463,137 @@ public class AuthIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(ResetPasswordRequest.builder()
-                                .token(rawResetToken)
+                                .email(email)
+                                .otp(rawResetOtp)
                                 .newPassword("ResetPass2026!")
+                                .build())))
+                .andExpect(status().isOk());
+
+        // Replaying the same password reset OTP must fail
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ResetPasswordRequest.builder()
+                                .email(email)
+                                .otp(rawResetOtp)
+                                .newPassword("AnotherPass2026!")
+                                .build())))
+                .andExpect(status().isBadRequest());
+
+        // Confirm login succeeds with the updated password
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(LoginRequest.builder()
+                                .emailOrUsername(email)
+                                .password("ResetPass2026!")
+                                .build())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldLockPasswordResetOtpAfterFiveFailedAttemptsAndEnforceCooldown() throws Exception {
+        String suffix = System.currentTimeMillis() + "_reset_otp_lock";
+        String email = "resetlock_" + suffix + "@medinex.health";
+        RegisterRequest register = RegisterRequest.builder()
+                .username("resetlock_" + suffix)
+                .email(email)
+                .fullName("Reset Lockout User")
+                .password("InitialPass2026!")
+                .agreeTerms(true)
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isCreated());
+
+        ForgotPasswordRequest forgotReq = ForgotPasswordRequest.builder().email(email).build();
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(forgotReq)))
+                .andExpect(status().isOk());
+
+        // Immediate duplicate forgot-password request must enforce 2-minute cooldown
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(forgotReq)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.message", containsString("Please wait")));
+
+        String realOtp = captureResetTokenForEmail(email);
+        String wrongOtp = realOtp.equals("000000") ? "999999" : "000000";
+
+        // Reject malformed non-6-digit OTP
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ResetPasswordRequest.builder()
+                                .email(email)
+                                .otp("abc123")
+                                .newPassword("NewPass2026!")
+                                .build())))
+                .andExpect(status().isBadRequest());
+
+        ResetPasswordRequest wrongReq = ResetPasswordRequest.builder()
+                .email(email)
+                .otp(wrongOtp)
+                .newPassword("NewPass2026!")
+                .build();
+
+        for (int attempt = 1; attempt <= 4; attempt++) {
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(wrongReq)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("attempt(s) remaining")));
+        }
+
+        // 5th failed attempt locks the OTP
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wrongReq)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.message", containsString("Too many failed attempts")));
+
+        // Real OTP is blocked while locked
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ResetPasswordRequest.builder()
+                                .email(email)
+                                .otp(realOtp)
+                                .newPassword("NewPass2026!")
+                                .build())))
+                .andExpect(status().isTooManyRequests());
+
+        // Age token past cooldown and request a fresh reset OTP
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        PasswordResetToken lockedToken = passwordResetTokenRepository
+                .findAllByUserIdOrderByCreatedAtDesc(user.getId())
+                .get(0);
+        jdbcTemplate.update(
+                "UPDATE password_reset_tokens SET created_at = ? WHERE id = ?",
+                Timestamp.from(Instant.now().minusSeconds(130)),
+                lockedToken.getId()
+        );
+
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(forgotReq)))
+                .andExpect(status().isOk());
+
+        String freshOtp = captureResetTokenForEmail(email);
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ResetPasswordRequest.builder()
+                                .email(email)
+                                .otp(freshOtp)
+                                .newPassword("RecoveredPass2026!")
+                                .build())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(LoginRequest.builder()
+                                .emailOrUsername(email)
+                                .password("RecoveredPass2026!")
                                 .build())))
                 .andExpect(status().isOk());
     }

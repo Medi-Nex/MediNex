@@ -82,13 +82,13 @@ public class EmailService {
     }
 
     /**
-     * Dispatches a password reset email without ever logging the raw reset token.
+     * Dispatches a password reset OTP email without ever logging the raw code.
      */
-    public boolean sendPasswordResetEmail(String recipientEmail, String recipientName, String rawToken) {
-        log.info("[EMAIL SERVICE] Dispatching password reset instructions to {} (token redacted)", recipientEmail);
-        return sendEmail(recipientEmail, recipientName, "MediNex Password Reset Request",
-                String.format("Hello %s,\n\nWe received a request to reset your MediNex password. Use the token below to reset your password:\n\n%s\n\nThis token will expire in 1 hour. If you did not request this, please ignore this email.\n\nBest regards,\nMediNex Team",
-                        recipientName, rawToken),
+    public boolean sendPasswordResetEmail(String recipientEmail, String recipientName, String rawOtp) {
+        log.info("[EMAIL SERVICE] Dispatching password reset OTP to {} (OTP redacted)", recipientEmail);
+        return sendEmail(recipientEmail, recipientName, "Your MediNex Password Reset Code (OTP)",
+                String.format("Hello %s,\n\nWe received a request to reset your MediNex password. Your 6-digit password reset OTP is:\n\n%s\n\nEnter this 6-digit code with your email on the MediNex Reset Password page. It expires in 10 minutes and locks after 5 incorrect attempts. If you did not request this, please ignore this email.\n\nBest regards,\nMediNex Team",
+                        recipientName, rawOtp),
                 null, null);
     }
 
