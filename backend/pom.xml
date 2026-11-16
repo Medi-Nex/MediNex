@@ -9,11 +9,11 @@
 		<relativePath/>
 	</parent>
 
-	<groupId>com.medinex</groupId>
-	<artifactId>medinex-backend</artifactId>
+	<groupId>com.nexora71</groupId>
+	<artifactId>nexora71-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>medinex-backend</name>
-	<description>MediNex Healthcare Innovation Community Platform - Backend API Service</description>
+	<name>nexora71-backend</name>
+	<description>Nexora71 Healthcare Innovation Community Platform - Backend API Service</description>
 
 	<properties>
 		<java.version>21</java.version>

@@ -1,4 +1,4 @@
-name: medinex
+name: nexora71
 
 services:
   # ----------------------------------------------------------------------------
@@ -6,23 +6,23 @@ services:
   # ----------------------------------------------------------------------------
   postgres:
     image: postgres:16.4-alpine
-    container_name: medinex-postgres
+    container_name: nexora71-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-medinex_db}
-      POSTGRES_USER: ${POSTGRES_USER:-medinex_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medinex_secure_password_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-nexora71_db}
+      POSTGRES_USER: ${POSTGRES_USER:-nexora71_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexora71_secure_password_dev_only}
       TZ: UTC
       PGTZ: UTC
     ports:
       - "${POSTGRES_PORT:-5434}:5432"
     volumes:
-      - medinex_pgdata:/var/lib/postgresql/data
+      - nexora71_pgdata:/var/lib/postgresql/data
       - ./infrastructure/docker/postgres/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
-      - medinex-network
+      - nexora71-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medinex_user} -d ${POSTGRES_DB:-medinex_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexora71_user} -d ${POSTGRES_DB:-nexora71_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,7 +35,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: medinex-backend
+    container_name: nexora71-backend
     restart: unless-stopped
     depends_on:
       postgres:
@@ -44,9 +44,9 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       SERVER_PORT: 8080
       MANAGEMENT_SERVER_PORT: 8081
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-medinex_db}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-medinex_user}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-medinex_secure_password_dev_only}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-nexora71_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-nexora71_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-nexora71_secure_password_dev_only}
       SPRING_FLYWAY_ENABLED: "true"
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-4c56e297893a778c187e1451b5c2a13b4f59837651a2d48698ecb819f3900cb93ad9871f92e071e6d1f054817a1936c5}
@@ -55,12 +55,12 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://frontend:3000}
       MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
       MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-medinexbd.noreply@gmail.com}
+      MAIL_USERNAME: ${MAIL_USERNAME:-nexora71bd.noreply@gmail.com}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
       MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
-      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-medinexbd.noreply@gmail.com}
-      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-MediNex Platform}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-nexora71bd.noreply@gmail.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-nexora71 Platform}
       UPLOAD_DIR: /app/uploads
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -68,9 +68,9 @@ services:
       - "${SERVER_PORT:-8080}:8080"
       - "${MANAGEMENT_SERVER_PORT:-8083}:8081"
     volumes:
-      - medinex_uploads:/app/uploads
+      - nexora71_uploads:/app/uploads
     networks:
-      - medinex-network
+      - nexora71-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8081/actuator/health"]
       interval: 15s
@@ -86,25 +86,25 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_APP_NAME: "MediNex"
+        NEXT_PUBLIC_APP_NAME: "Nexora71"
         NEXT_PUBLIC_APP_TAGLINE: "Connecting Technology, Research & Healthcare Innovation."
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}
-    container_name: medinex-frontend
+    container_name: nexora71-frontend
     restart: unless-stopped
     depends_on:
       - backend
     environment:
       NODE_ENV: production
       PORT: 3000
-      NEXT_PUBLIC_APP_NAME: "MediNex"
+      NEXT_PUBLIC_APP_NAME: "Nexora71"
       NEXT_PUBLIC_APP_TAGLINE: "Connecting Technology, Research & Healthcare Innovation."
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     networks:
-      - medinex-network
+      - nexora71-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000"]
       interval: 15s
@@ -117,26 +117,26 @@ services:
   # ----------------------------------------------------------------------------
   mailpit:
     image: axllent/mailpit:v1.20
-    container_name: medinex-mailpit
+    container_name: nexora71-mailpit
     restart: unless-stopped
     ports:
       - "${MAILPIT_WEB_PORT:-8026}:8025" # Web UI
       - "${MAILPIT_SMTP_PORT:-1026}:1025" # SMTP port
     networks:
-      - medinex-network
+      - nexora71-network
 
   # ----------------------------------------------------------------------------
   # Optional Redis Cache Service (profile: cache)
   # ----------------------------------------------------------------------------
   redis:
     image: redis:7.2.5-alpine
-    container_name: medinex-redis
+    container_name: nexora71-redis
     profiles: ["cache"]
     restart: unless-stopped
     ports:
       - "6379:6379"
     networks:
-      - medinex-network
+      - nexora71-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -148,7 +148,7 @@ services:
   # ----------------------------------------------------------------------------
   minio:
     image: minio/minio:RELEASE.2024-08-03T04-33-23Z
-    container_name: medinex-minio
+    container_name: nexora71-minio
     profiles: ["storage"]
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -159,9 +159,9 @@ services:
       - "9000:9000" # API
       - "9001:9001" # Web Console
     volumes:
-      - medinex_minio_data:/data
+      - nexora71_minio_data:/data
     networks:
-      - medinex-network
+      - nexora71-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 15s
@@ -172,17 +172,17 @@ services:
 # Persistent Named Volumes
 # ------------------------------------------------------------------------------
 volumes:
-  medinex_pgdata:
-    name: medinex_pgdata
-  medinex_uploads:
-    name: medinex_uploads
-  medinex_minio_data:
-    name: medinex_minio_data
+  nexora71_pgdata:
+    name: nexora71_pgdata
+  nexora71_uploads:
+    name: nexora71_uploads
+  nexora71_minio_data:
+    name: nexora71_minio_data
 
 # ------------------------------------------------------------------------------
 # Isolated Internal Network
 # ------------------------------------------------------------------------------
 networks:
-  medinex-network:
-    name: medinex-network
+  nexora71-network:
+    name: nexora71-network
     driver: bridge

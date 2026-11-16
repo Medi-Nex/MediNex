@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2001/svg" viewBox="0 0 200 60" width="200" height="60">
+    <!-- Nexora71 Logo -->
+    <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#007BFF" />
+            <stop offset="100%" stop-color="#00C6FF" />
+        </linearGradient>
+    </defs>
+    <!-- Icon part -->
+    <circle cx="30" cy="30" r="24" fill="url(#gradient)" />
+    <path d="M 22 30 L 38 30 M 30 22 L 30 38" stroke="white" stroke-width="6" stroke-linecap="round" />
+    <circle cx="30" cy="30" r="6" fill="white" />
+    <circle cx="30" cy="30" r="2" fill="#007BFF" />
+    <!-- Text part -->
+    <text x="65" y="40" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="32" font-weight="bold" fill="#333333">
+        Nexora<tspan fill="#007BFF">71</tspan>
+    </text>
+</svg>

@@ -18,7 +18,7 @@ export default function Footer() {
                 <Activity className="w-5 h-5 text-medinex-mint" />
               </div>
               <span className="font-bold text-2xl tracking-tight text-white">
-                Medi<span className="text-medinex-teal">Nex</span>
+                Nexora<span className="text-medinex-teal">71</span>
               </span>
             </div>
 
@@ -160,7 +160,7 @@ export default function Footer() {
         {/* Bottom row */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div>
-            &copy; {new Date().getFullYear()} MediNex Platform. Healthcare Innovation &amp; Technology Platform.
+            &copy; {new Date().getFullYear()} Nexora71 Platform. Healthcare Innovation &amp; Technology Platform.
           </div>
           <div className="flex items-center gap-2">
             <HeartHandshake className="w-4 h-4 text-medinex-mint" />

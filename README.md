@@ -1,4 +1,4 @@
-# MediNex — Healthcare Innovation & Technology Platform
+# Nexora71 — Healthcare Innovation & Technology Platform
 
 > *"Connecting Technology, Research & Healthcare Innovation."*
 

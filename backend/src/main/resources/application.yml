@@ -6,15 +6,15 @@ server:
 
 spring:
   application:
-    name: medinex-backend
+    name: nexora71-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   lifecycle:
     timeout-per-shutdown-phase: 20s
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/medinex_db}
-    username: ${SPRING_DATASOURCE_USERNAME:medinex_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:medinex_secure_password_dev_only}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/nexora71_db}
+    username: ${SPRING_DATASOURCE_USERNAME:nexora71_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:nexora71_secure_password_dev_only}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 15
@@ -45,7 +45,7 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:medinexbd.noreply@gmail.com}
+    username: ${MAIL_USERNAME:nexora71.noreply@gmail.com}
     password: ${MAIL_PASSWORD:}
     properties:
       mail:
@@ -80,14 +80,14 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: alpha
 
-medinex:
+nexora71:
   storage:
     upload-dir: ${UPLOAD_DIR:./uploads}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
   mail:
-    from-address: ${MAIL_FROM_ADDRESS:medinexbd.noreply@gmail.com}
-    from-name: ${MAIL_FROM_NAME:MediNex Platform}
+    from-address: ${MAIL_FROM_ADDRESS:nexora71.noreply@gmail.com}
+    from-name: ${MAIL_FROM_NAME:Nexora71 Platform}
     webhook:
       url: ${MAIL_WEBHOOK_URL:}
       secret: ${MAIL_WEBHOOK_SECRET:}

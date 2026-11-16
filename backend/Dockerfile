@@ -1,5 +1,5 @@
 # ==============================================================================
-# MEDINEX BACKEND MULTI-STAGE DOCKERFILE
+# Nexora71 BACKEND MULTI-STAGE DOCKERFILE
 # Language / Runtime: Java 21 (LTS) on Eclipse Temurin Alpine
 # Security: Non-root execution, optimized layer caching, minimal attack surface
 # ==============================================================================

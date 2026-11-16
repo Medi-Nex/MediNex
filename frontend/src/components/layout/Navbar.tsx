@@ -86,7 +86,7 @@ export default function Navbar() {
               </div>
               <div>
                 <span className="font-bold text-lg sm:text-xl tracking-tight text-medinex-text">
-                  Medi<span className="text-medinex-teal">Nex</span>
+                  Nexora<span className="text-medinex-teal">71</span>
                 </span>
                 <span className="hidden xl:block text-[10px] tracking-wider uppercase text-medinex-muted -mt-1 font-semibold whitespace-nowrap">
                   Health Tech Platform
@@ -284,7 +284,7 @@ export default function Navbar() {
                     <Activity className="w-4 h-4 text-medinex-mint" />
                   </div>
                   <span className="font-bold text-lg tracking-tight text-medinex-text">
-                    Medi<span className="text-medinex-teal">Nex</span>
+                    Nexora<span className="text-medinex-teal">71</span>
                   </span>
                 </div>
                 <button

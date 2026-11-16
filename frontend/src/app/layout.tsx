@@ -30,13 +30,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "MediNex — Healthcare Innovation & Technology Platform",
-    template: "%s | MediNex",
+    default: "Nexora71 — Healthcare Innovation & Technology Platform",
+    template: "%s | Nexora71",
   },
   description:
-    "MediNex is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, build innovative solutions, and collaborate on technology-driven healthcare initiatives.",
+    "Nexora71 is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, build innovative solutions, and collaborate on technology-driven healthcare initiatives.",
   keywords: [
-    "MediNex",
+    "Nexora71",
+    "Nexora",
     "Healthcare Innovation",
     "Healthcare Technology Platform",
     "Digital Health",
@@ -48,13 +49,13 @@ export const metadata: Metadata = {
     "AI in Healthcare",
     "Health Data Security",
   ],
-  authors: [{ name: "MediNex Innovation Team" }],
+  authors: [{ name: "Nexora71 Innovation Team" }],
   metadataBase: new URL(APP_URL),
   openGraph: {
-    title: "MediNex — Healthcare Innovation & Technology Platform",
+    title: "Nexora71 — Healthcare Innovation & Technology Platform",
     description:
       "Connecting Technology, Research & Healthcare Innovation. A collaborative platform uniting developers, researchers, and public health professionals.",
-    siteName: "MediNex",
+    siteName: "Nexora71",
     locale: "en_US",
     type: "website",
     url: APP_URL,
