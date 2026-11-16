@@ -27,7 +27,7 @@ export default function Footer() {
             </p>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              MediNex is a collaborative healthcare technology platform where developers, researchers,
+              Nexora71 is a collaborative healthcare technology platform where developers, researchers,
               and public health professionals explore ideas, build innovative solutions, and
               collaborate on technology-driven healthcare initiatives.
             </p>
@@ -38,7 +38,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-lg bg-emerald-950/60 hover:bg-medinex-teal/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors border border-emerald-900/40"
-                aria-label="MediNex GitHub Organization"
+                aria-label="Nexora71 GitHub Organization"
               >
                 <GithubIcon className="w-4 h-4" />
               </a>

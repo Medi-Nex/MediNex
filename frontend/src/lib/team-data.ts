@@ -347,19 +347,19 @@ export const OFFICIAL_ANNOUNCEMENTS: TeamAnnouncement[] = [
   {
     id: "ann-01",
 
-    title: "MediNex Platform Phase 1 Launched for E-Health Hackathon 2026",
+    title: "Nexora71 Platform Phase 1 Launched for E-Health Hackathon 2026",
 
     slug: "phase-1-launched-ehealth-hackathon-2026",
 
     date: "2026-02-10",
 
-    authorName: "MediNex Lead Team",
+    authorName: "Nexora71 Lead Team",
 
     summary:
-      "Introduction of the MediNex community platform architecture, team profiles, and ShasthoSetu project specification.",
+      "Introduction of the Nexora71 community platform architecture, team profiles, and ShasthoSetu project specification.",
 
     content:
-      "MediNex is being developed as a collaborative platform for its team and the broader digital health community. The platform brings together team information, project updates, and community engagement features.",
+      "Nexora71 is being developed as a collaborative platform for its team and the broader digital health community. The platform brings together team information, project updates, and community engagement features.",
 
     category: "HACKATHON",
   },
@@ -373,13 +373,13 @@ export const OFFICIAL_ANNOUNCEMENTS: TeamAnnouncement[] = [
 
     date: "2026-02-08",
 
-    authorName: "MediNex Architecture Working Group",
+    authorName: "Nexora71 Architecture Working Group",
 
     summary:
       "Separating public community interactions from patient clinical information.",
 
     content:
-      "MediNex is designed to maintain strict separation between public social interactions, including posts, follows, and discussions, and interoperable health-record research initiatives such as ShasthoSetu. Real patient medical records, diagnostic information, and personally identifiable clinical information must not be stored in the public community database.",
+      "Nexora71 is designed to maintain strict separation between public social interactions, including posts, follows, and discussions, and interoperable health-record research initiatives such as ShasthoSetu. Real patient medical records, diagnostic information, and personally identifiable clinical information must not be stored in the public community database.",
 
     category: "TECHNICAL",
   },

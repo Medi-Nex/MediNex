@@ -2,7 +2,7 @@
 
 > *"Connecting Technology, Research & Healthcare Innovation."*
 
-[![Healthcare Technology Platform](https://img.shields.io/badge/MediNex-Health%20Tech%20Platform-0D9488?style=for-the-badge&logo=medscape&logoColor=white)](https://github.com/Medi-Nex)
+[![Healthcare Technology Platform](https://img.shields.io/badge/Nexora71-Health%20Tech%20Platform-0D9488?style=for-the-badge&logo=medscape&logoColor=white)](https://github.com/Medi-Nex)
 [![Java 21 LTS](https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
 [![Spring Boot 3.4](https://img.shields.io/badge/Spring%20Boot-3.4.3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Next.js 16 App Router](https://img.shields.io/badge/Next.js-16%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -13,19 +13,19 @@
 
 ## 1. Platform Identity & Collaborative Mission
 
-**MediNex** is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, build innovative solutions, and collaborate on technology-driven healthcare initiatives (initially incubated during E-Health Hackathon 2026).
+**Nexora71** is a collaborative healthcare technology platform where developers, researchers, and public health professionals explore ideas, build innovative solutions, and collaborate on technology-driven healthcare initiatives (initially incubated during E-Health Hackathon 2026).
 
-> **Important Positioning Clarification:** MediNex is NOT a telemedicine service provider, doctor consultation marketplace, clinic, or hospital management system.
+> **Important Positioning Clarification:** Nexora71 is NOT a telemedicine service provider, doctor consultation marketplace, clinic, or hospital management system.
 
 The platform provides a dual architecture:
-1. **The MediNex Public Community Platform:** An open collaboration ecosystem featuring contributor profiles, official announcements, project specifications, follower relationships, and healthcare technology discussion feeds.
+1. **The Nexora71 Public Community Platform:** An open collaboration ecosystem featuring contributor profiles, official announcements, project specifications, follower relationships, and healthcare technology discussion feeds.
 2. **The ShasthoSetu Project (Featured Initiative):** An interoperable digital health record and exchange platform prototype exploring standardized health data structures, HL7 FHIR alignment, consent workflows, and RBAC.
 
 ---
 
 ## 2. Non-Negotiable Project Rules & Governance
 
-- **Zero Protected Health Information (PHI):** MediNex does **NOT** accept, index, or store patient medical records, personal health identifiers, prescriptions, or clinical diagnostic scans in public community databases.
+- **Zero Protected Health Information (PHI):** Nexora71 does **NOT** accept, index, or store patient medical records, personal health identifiers, prescriptions, or clinical diagnostic scans in public community databases.
 - **Strict Data Segregation:** Community social interactions and ShasthoSetu health-record interoperability prototypes reside in separated logical domains. Social tokens grant zero privilege to clinical record pipelines.
 - **Honest Metrics & Transparency:** Implemented capabilities, working prototypes, research concepts, and long-term vision are strictly separated. No fake followers, hospital integrations, regulatory approvals, or clinical trial claims are fabricated.
 - **Real Database Persistence:** Powered by PostgreSQL 16 with deterministic Flyway schema migrations (`V1`–`V6`, including privacy, OTP security, and contributor least-privilege enforcement).
@@ -55,7 +55,7 @@ The platform provides a dual architecture:
 
 ### Public Routes:
 - `/` — Premium landing page with hero, mission, and live metrics
-- `/about` — MediNex mission, vision, values, and initiative background
+- `/about` — Nexora71 mission, vision, values, and initiative background
 - `/team` — Core multidisciplinary contributor profiles roster
 - `/team/[username]` — Individual dynamic contributor profile with social graph
 - `/users/[username]` — Public and privacy-enforced community profile view
@@ -120,7 +120,7 @@ docker compose down
 ```
 
 > [!CAUTION]
-> Never execute `docker compose down -v` in staging or production. The `-v` flag permanently removes named Docker volumes (`medinex_pgdata`), destroying database persistence.
+> Never execute `docker compose down -v` in staging or production. The `-v` flag permanently removes named Docker volumes (`Nexora71_pgdata`), destroying database persistence.
 
 ### Option B: Running with Local Developer Tools
 

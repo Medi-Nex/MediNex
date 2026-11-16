@@ -16,9 +16,9 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 export const metadata = {
-  title: "About MediNex — Healthcare Innovation & Technology Platform",
+  title: "About Nexora71 — Healthcare Innovation & Technology Platform",
   description:
-    "Learn about MediNex, a collaborative healthcare technology platform uniting developers, researchers, and public health professionals around interoperable digital health solutions.",
+    "Learn about Nexora71, a collaborative healthcare technology platform uniting developers, researchers, and public health professionals around interoperable digital health solutions.",
 };
 
 export default function AboutPage() {
@@ -28,13 +28,13 @@ export default function AboutPage() {
       <section className="bg-medinex-dark text-white py-16 md:py-24 border-b border-emerald-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <Badge variant="mint" className="mb-2">
-            The MediNex Story
+            The Nexora71 Story
           </Badge>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
             Connecting Technology, Research &amp; Healthcare Innovation
           </h1>
           <p className="text-slate-300 text-lg max-w-3xl mx-auto leading-relaxed">
-            MediNex is built by an interdisciplinary team of six developers, health informatics
+            Nexora71 is built by an interdisciplinary team of six developers, health informatics
             researchers, and human factors designers participating in{" "}
             <strong className="text-white">E-Health Hackathon 2026</strong>.
           </p>
@@ -87,7 +87,7 @@ export default function AboutPage() {
           </div>
 
           <p className="text-sm text-slate-700 leading-relaxed">
-            MediNex originated during <strong className="text-medinex-text">E-Health Hackathon 2026</strong> as the
+            Nexora71 originated during <strong className="text-medinex-text">E-Health Hackathon 2026</strong> as the
             collaborative workspace for a six-member interdisciplinary team. We bridge software
             engineering and public health research without operating as a hospital or clinical provider,
             pairing deep engineering execution (including our flagship initiative,{" "}
@@ -164,7 +164,7 @@ export default function AboutPage() {
             <span>Healthcare Data Governance Notice</span>
           </div>
           <p className="text-xs sm:text-sm text-amber-900/90 leading-relaxed">
-            The MediNex public platform is designed solely for technical team collaboration,
+            The Nexora71 public platform is designed solely for technical team collaboration,
             project documentation, and public community discourse. It does not provide medical advice,
             prescriptions, or patient diagnostic services. ShasthoSetu is an isolated experimental
             technology prototype under technical development.

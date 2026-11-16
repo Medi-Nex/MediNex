@@ -154,7 +154,7 @@ export default function HomePage() {
                 Connecting Technology, Research &amp; Healthcare Innovation.
               </h2>
               <p className="text-base text-medinex-muted leading-relaxed">
-                MediNex is a collaborative healthcare technology platform where developers, researchers,
+                Nexora71 is a collaborative healthcare technology platform where developers, researchers,
                 and public health professionals explore ideas, build innovative solutions, and
                 collaborate on technology-driven healthcare initiatives.
               </p>
@@ -279,7 +279,7 @@ export default function HomePage() {
 
       {/* ---------------------------------------------------------------------- */}
       {/* 3. FEATURED PROJECT: SHASTHOSETU SPOTLIGHT */}
-      {/* ---------------------------------------------------------------------- */}
+      {/* ----------------------------------------------------------------------
       <section className="py-14 sm:py-20 bg-white border-b border-medinex-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-medinex-dark bg-hero-mesh rounded-3xl text-white p-6 sm:p-10 lg:p-12 shadow-premium ring-1 ring-white/10 relative overflow-hidden">
@@ -347,7 +347,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>*/}
 
       {/* ---------------------------------------------------------------------- */}
       {/* 4. COLLABORATION & CORE CONTRIBUTORS */}

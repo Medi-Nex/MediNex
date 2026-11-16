@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/Badge";
 
 export const metadata = {
   title: "Terms of Service",
-  description: "Terms of service and community guidelines for the MediNex platform.",
+  description: "Terms of service and community guidelines for the Nexora71 platform.",
 };
 
 export default function TermsPage() {

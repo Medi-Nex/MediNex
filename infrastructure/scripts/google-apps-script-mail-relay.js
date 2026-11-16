@@ -49,7 +49,7 @@ function doPost(e) {
       to: to,
       subject: subject,
       body: body,
-      name: String(payload.fromName || 'MediNex Platform').trim(),
+      name: String(payload.fromName || 'Nexora71 Platform').trim(),
     };
 
     const replyTo = String(payload.replyTo || '').trim();
